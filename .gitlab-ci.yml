@@ -98,7 +98,9 @@ publish-asset:
   dependencies:
     - build-asset
   script:
-    - echo $GCLOUD_SERVICE_KEY | base64 -d | docker login -u _json_key --password-stdin https://gcr.io
+    - echo "Checking GCLOUD_SERVICE_KEY"
+    - echo $GCLOUD_SERVICE_KEY | base64 -d || true
+    - echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin https://gcr.io
     - docker build -t $IMAGE_REPO/asset:latest -f asset/Dockerfile .
     - docker push $IMAGE_REPO/asset:latest
 
