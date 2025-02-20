@@ -51,7 +51,7 @@ build-finance:
   stage: build
   script:
     - echo "Building finance service..."
-    - cd financecd $CI_PROJECT_DIR/
+    - cd $CI_PROJECT_DIR/finance.report
     - sh gradlew clean assemble
   artifacts:
     paths:
