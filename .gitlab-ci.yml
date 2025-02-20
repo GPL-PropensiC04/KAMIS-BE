@@ -35,16 +35,6 @@ build-asset:
     paths:
       - asset/build/libs/asset-0.0.1-SNAPSHOT.jar
 
-build-dashboard:
-  image: $IMAGE_OPENJDK_GRADLE
-  stage: build
-  script:
-    - echo "Building dashboard service..."
-    - cd $CI_PROJECT_DIR/dashboard
-    - sh gradlew clean assemble
-  artifacts:
-    paths:
-      - dashboard/build/libs/dashboard-0.0.1-SNAPSHOT.jar
 
 build-finance:
   image: $IMAGE_OPENJDK_GRADLE
@@ -112,14 +102,6 @@ publish-asset:
     - docker build -t $IMAGE_REPO/asset:latest -f asset/Dockerfile .
     - docker push $IMAGE_REPO/asset:latest
 
-publish-dashboard:
-  image: $IMAGE_DOCKER_DIND
-  stage: publish
-  dependencies:
-    - build-dashboard
-  script:
-    - docker build -t $IMAGE_REPO/dashboard:latest -f dashboard/Dockerfile .
-    - docker push $IMAGE_REPO/dashboard:latest
 
 publish-finance:
   image: $IMAGE_DOCKER_DIND
@@ -175,13 +157,6 @@ deploy-asset:
   script:
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/asset:latest && docker-compose up -d asset"
 
-deploy-dashboard:
-  stage: deploy
-  dependencies:
-    - publish-dashboard
-  extends: .setup-ssh
-  script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/dashboard:latest && docker-compose up -d dashboard"
 
 deploy-finance:
   stage: deploy
@@ -229,7 +204,6 @@ cleaning:
   stage: clean
   dependencies:
     - deploy-asset
-    - deploy-dashboard
   extends: .setup-ssh
   script:
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker system prune -af"
