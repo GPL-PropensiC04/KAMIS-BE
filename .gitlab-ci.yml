@@ -1,6 +1,5 @@
 default:
   tags:
-    - shared
     - apap
     
 .setup-ssh:
