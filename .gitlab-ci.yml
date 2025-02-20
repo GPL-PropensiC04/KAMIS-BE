@@ -30,7 +30,7 @@ build-asset:
   script:
     - echo "Building asset service..."
     - cd $CI_PROJECT_DIR/asset
-    - ./gradlew clean assemble
+    - sh gradlew clean assemble
   artifacts:
     paths:
       - asset/build/libs/asset-0.0.1-SNAPSHOT.jar
@@ -41,7 +41,7 @@ build-dashboard:
   script:
     - echo "Building dashboard service..."
     - cd $CI_PROJECT_DIR/dashboard
-    - ./gradlew clean assemble
+    - sh gradlew clean assemble
   artifacts:
     paths:
       - dashboard/build/libs/dashboard-0.0.1-SNAPSHOT.jar
@@ -51,7 +51,8 @@ build-finance:
   stage: build
   script:
     - echo "Building finance service..."
-    - cd financecd $CI_PROJECT_DIR/    - ./gradlew clean assemble
+    - cd financecd $CI_PROJECT_DIR/
+    - sh gradlew clean assemble
   artifacts:
     paths:
       - finance.report/build/libs/finance.report-0.0.1-SNAPSHOT.jar
@@ -62,7 +63,7 @@ build-profile:
   script:
     - echo "Building profile service..."
     - cd $CI_PROJECT_DIR/profile
-    - ./gradlew clean assemble
+    - sh gradlew clean assemble
   artifacts:
     paths:
       - profile/build/libs/profile-0.0.1-SNAPSHOT.jar
@@ -73,7 +74,7 @@ build-project:
   script:
     - echo "Building project service..."
     - cd $CI_PROJECT_DIR/project
-    - ./gradlew clean assemble
+    - sh gradlew clean assemble
   artifacts:
     paths:
       - project/build/libs/project-0.0.1-SNAPSHOT.jar
@@ -84,7 +85,7 @@ build-purchase:
   script:
     - echo "Building purchase service..."
     - cd $CI_PROJECT_DIR/purchase
-    - ./gradlew clean assemble
+    - sh gradlew clean assemble
   artifacts:
     paths:
       - purchase/build/libs/purchase-0.0.1-SNAPSHOT.jar
@@ -95,7 +96,7 @@ build-resource:
   script:
     - echo "Building resource service..."
     - cd $CI_PROJECT_DIR/resource
-    - ./gradlew clean assemble
+    - sh gradlew clean assemble
   artifacts:
     paths:
       - resource/build/libs/resource-0.0.1-SNAPSHOT.jar
