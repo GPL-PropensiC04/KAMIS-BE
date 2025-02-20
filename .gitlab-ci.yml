@@ -1,6 +1,6 @@
 default:
   tags:
-    - gcp
+    - apap
 
 .setup-ssh:
   before_script:
@@ -21,80 +21,80 @@ variables:
   GCP_PROJECT_ID: "propensi-451504"
   IMAGE_REPO: "gcr.io/$GCP_PROJECT_ID"
   IMAGE_DOCKER_DIND: docker:27.3.1-alpine3.20
+  IMAGE_OPENJDK_GRADLE: gradle:8.11.1-jdk21-alpine
 
 # Separate build jobs
 build-asset:
-  image: eclipse-temurin:21-jre-alpine
+  image: $IMAGE_OPENJDK_GRADLE
   stage: build
   script:
     - echo "Building asset service..."
-    - cd asset
+    - cd $CI_PROJECT_DIR/asset
     - ./gradlew clean assemble
   artifacts:
     paths:
       - asset/build/libs/asset-0.0.1-SNAPSHOT.jar
 
 build-dashboard:
-  image: eclipse-temurin:21-jre-alpine
+  image: $IMAGE_OPENJDK_GRADLE
   stage: build
   script:
     - echo "Building dashboard service..."
-    - cd dashboard
+    - cd $CI_PROJECT_DIR/dashboard
     - ./gradlew clean assemble
   artifacts:
     paths:
       - dashboard/build/libs/dashboard-0.0.1-SNAPSHOT.jar
 
 build-finance:
-  image: eclipse-temurin:21-jre-alpine
+  image: $IMAGE_OPENJDK_GRADLE
   stage: build
   script:
     - echo "Building finance service..."
-    - cd finance.report
-    - ./gradlew clean assemble
+    - cd financecd $CI_PROJECT_DIR/    - ./gradlew clean assemble
   artifacts:
     paths:
       - finance.report/build/libs/finance.report-0.0.1-SNAPSHOT.jar
 
 build-profile:
-  image: eclipse-temurin:21-jre-alpine
+  image: $IMAGE_OPENJDK_GRADLE
   stage: build
   script:
     - echo "Building profile service..."
-    - cd profile
+    - cd $CI_PROJECT_DIR/profile
     - ./gradlew clean assemble
   artifacts:
     paths:
       - profile/build/libs/profile-0.0.1-SNAPSHOT.jar
 
 build-project:
-  image: eclipse-temurin:21-jre-alpine
+  image: $IMAGE_OPENJDK_GRADLE
   stage: build
   script:
     - echo "Building project service..."
-    - cd project
+    - cd $CI_PROJECT_DIR/project
     - ./gradlew clean assemble
   artifacts:
     paths:
       - project/build/libs/project-0.0.1-SNAPSHOT.jar
 
 build-purchase:
-  image: eclipse-temurin:21-jre-alpine
+  image: $IMAGE_OPENJDK_GRADLE
   stage: build
   script:
     - echo "Building purchase service..."
-    - cd purchase
+    - cd $CI_PROJECT_DIR/purchase
     - ./gradlew clean assemble
   artifacts:
     paths:
       - purchase/build/libs/purchase-0.0.1-SNAPSHOT.jar
 
 build-resource:
-  image: eclipse-temurin:21-jre-alpine
+  image: $IMAGE_OPENJDK_GRADLE
   stage: build
   script:
     - echo "Building resource service..."
-    - cd resource
+    - cd $CI_PROJECT_DIR/resource
     - ./gradlew clean assemble
   artifacts:
     paths:
