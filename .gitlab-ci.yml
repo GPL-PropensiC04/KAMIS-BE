@@ -1,6 +1,6 @@
 default:
   tags:
-    - gcp
+    - shared
 
 .setup-ssh:
   before_script:
