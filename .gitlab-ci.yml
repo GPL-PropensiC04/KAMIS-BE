@@ -99,7 +99,7 @@ publish-asset:
     - build-asset
   script:
     - echo "Authenticating with Google Cloud..."
-    - echo $GCLOUD_SERVICE_KEY | base64 -d > gcloud-key.json
+    - echo $GCLOUD_SERVICE_KEY | base64 -d > gcloud-key.json || true
     - gcloud auth activate-service-account --key-file=gcloud-key.json
     - gcloud auth configure-docker
     - docker build -t $IMAGE_REPO/asset:latest -f asset/Dockerfile asset
@@ -199,7 +199,7 @@ deploy-resource:
   extends: .setup-ssh
   script:
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "[ -f docker-compose.yml ] && docker pull $IMAGE_REPO/resource:latest && docker-compose up -d resource || echo 'docker-compose.yml not found'"
-    
+
 cleaning:
   stage: clean
   dependencies:
