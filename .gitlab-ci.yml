@@ -64,72 +64,16 @@ build-project:
       - project/build/libs/project-0.0.1-SNAPSHOT.jar
 
 # Deploy Jobs
-deploy-asset:
-  image: $UBUNTU
+# Deploy Job (Uses a single job instead of multiple)
+deploy:
+  image: $RAILWAY_IMAGE
   stage: deploy
-  variables:
-    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
+  parallel:
+    matrix:
+      - SERVICE: ["profile", "purchase", "asset", "finance", "project"]
   script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --browserless
+    - echo "Deploying $SERVICE to Railway..."
     - railway link --environment Development --project $RAILWAY_PROJECT_ID
-    - railway up --service asset
-  only:
-    - railway-deploy
-
-deploy-finance:
-  image: $UBUNTU
-  stage: deploy
-  variables:
-    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
-  script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --browserless
-    - railway link --environment Development --project $RAILWAY_PROJECT_ID
-    - railway up --service finance
-  only:
-    - railway-deploy
-
-deploy-profile:
-  image: $UBUNTU
-  stage: deploy
-  variables:
-    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
-  script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --browserless
-    - railway link --environment Development --project $RAILWAY_PROJECT_ID
-    - railway up --service profile
-  only:
-    - railway-deploy
-
-deploy-project:
-  image: $UBUNTU
-  stage: deploy
-  variables:
-    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
-  script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --browserless
-    - railway link --environment Development --project $RAILWAY_PROJECT_ID
-    - railway up --service project
-  only:
-    - railway-deploy
-
-deploy-purchase:
-  image: $UBUNTU
-  stage: deploy
-  variables:
-    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
-  script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --browserless
-    - railway link --environment Development --project $RAILWAY_PROJECT_ID
-    - railway up --service purchase
+    - railway up --service $SERVICE
   only:
     - railway-deploy
