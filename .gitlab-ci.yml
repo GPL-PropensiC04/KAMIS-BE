@@ -98,9 +98,11 @@ publish-asset:
   dependencies:
     - build-asset
   script:
-    - echo "Checking GCLOUD_SERVICE_KEY"
-    - echo $GCLOUD_SERVICE_KEY | base64 -d | docker login -u _json_key --password-stdin https://gcr.io || true
-    - docker build -t $IMAGE_REPO/asset:latest -f asset/Dockerfile .
+    - echo "Authenticating with Google Cloud..."
+    - echo $GCLOUD_SERVICE_KEY | base64 -d > gcloud-key.json
+    - gcloud auth activate-service-account --key-file=gcloud-key.json
+    - gcloud auth configure-docker
+    - docker build -t $IMAGE_REPO/asset:latest -f asset/Dockerfile asset
     - docker push $IMAGE_REPO/asset:latest
 
 publish-finance:
@@ -109,7 +111,7 @@ publish-finance:
   dependencies:
     - build-finance
   script:
-    - docker build -t $IMAGE_REPO/finance:latest -f finance.report/Dockerfile .
+    - docker build -t $IMAGE_REPO/finance:latest -f finance.report/Dockerfile finance.report
     - docker push $IMAGE_REPO/finance:latest
 
 publish-profile:
@@ -118,7 +120,7 @@ publish-profile:
   dependencies:
     - build-profile
   script:
-    - docker build -t $IMAGE_REPO/profile:latest -f profile/Dockerfile .
+    - docker build -t $IMAGE_REPO/profile:latest -f profile/Dockerfile profile
     - docker push $IMAGE_REPO/profile:latest
 
 publish-project:
@@ -127,7 +129,7 @@ publish-project:
   dependencies:
     - build-project
   script:
-    - docker build -t $IMAGE_REPO/project:latest -f project/Dockerfile .
+    - docker build -t $IMAGE_REPO/project:latest -f project/Dockerfile project
     - docker push $IMAGE_REPO/project:latest
 
 publish-purchase:
@@ -136,7 +138,7 @@ publish-purchase:
   dependencies:
     - build-purchase
   script:
-    - docker build -t $IMAGE_REPO/purchase:latest -f purchase/Dockerfile .
+    - docker build -t $IMAGE_REPO/purchase:latest -f purchase/Dockerfile purchase
     - docker push $IMAGE_REPO/purchase:latest
 
 publish-resource:
@@ -145,7 +147,7 @@ publish-resource:
   dependencies:
     - build-resource
   script:
-    - docker build -t $IMAGE_REPO/resource:latest -f resource/Dockerfile .
+    - docker build -t $IMAGE_REPO/resource:latest -f resource/Dockerfile resource
     - docker push $IMAGE_REPO/resource:latest
 
 # Separate deploy jobs
@@ -155,7 +157,7 @@ deploy-asset:
     - publish-asset
   extends: .setup-ssh
   script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/asset:latest && docker-compose up -d asset"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "[ -f docker-compose.yml ] && docker pull $IMAGE_REPO/asset:latest && docker-compose up -d asset || echo 'docker-compose.yml not found'"
 
 
 deploy-finance:
@@ -164,7 +166,7 @@ deploy-finance:
     - publish-finance
   extends: .setup-ssh
   script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/finance:latest && docker-compose up -d finance"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "[ -f docker-compose.yml ] && docker pull $IMAGE_REPO/finance:latest && docker-compose up -d finance || echo 'docker-compose.yml not found'"
 
 deploy-profile:
   stage: deploy
@@ -172,7 +174,7 @@ deploy-profile:
     - publish-profile
   extends: .setup-ssh
   script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/profile:latest && docker-compose up -d profile"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "[ -f docker-compose.yml ] && docker pull $IMAGE_REPO/profile:latest && docker-compose up -d profile || echo 'docker-compose.yml not found'"
 
 deploy-project:
   stage: deploy
@@ -180,7 +182,7 @@ deploy-project:
     - publish-project
   extends: .setup-ssh
   script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/project:latest && docker-compose up -d project"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "[ -f docker-compose.yml ] && docker pull $IMAGE_REPO/project:latest && docker-compose up -d project || echo 'docker-compose.yml not found'"
 
 deploy-purchase:
   stage: deploy
@@ -188,7 +190,7 @@ deploy-purchase:
     - publish-purchase
   extends: .setup-ssh
   script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/purchase:latest && docker-compose up -d purchase"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "[ -f docker-compose.yml ] && docker pull $IMAGE_REPO/purchase:latest && docker-compose up -d purchase || echo 'docker-compose.yml not found'"
 
 deploy-resource:
   stage: deploy
@@ -196,8 +198,8 @@ deploy-resource:
     - publish-resource
   extends: .setup-ssh
   script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/resource:latest && docker-compose up -d resource"
-
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "[ -f docker-compose.yml ] && docker pull $IMAGE_REPO/resource:latest && docker-compose up -d resource || echo 'docker-compose.yml not found'"
+    
 cleaning:
   stage: clean
   dependencies:
