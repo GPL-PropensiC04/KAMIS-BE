@@ -2,12 +2,6 @@ default:
   tags:
     - apap
 
-before_script:
-  - curl -fsSL https://railway.app/install.sh | sh -s -- --path=$HOME/.railway
-  - export PATH=$HOME/.railway/bin:$PATH
-
-
-
 stages:
   - build
   - deploy
@@ -76,37 +70,38 @@ build-project:
 
 # Deploy Jobs
 deploy-asset:
+  image: node:20-alpine
   stage: deploy
   script:
-    - echo "Deploying asset service to Railway..."
+    - npm install -g railway
     - railway login --token $RAILWAY_TOKEN
     - railway up --service asset
 
 deploy-finance:
   stage: deploy
   script:
-    - echo "Deploying finance service to Railway..."
+    - npm install -g railway
     - railway login --token $RAILWAY_TOKEN
     - railway up --service finance
 
 deploy-profile:
+  image: node:20-alpine
   stage: deploy
   script:
-    - echo "Deploying profile service to Railway..."
+    - npm install -g railway
     - railway login --token $RAILWAY_TOKEN
     - railway up --service profile
-
 
 deploy-project:
   stage: deploy
   script:
-    - echo "Deploying project service to Railway..."
+    - npm install -g railway
     - railway login --token $RAILWAY_TOKEN
     - railway up --service project
 
 deploy-purchase:
   stage: deploy
   script:
-    - echo "Deploying purchase service to Railway..."
+    - npm install -g railway
     - railway login --token $RAILWAY_TOKEN
     - railway up --service purchase
