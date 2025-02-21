@@ -67,44 +67,64 @@ build-project:
 deploy-asset:
   image: $UBUNTU
   stage: deploy
+  variables:
+        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --token $RAILWAY_TOKEN
+    - railway link --environment Development $RAILWAY_PROJECT_ID
     - railway up --service asset
+  only:
+    - railway-deploy
 
 deploy-finance:
   image: $UBUNTU
   stage: deploy
+  variables:
+        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --token $RAILWAY_TOKEN
+    - railway link --environment Development $RAILWAY_PROJECT_ID
     - railway up --service finance
+  only:
+    - railway-deploy
 
 deploy-profile:
   image: $UBUNTU
   stage: deploy
+  variables:
+        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --token $RAILWAY_TOKEN
+    - railway link --environment Development $RAILWAY_PROJECT_ID
     - railway up --service profile
+  only:
+    - railway-deploy
 
 deploy-project:
   image: $UBUNTU
   stage: deploy
+  variables:
+        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --token $RAILWAY_TOKEN
+    - railway link --environment Development $RAILWAY_PROJECT_ID
     - railway up --service project
+  only:
+    - railway-deploy
 
 deploy-purchase:
   image: $UBUNTU
   stage: deploy
+  variables:
+        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway login --token $RAILWAY_TOKEN
+    - railway link --environment Development $RAILWAY_PROJECT_ID
     - railway up --service purchase
+  only:
+    - railway-deploy
