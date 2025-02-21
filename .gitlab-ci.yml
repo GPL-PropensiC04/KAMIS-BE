@@ -148,7 +148,7 @@ publish-resource:
     - docker build -t $IMAGE_REPO/resource:latest -f resource/Dockerfile .
     - docker push $IMAGE_REPO/resource:latest
 
-deploy:
+deploy-microservices:
   stage: deploy
   dependencies:
     - publish-asset
@@ -172,7 +172,7 @@ deploy:
 cleaning:
   stage: clean
   dependencies:
-    - deploy-asset
+    - deploy-microservices
   extends: .setup-ssh
   script:
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker system prune -af"
