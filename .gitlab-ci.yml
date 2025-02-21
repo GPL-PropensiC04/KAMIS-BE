@@ -14,11 +14,12 @@ build:
   stage: build
   parallel:
     matrix:
-      - SERVICE: ["profile", "purchase", "asset", "finance", "project"]
+      - SERVICE: ["profile", "purchase", "asset", "finance.report", "project"]
   script:
     - echo "Building $SERVICE service..."
     - cd $CI_PROJECT_DIR/$SERVICE
-    - ./gradlew clean assemble
+    - sh gradlew clean assemble
+
   artifacts:
     paths:
       - $SERVICE/build/libs/*.jar
