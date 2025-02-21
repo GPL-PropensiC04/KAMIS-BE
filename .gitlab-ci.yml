@@ -9,6 +9,7 @@ stages:
 variables:
   IMAGE_OPENJDK_GRADLE: gradle:8.11.1-jdk21-alpine
   IMAGE_DOCKER_DIND: docker:27.3.1-alpine3.20
+  UBUNTU: ubuntu:latest
 
 # Build Jobs
 build-profile:
@@ -68,46 +69,46 @@ build-project:
 
 # Deploy Jobs
 deploy-asset:
-  image: $IMAGE_DOCKER_DIND
+  image: $UBUNTU
   stage: deploy
   script:
-    - apk add --no-cache nodejs npm
-    - npm install -g railway
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://railway.app/install.sh | sh
     - railway login --token $RAILWAY_TOKEN
     - railway up --service asset
 
 deploy-finance:
-  image: $IMAGE_DOCKER_DIND
+  image: $UBUNTU
   stage: deploy
   script:
-    - apk add --no-cache nodejs npm
-    - npm install -g railway
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://railway.app/install.sh | sh
     - railway login --token $RAILWAY_TOKEN
     - railway up --service finance
 
 deploy-profile:
-  image: $IMAGE_DOCKER_DIND
+  image: $UBUNTU
   stage: deploy
   script:
-    - apk add --no-cache nodejs npm
-    - npm install -g railway
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://railway.app/install.sh | sh
     - railway login --token $RAILWAY_TOKEN
     - railway up --service profile
 
 deploy-project:
-  image: $IMAGE_DOCKER_DIND
+  image: $UBUNTU
   stage: deploy
   script:
-    - apk add --no-cache nodejs npm
-    - npm install -g railway
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://railway.app/install.sh | sh
     - railway login --token $RAILWAY_TOKEN
     - railway up --service project
 
 deploy-purchase:
-  image: $IMAGE_DOCKER_DIND
+  image: $UBUNTU
   stage: deploy
   script:
-    - apk add --no-cache nodejs npm
-    - npm install -g railway
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://railway.app/install.sh | sh
     - railway login --token $RAILWAY_TOKEN
     - railway up --service purchase
