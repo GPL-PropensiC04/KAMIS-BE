@@ -25,6 +25,8 @@ build:
 deploy:
   image: $UBUNTU
   stage: deploy
+  variables:
+    RAILWAY_API_TOKEN: $YOUR_RAILWAY_API_TOKEN
   parallel:
     matrix:
       - SERVICE: ["profile", "purchase", "asset", "finance", "project"]
