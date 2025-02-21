@@ -68,10 +68,11 @@ deploy-asset:
   image: $UBUNTU
   stage: deploy
   variables:
-        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
+    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
+    - railway login --browserless
     - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service asset
   only:
@@ -81,10 +82,11 @@ deploy-finance:
   image: $UBUNTU
   stage: deploy
   variables:
-        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
+    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
+    - railway login --browserless
     - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service finance
   only:
@@ -94,10 +96,11 @@ deploy-profile:
   image: $UBUNTU
   stage: deploy
   variables:
-        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
+    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
+    - railway login --browserless
     - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service profile
   only:
@@ -107,10 +110,11 @@ deploy-project:
   image: $UBUNTU
   stage: deploy
   variables:
-        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
+    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
+    - railway login --browserless
     - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service project
   only:
@@ -120,10 +124,11 @@ deploy-purchase:
   image: $UBUNTU
   stage: deploy
   variables:
-        RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
+    RAILWAY_TOKEN: $RAILWAY_TOKEN_STAGING
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
+    - railway login --browserless
     - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service purchase
   only:
