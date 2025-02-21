@@ -160,7 +160,6 @@ deploy-microservices:
   extends: .setup-ssh
   script:
     - echo "Deploying to GCP VM..."
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "echo ${REGISTRY_PASSWORD} | docker login --username ${REGISTRY_USERNAME} --password-stdin ${REGISTRY_SERVER}"
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "mkdir -p ~/microservices-deploy/"
     - rsync -rahv $CI_PROJECT_DIR/docker-compose-deploy.yml "$DEPLOY_USERNAME@$DEPLOY_SERVER:~/microservices-deploy/"
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "
