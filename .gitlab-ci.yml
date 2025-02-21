@@ -72,7 +72,7 @@ deploy-asset:
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway link --environment Development $RAILWAY_PROJECT_ID
+    - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service asset
   only:
     - railway-deploy
@@ -85,7 +85,7 @@ deploy-finance:
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway link --environment Development $RAILWAY_PROJECT_ID
+    - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service finance
   only:
     - railway-deploy
@@ -98,7 +98,7 @@ deploy-profile:
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway link --environment Development $RAILWAY_PROJECT_ID
+    - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service profile
   only:
     - railway-deploy
@@ -111,7 +111,7 @@ deploy-project:
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway link --environment Development $RAILWAY_PROJECT_ID
+    - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service project
   only:
     - railway-deploy
@@ -124,7 +124,7 @@ deploy-purchase:
   script:
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
-    - railway link --environment Development $RAILWAY_PROJECT_ID
+    - railway link --environment Development --project $RAILWAY_PROJECT_ID
     - railway up --service purchase
   only:
     - railway-deploy
