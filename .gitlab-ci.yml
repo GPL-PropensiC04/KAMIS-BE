@@ -55,7 +55,7 @@ build-finance:
   stage: build
   script:
     - echo "Building finance service..."
-    - cd $CI_PROJECT_DIR/finance
+    - cd $CI_PROJECT_DIR/finance.report
     - sh gradlew clean assemble
   artifacts:
     paths:
@@ -102,13 +102,6 @@ deploy-project:
     - echo "Deploying project service to Railway..."
     - railway login --token $RAILWAY_TOKEN
     - railway up --service project
-
-deploy-resource:
-  stage: deploy
-  script:
-    - echo "Deploying resource service to Railway..."
-    - railway login --token $RAILWAY_TOKEN
-    - railway up --service resource
 
 deploy-purchase:
   stage: deploy
