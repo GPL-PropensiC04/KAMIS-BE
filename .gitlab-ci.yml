@@ -148,22 +148,27 @@ publish-resource:
     - docker build -t $IMAGE_REPO/resource:latest -f resource/Dockerfile .
     - docker push $IMAGE_REPO/resource:latest
 
-deployment:
+deploy:
   stage: deploy
   dependencies:
-    - publish
-  only:
-    - main
+    - publish-asset
+    - publish-finance
+    - publish-profile
+    - publish-project
+    - publish-purchase
+    - publish-resource
   extends: .setup-ssh
   script:
     - echo "Deploying to GCP VM..."
-    - ssh "${DEPLOY_USERNAME}@${DEPLOY_SERVER}" "mkdir -p ~/microservices-deploy/"
-    - rsync -rahv $CI_PROJECT_DIR/docker-compose-deploy.yml "${DEPLOY_USERNAME}@${DEPLOY_SERVER}:~/microservices-deploy/"
-    - ssh "${DEPLOY_USERNAME}@${DEPLOY_SERVER}" 
-      "cd ~/microservices-deploy/ && 
-       docker compose -f docker-compose.yml pull && 
-       docker compose -f docker-compose.yml up -d"
-       
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "echo ${REGISTRY_PASSWORD} | docker login --username ${REGISTRY_USERNAME} --password-stdin ${REGISTRY_SERVER}"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "mkdir -p ~/microservices-deploy/"
+    - rsync -rahv $CI_PROJECT_DIR/docker-compose-deploy.yml "$DEPLOY_USERNAME@$DEPLOY_SERVER:~/microservices-deploy/"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "
+        cd ~/microservices-deploy/ && 
+        docker compose -f docker-compose-deploy.yml pull && 
+        docker compose -f docker-compose-deploy.yml up -d"
+
+
 cleaning:
   stage: clean
   dependencies:
