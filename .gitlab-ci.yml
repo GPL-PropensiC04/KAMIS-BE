@@ -2,8 +2,10 @@ default:
   tags:
     - apap
 
-  before_script:
-  - curl -fsSL https://railway.app/install.sh | sh
+before_script:
+  - curl -fsSL https://railway.app/install.sh | sh -s -- --path=$HOME/.railway
+  - export PATH=$HOME/.railway/bin:$PATH
+
 
 
 stages:
