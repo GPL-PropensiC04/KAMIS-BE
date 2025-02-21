@@ -100,7 +100,7 @@ publish-asset:
   script:
     - echo "Checking GCLOUD_SERVICE_KEY"
     - echo $GCLOUD_SERVICE_KEY | base64 -d | docker login -u _json_key --password-stdin https://gcr.io || true
-    - docker build -t $IMAGE_REPO/asset:latest -f assetDockerfile .
+    - docker build -t $IMAGE_REPO/asset:latest -f asset/Dockerfile .
     - docker push $IMAGE_REPO/asset:latest
 
 publish-finance:
@@ -109,7 +109,7 @@ publish-finance:
   dependencies:
     - build-finance
   script:
-    - docker build -t $IMAGE_REPO/finance:latest -f financeDockerfile .
+    - docker build -t $IMAGE_REPO/finance:latest -f finance.report/Dockerfile .
     - docker push $IMAGE_REPO/finance:latest
 
 publish-profile:
@@ -118,7 +118,7 @@ publish-profile:
   dependencies:
     - build-profile
   script:
-    - docker build -t $IMAGE_REPO/profile:latest -f profileDockerfile .
+    - docker build -t $IMAGE_REPO/profile:latest -f profile/Dockerfile .
     - docker push $IMAGE_REPO/profile:latest
 
 publish-project:
@@ -127,7 +127,7 @@ publish-project:
   dependencies:
     - build-project
   script:
-    - docker build -t $IMAGE_REPO/project:latest -f projectDockerfile .
+    - docker build -t $IMAGE_REPO/project:latest -f project/Dockerfile .
     - docker push $IMAGE_REPO/project:latest
 
 publish-purchase:
@@ -136,7 +136,7 @@ publish-purchase:
   dependencies:
     - build-purchase
   script:
-    - docker build -t $IMAGE_REPO/purchase:latest -f purchaseDockerfile .
+    - docker build -t $IMAGE_REPO/purchase:latest -f purchase/Dockerfile .
     - docker push $IMAGE_REPO/purchase:latest
 
 publish-resource:
@@ -145,7 +145,7 @@ publish-resource:
   dependencies:
     - build-resource
   script:
-    - docker build -t $IMAGE_REPO/resource:latest -f resourceDockerfile .
+    - docker build -t $IMAGE_REPO/resource:latest -f resource/Dockerfile .
     - docker push $IMAGE_REPO/resource:latest
 
 # Separate deploy jobs
