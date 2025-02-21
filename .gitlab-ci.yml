@@ -2,7 +2,6 @@ default:
   tags:
     - apap
 
-.setup-ssh:
   before_script:
   - curl -fsSL https://railway.app/install.sh | sh
 
