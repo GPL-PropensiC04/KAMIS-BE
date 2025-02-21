@@ -148,56 +148,6 @@ publish-resource:
     - docker build -t $IMAGE_REPO/resource:latest -f resource/Dockerfile .
     - docker push $IMAGE_REPO/resource:latest
 
-# Separate deploy jobs
-deploy-asset:
-  stage: deploy
-  dependencies:
-    - publish-asset
-  extends: .setup-ssh
-  script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/asset:latest && docker-compose up -d asset"
-
-
-deploy-finance:
-  stage: deploy
-  dependencies:
-    - publish-finance
-  extends: .setup-ssh
-  script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/finance:latest && docker-compose up -d finance"
-
-deploy-profile:
-  stage: deploy
-  dependencies:
-    - publish-profile
-  extends: .setup-ssh
-  script:
-    - ssh"$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/profile:latest && docker-compose up -d profile"
-
-deploy-project:
-  stage: deploy
-  dependencies:
-    - publish-project
-  extends: .setup-ssh
-  script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/project:latest && docker-compose up -d project"
-
-deploy-purchase:
-  stage: deploy
-  dependencies:
-    - publish-purchase
-  extends: .setup-ssh
-  script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/purchase:latest && docker-compose up -d purchase"
-
-deploy-resource:
-  stage: deploy
-  dependencies:
-    - publish-resource
-  extends: .setup-ssh
-  script:
-    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker pull $IMAGE_REPO/resource:latest && docker-compose up -d resource"
-
 deployment:
   stage: deploy
   dependencies:
@@ -213,7 +163,7 @@ deployment:
       "cd ~/microservices-deploy/ && 
        docker compose -f docker-compose.yml pull && 
        docker compose -f docker-compose.yml up -d"
-
+       
 cleaning:
   stage: clean
   dependencies:
