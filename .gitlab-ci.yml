@@ -12,7 +12,7 @@ build:
   stage: build
   parallel:
     matrix:
-      - SERVICE: ["profile", "purchase", "asset", "finance.report", "project"]
+      - SERVICE: ["profile"]
   script:
     - echo "Building $SERVICE service..."
     - cd $CI_PROJECT_DIR/$SERVICE
@@ -29,12 +29,14 @@ deploy:
     RAILWAY_API_TOKEN: $YOUR_RAILWAY_API_TOKEN
   parallel:
     matrix:
-      - SERVICE: ["profile", "purchase", "asset", "finance", "project"]
+      - SERVICE: ["profile"]
   script:
     - echo "Deploying $SERVICE to Railway..."
     - apt-get update && apt-get install -y curl
     - curl -fsSL https://railway.app/install.sh | sh
     - railway link --environment Development --project $RAILWAY_PROJECT_ID
+    - echo "Testing Railway Authentication..."
+    - railway whoami
     - railway up --service $SERVICE
   only:
     - railway-deploy
