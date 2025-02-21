@@ -1,6 +1,12 @@
+FROM gradle:latest AS build
+WORKDIR /app
+COPY . .
+RUN gradle build -x test
+
 FROM eclipse-temurin:21-jre-alpine
 
-COPY profile/build/libs/profile-0.0.1-SNAPSHOT.jar /app.jar
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar /app.jar
 
 EXPOSE 8082
 

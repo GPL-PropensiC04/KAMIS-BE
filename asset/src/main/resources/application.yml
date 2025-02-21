@@ -2,9 +2,9 @@ spring:
   application:
     name: asset
   datasource:
-    url: ${DATABASE_URL_DEV}
-    username: ${DATABASE_USERNAME_DEV}
-    password: ${DATABASE_PASSWORD_DEV}
+    url: postgresql://postgres:UuMOCgOOamDlBVItyiJkDnSXFaLlzPeR@hopper.proxy.rlwy.net:55694/railway
+    username: postgres
+    password: UuMOCgOOamDlBVItyiJkDnSXFaLlzPeR
   thymeleaf:
     cache: false
   devtools:

@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-AssetApplication<asset>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "gpl.karina.asset.AssetApplication",
+            "projectName": "asset",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

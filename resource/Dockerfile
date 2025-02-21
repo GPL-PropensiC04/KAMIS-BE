@@ -1,6 +1,11 @@
-FROM eclipse-temurin:21-jre-alpine
+FROM gradle:latest AS build
+WORKDIR /app
+COPY . .
+RUN gradle build -x test
 
-COPY resource/build/libs/resource-0.0.1-SNAPSHOT.jar /app.jar
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar /app.jar
 
 EXPOSE 8085
 
