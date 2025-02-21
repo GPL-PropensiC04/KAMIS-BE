@@ -8,21 +8,12 @@ services:
     ports:
       - "8080:8080"
     
-
-  dashboard:
-    image: gcr.io/propensi-451504/dashboard:latest
-    container_name: dashboard_service
-    restart: always
-    ports:
-      - "8081:8081"
-    
-
   finance:
     image: gcr.io/propensi-451504/finance:latest
     container_name: finance_service
     restart: always
     ports:
-      - "8082:8082"
+      - "8081:8081"
     
 
   profile:
@@ -30,7 +21,7 @@ services:
     container_name: profile_service
     restart: always
     ports:
-      - "8083:8083"
+      - "8082:8082"
     
 
   project:
@@ -38,7 +29,7 @@ services:
     container_name: project_service
     restart: always
     ports:
-      - "8084:8084"
+      - "8083:8083"
     
 
   purchase:
@@ -46,7 +37,7 @@ services:
     container_name: purchase_service
     restart: always
     ports:
-      - "8085:8085"
+      - "8084:8084"
     
 
   resource:
@@ -54,7 +45,7 @@ services:
     container_name: resource_service
     restart: always
     ports:
-      - "8086:8086"
+      - "8085:8085"
 
 networks:
   default:
