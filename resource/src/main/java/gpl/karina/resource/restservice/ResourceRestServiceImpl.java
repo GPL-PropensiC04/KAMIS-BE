@@ -1,14 +1,19 @@
 package gpl.karina.resource.restservice;
 
 
+import gpl.karina.resource.exception.UserNotFound;
+import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.model.Resource;
 
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import gpl.karina.resource.repository.ResourceRepository;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.response.AddResourceResponseDTO;
+import gpl.karina.resource.restdto.response.ListResourceResponseDTO;
 
 @Service
 public class ResourceRestServiceImpl implements ResourceRestService {
@@ -53,4 +58,24 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         return resourceToResourceResponseDTO(resource);
     }
 
+    @Override
+    public List<AddResourceResponseDTO> getAllResources() {
+        // // Verifikasi token dan dapatkan informasi pengguna
+        // EndUserResponseDTO currentUser = profileService.getCurrentUser(token);
+        // if (currentUser == null) {
+        //     throw new UserNotFound("You Must Login First");
+        // }
+    
+        // // Periksa apakah pengguna memiliki peran ADMIN atau NURSE
+        // String role = currentUser.getRole();
+        // if (!"ADMIN".equalsIgnoreCase(role) && !"NURSE".equalsIgnoreCase(role)) {
+        //     throw new UserUnauthorized("You are not authorized to view appointments");
+        // }
+    
+        // Mengambil semua janji dari database
+        List<Resource> resources = resourceRepository.findAll();
+        List<AddResourceResponseDTO> responseDTOs = new ArrayList<>();
+        resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
+        return responseDTOs;
+    }
 }
