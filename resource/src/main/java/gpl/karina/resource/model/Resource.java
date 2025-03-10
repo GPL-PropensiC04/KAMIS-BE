@@ -27,8 +27,6 @@ public class Resource {
     private String resourceName;
     @Column(nullable = false, name = "Deskripsi Barang")
     private String resourceDescription;
-    @Column(nullable = false, name = "Supplier Barang")
-    private String resourceSupplier;
     @Column(nullable = false, name = "Stok Barang")
     private Integer resourceStock;
     @Column(nullable = false, name = "Harga Barang")
