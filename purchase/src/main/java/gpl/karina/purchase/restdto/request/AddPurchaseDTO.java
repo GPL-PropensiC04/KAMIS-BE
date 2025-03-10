@@ -1,0 +1,19 @@
+package gpl.karina.purchase.restdto.request;
+
+import java.util.List;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+
+@Data
+public class AddPurchaseDTO {
+    @NotNull(message = "Supplier tidak boleh kosong")
+    private String purchaseSupplier;
+    @NotNull(message = "Tipe barang tidak boleh kosong")
+    private boolean purchaseType; // Value 0 = Aset, Value 1 = Resource
+
+    private Long purchaseAsset;
+    private List<ResourceTempDTO> purchaseResource;
+
+    private String purchaseNote;
+}
