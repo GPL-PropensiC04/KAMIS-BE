@@ -6,17 +6,26 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import gpl.karina.resource.exception.UserNotFound;
+import gpl.karina.resource.exception.UserUnauthorized;
+import gpl.karina.resource.exception.DataNotFound;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.response.AddResourceResponseDTO;
+import gpl.karina.resource.restdto.response.ListResourceResponseDTO;
 import gpl.karina.resource.restdto.response.BaseResponseDTO;
 import gpl.karina.resource.restservice.ResourceRestService;
 import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.GetMapping;
+
 import java.util.Date;
 import java.util.List;
+
+import gpl.karina.resource.exception.UserUnauthorized;
 
 @RestController
 @RequestMapping("api/resource")
@@ -62,4 +71,38 @@ public class ResourceController {
         return "Hello World";
     }
 
+    @GetMapping("/viewall")
+    public ResponseEntity<BaseResponseDTO<List<AddResourceResponseDTO>>> getAllResources() {
+        var baseResponseDTO = new BaseResponseDTO<List<AddResourceResponseDTO>>();
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+    
+        try {
+            // Mengirim token ke service
+            List<AddResourceResponseDTO> resources = resourceRestService.getAllResources();
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(resources);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+    
+        } catch (UserNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
