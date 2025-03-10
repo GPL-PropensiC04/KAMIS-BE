@@ -1,3 +1,5 @@
+server:
+    port: 8083
 spring:
   application:
     name: project
@@ -23,5 +25,5 @@ spring:
       ddl-auto: create
 project:
   app:
-    jwtSecret: ${JWT_SECRET_KEY:HWlEIJMvCDcKFNTzNOXCVjrArVFkLbcEa}
+    jwtSecret: ${JWT_SECRET_KEY}
     jwtExpirationMs: 86400000

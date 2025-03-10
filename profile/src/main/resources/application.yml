@@ -1,3 +1,5 @@
+server:
+    port: 8080
 spring:
   application:
     name: profile
@@ -23,5 +25,5 @@ spring:
       ddl-auto: create
 profile:
   app:
-    jwtSecret: ${JWT_SECRET_KEY:HWlEIJMvCDcKFNTzNOXCVjrArVFkLbcEa}
+    jwtSecret: ${JWT_SECRET_KEY}
     jwtExpirationMs: 86400000

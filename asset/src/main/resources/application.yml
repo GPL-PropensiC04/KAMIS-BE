@@ -1,3 +1,5 @@
+server:
+    port: 8081
 spring:
   application:
     name: asset
@@ -23,5 +25,5 @@ spring:
       ddl-auto: create
 asset:
   app:
-    jwtSecret: ${JWT_SECRET_KEY:HWlEIJMvCDcKFNTzNOXCVjrArVFkLbcEa}
+    jwtSecret: ${JWT_SECRET_KEY}
     jwtExpirationMs: 86400000
