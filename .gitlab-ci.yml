@@ -1,0 +1,177 @@
+default:
+  tags:
+    - apap
+
+.setup-ssh:
+  before_script:
+    - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+stages:
+  - build
+  - publish
+  - deploy
+  - clean
+
+variables:
+  GCP_PROJECT_ID: "propensi-451504"
+  IMAGE_REPO: "gcr.io/$GCP_PROJECT_ID"
+  IMAGE_DOCKER_DIND: docker:27.3.1-alpine3.20
+  IMAGE_OPENJDK_GRADLE: gradle:8.11.1-jdk21-alpine
+
+# Separate build jobs
+build-asset:
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build
+  script:
+    - echo "Building asset service..."
+    - cd $CI_PROJECT_DIR/asset
+    - sh gradlew clean assemble
+  artifacts:
+    paths:
+      - asset/build/libs/asset-0.0.1-SNAPSHOT.jar
+
+
+build-finance:
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build
+  script:
+    - echo "Building finance service..."
+    - cd $CI_PROJECT_DIR/finance.report
+    - sh gradlew clean assemble
+  artifacts:
+    paths:
+      - finance.report/build/libs/finance.report-0.0.1-SNAPSHOT.jar
+
+build-profile:
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build
+  script:
+    - echo "Building profile service..."
+    - cd $CI_PROJECT_DIR/profile
+    - sh gradlew clean assemble
+  artifacts:
+    paths:
+      - profile/build/libs/profile-0.0.1-SNAPSHOT.jar
+
+build-project:
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build
+  script:
+    - echo "Building project service..."
+    - cd $CI_PROJECT_DIR/project
+    - sh gradlew clean assemble
+  artifacts:
+    paths:
+      - project/build/libs/project-0.0.1-SNAPSHOT.jar
+
+build-purchase:
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build
+  script:
+    - echo "Building purchase service..."
+    - cd $CI_PROJECT_DIR/purchase
+    - sh gradlew clean assemble
+  artifacts:
+    paths:
+      - purchase/build/libs/purchase-0.0.1-SNAPSHOT.jar
+
+build-resource:
+  image: $IMAGE_OPENJDK_GRADLE
+  stage: build
+  script:
+    - echo "Building resource service..."
+    - cd $CI_PROJECT_DIR/resource
+    - sh gradlew clean assemble
+  artifacts:
+    paths:
+      - resource/build/libs/resource-0.0.1-SNAPSHOT.jar
+
+# Separate publish jobs
+publish-asset:
+  image: $IMAGE_DOCKER_DIND
+  stage: publish
+  dependencies:
+    - build-asset
+  script:
+    - echo "Checking GCLOUD_SERVICE_KEY"
+    - echo $GCLOUD_SERVICE_KEY | base64 -d | docker login -u _json_key --password-stdin https://gcr.io || true
+    - docker build -t $IMAGE_REPO/asset:latest -f asset/Dockerfile .
+    - docker push $IMAGE_REPO/asset:latest
+
+publish-finance:
+  image: $IMAGE_DOCKER_DIND
+  stage: publish
+  dependencies:
+    - build-finance
+  script:
+    - docker build -t $IMAGE_REPO/finance:latest -f finance.report/Dockerfile .
+    - docker push $IMAGE_REPO/finance:latest
+
+publish-profile:
+  image: $IMAGE_DOCKER_DIND
+  stage: publish
+  dependencies:
+    - build-profile
+  script:
+    - docker build -t $IMAGE_REPO/profile:latest -f profile/Dockerfile .
+    - docker push $IMAGE_REPO/profile:latest
+
+publish-project:
+  image: $IMAGE_DOCKER_DIND
+  stage: publish
+  dependencies:
+    - build-project
+  script:
+    - docker build -t $IMAGE_REPO/project:latest -f project/Dockerfile .
+    - docker push $IMAGE_REPO/project:latest
+
+publish-purchase:
+  image: $IMAGE_DOCKER_DIND
+  stage: publish
+  dependencies:
+    - build-purchase
+  script:
+    - docker build -t $IMAGE_REPO/purchase:latest -f purchase/Dockerfile .
+    - docker push $IMAGE_REPO/purchase:latest
+
+publish-resource:
+  image: $IMAGE_DOCKER_DIND
+  stage: publish
+  dependencies:
+    - build-resource
+  script:
+    - docker build -t $IMAGE_REPO/resource:latest -f resource/Dockerfile .
+    - docker push $IMAGE_REPO/resource:latest
+
+deploy-microservices:
+  stage: deploy
+  dependencies:
+    - publish-asset
+    - publish-finance
+    - publish-profile
+    - publish-project
+    - publish-purchase
+    - publish-resource
+  extends: .setup-ssh
+  script:
+    - echo "Deploying to GCP VM..."
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "mkdir -p ~/microservices-deploy/"
+    - rsync -rahv $CI_PROJECT_DIR/docker-compose-deploy.yml "$DEPLOY_USERNAME@$DEPLOY_SERVER:~/microservices-deploy/"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "
+        cd ~/microservices-deploy/ && 
+        docker compose -f docker-compose-deploy.yml pull && 
+        docker compose -f docker-compose-deploy.yml up -d"
+
+
+cleaning:
+  stage: clean
+  dependencies:
+    - deploy-microservices
+  extends: .setup-ssh
+  script:
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker system prune -af"
