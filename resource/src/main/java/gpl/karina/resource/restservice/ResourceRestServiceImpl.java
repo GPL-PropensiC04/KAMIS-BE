@@ -22,7 +22,6 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         AddResourceResponseDTO addResourceResponseDTO = new AddResourceResponseDTO();
         addResourceResponseDTO.setResourceName(resource.getResourceName());
         addResourceResponseDTO.setResourceDescription(resource.getResourceDescription());   
-        addResourceResponseDTO.setResourceSupplier(resource.getResourceSupplier());
         addResourceResponseDTO.setResourceStock(resource.getResourceStock());
         addResourceResponseDTO.setResourcePrice(resource.getResourcePrice());
         return addResourceResponseDTO;
@@ -47,7 +46,6 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         }   
         resource.setResourceName(addResourceDTO.getResourceName());    
         resource.setResourceDescription(addResourceDTO.getResourceDescription());
-        resource.setResourceSupplier(addResourceDTO.getResourceSupplier());
         resource.setResourceStock(addResourceDTO.getResourceStock());
         resource.setResourcePrice(addResourceDTO.getResourcePrice());
         
