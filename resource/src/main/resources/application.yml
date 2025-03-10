@@ -23,7 +23,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: create
-# resource:
-#   app:
-#     jwtSecret: ${JWT_SECRET_KEY:HWlEIJMvCDcKFNTzNOXCVjrArVFkLbcEa}
-#     jwtExpirationMs: 86400000
+resource:
+  app:
+    jwtSecret: ${JWT_SECRET_KEY}
+    jwtExpirationMs: 86400000

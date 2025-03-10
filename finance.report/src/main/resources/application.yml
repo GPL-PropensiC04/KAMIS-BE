@@ -1,3 +1,5 @@
+server:
+    port: 8082
 spring:
   application:
     name: finance.report
@@ -23,5 +25,5 @@ spring:
       ddl-auto: create
 finance.report:
   app:
-    jwtSecret: ${JWT_SECRET_KEY:HWlEIJMvCDcKFNTzNOXCVjrArVFkLbcEa}
+    jwtSecret: ${JWT_SECRET_KEY}
     jwtExpirationMs: 86400000
