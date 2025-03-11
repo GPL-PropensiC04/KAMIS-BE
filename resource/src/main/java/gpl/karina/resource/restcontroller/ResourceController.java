@@ -14,8 +14,7 @@ import gpl.karina.resource.exception.UserNotFound;
 import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.exception.DataNotFound;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
-import gpl.karina.resource.restdto.response.AddResourceResponseDTO;
-import gpl.karina.resource.restdto.response.ListResourceResponseDTO;
+import gpl.karina.resource.restdto.response.ResourceResponseDTO;
 import gpl.karina.resource.restdto.response.BaseResponseDTO;
 import gpl.karina.resource.restservice.ResourceRestService;
 import jakarta.validation.Valid;
@@ -37,9 +36,9 @@ public class ResourceController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<BaseResponseDTO<AddResourceResponseDTO>> addResource(
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResource(
             @Valid @RequestBody AddResourceDTO addResourceDTO, BindingResult bindingResult) {
-        BaseResponseDTO<AddResourceResponseDTO> response = new BaseResponseDTO<>();
+        BaseResponseDTO<ResourceResponseDTO> response = new BaseResponseDTO<>();
         if (bindingResult.hasErrors()) {
             StringBuilder errorMessages = new StringBuilder();
             List<FieldError> errors = bindingResult.getFieldErrors();
@@ -72,13 +71,13 @@ public class ResourceController {
     }
 
     @GetMapping("/viewall")
-    public ResponseEntity<BaseResponseDTO<List<AddResourceResponseDTO>>> getAllResources() {
-        var baseResponseDTO = new BaseResponseDTO<List<AddResourceResponseDTO>>();
+    public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllResources() {
+        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();
         // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
     
         try {
             // Mengirim token ke service
-            List<AddResourceResponseDTO> resources = resourceRestService.getAllResources();
+            List<ResourceResponseDTO> resources = resourceRestService.getAllResources();
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(resources);
