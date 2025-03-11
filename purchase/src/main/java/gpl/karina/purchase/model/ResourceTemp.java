@@ -1,5 +1,7 @@
 package gpl.karina.purchase.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -18,8 +20,10 @@ import lombok.Setter;
 @Setter
 public class ResourceTemp {
     @Id
+    private UUID id = UUID.randomUUID();
+    @Column(nullable = false, name = "Id Barang")
     private Long resourceId;
-    @Column(unique = true, nullable = false, name = "Nama Barang")
+    @Column(nullable = false, name = "Nama Barang")
     private String resourceName;
     @Column(nullable = false, name = "Jumlah Barang")
     private Integer resourceTotal;

@@ -1,12 +1,14 @@
 package gpl.karina.purchase.restservice;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -99,10 +101,21 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             id += "R-";
 
             List<ResourceTempDTO> resourceDTO = addPurchaseDTO.getPurchaseResource();
+            if (resourceDTO == null || resourceDTO.isEmpty()) {
+                throw new IllegalArgumentException("Anda memilih tipe pembelian resource, pastikan menginput data resource setidaknya satu.");
+            }
+            if (addPurchaseDTO.getPurchaseAsset() != null) {
+                throw new IllegalArgumentException("Anda memilih tipe pembelian resource, pastikan tidak menginput data aset.");
+            }
+
             List<ResourceTemp> resourceTemps = new ArrayList<>();
             Integer purchasePrice = 0;
 
+            Set<Long> existingIds = new HashSet<>();
             for (ResourceTempDTO resourceInput : resourceDTO) {
+                if (resourceInput.getResourceId() != null && !existingIds.add(resourceInput.getResourceId())) {
+                    throw new IllegalArgumentException("Tidak boleh terdapat lebih dari satu resource yang sama!");
+                }
                 ResourceTemp resourceTemp = new ResourceTemp();
                 resourceTemp.setResourceId(resourceInput.getResourceId());
                 resourceTemp.setResourceName(resourceInput.getResourceName());
@@ -117,6 +130,13 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             purchase.setPurchasePrice(purchasePrice);
         } else {
             id += "A-";
+
+            if (addPurchaseDTO.getPurchaseAsset() == null) {
+                throw new IllegalArgumentException("Anda memilih tipe pembelian aset, pastikan menginput data aset.");
+            }
+            if (addPurchaseDTO.getPurchaseResource() != null) {
+                throw new IllegalArgumentException("Anda memilih tipe pembelian aset, pastikan tidak menginput data resource.");
+            }
 
             AssetTemp assetTemp = assetTempRepository.findById(addPurchaseDTO.getPurchaseAsset()).orElse(null);
 
