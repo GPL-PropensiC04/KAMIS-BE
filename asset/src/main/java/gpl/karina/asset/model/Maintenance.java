@@ -33,7 +33,8 @@ public class Maintenance {
     @NotNull
     @Column(name = "status", nullable = false)
     private String status;
-
-    @ManyToMany(mappedBy = "historiMaintenance")
-    private List<Asset> assets;
+    
+    // Remove or comment out the problematic mapping
+    // @ManyToMany(mappedBy = "historiMaintenance")
+    // private List<Asset> assets;
 }
