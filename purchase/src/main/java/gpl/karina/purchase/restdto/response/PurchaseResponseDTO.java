@@ -8,14 +8,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 @Data
-public class AddPurchaseResponseDTO { //TODO: Belum add attribute foto
+public class PurchaseResponseDTO {
     private String purchaseId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
     private Date purchaseSubmissionDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
+    private Date purchaseUpdateDate;
     private String purchaseSupplier;
     private String purchaseType;
+    private String purchaseStatus;
     private List<ResourceTempResponseDTO> purchaseResource;
-    private String assetType;
-    private String assetDescription;
-    private Integer purchasePrice;
+    private AssetTempResponseDTO purchaseAsset;
+    private String purchaseNote;
 }

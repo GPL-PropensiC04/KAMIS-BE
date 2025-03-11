@@ -1,8 +1,8 @@
 package gpl.karina.purchase.restservice;
 
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
-import gpl.karina.purchase.restdto.response.AddPurchaseResponseDTO;
+import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 
 public interface PurchaseRestService {
-    AddPurchaseResponseDTO addPurchase(AddPurchaseDTO addPurchaseDTO);
+    PurchaseResponseDTO addPurchase(AddPurchaseDTO addPurchaseDTO);
 }

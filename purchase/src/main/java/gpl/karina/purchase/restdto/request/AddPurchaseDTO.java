@@ -12,8 +12,8 @@ public class AddPurchaseDTO {
     @NotNull(message = "Tipe barang tidak boleh kosong")
     private boolean purchaseType; // Value 0 = Aset, Value 1 = Resource
 
-    private Long purchaseAsset;
-    private List<ResourceTempDTO> purchaseResource;
+    private Long purchaseAsset; //only for purchaseType = 0
+    private List<ResourceTempDTO> purchaseResource; //only for purchaseType = 1
 
     private String purchaseNote;
 }
