@@ -13,8 +13,7 @@ import org.springframework.stereotype.Service;
 import gpl.karina.resource.repository.ResourceRepository;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.request.UpdateResourceDTO;
-import gpl.karina.resource.restdto.response.AddResourceResponseDTO;
-import gpl.karina.resource.restdto.response.ListResourceResponseDTO;
+import gpl.karina.resource.restdto.response.ResourceResponseDTO;
 
 @Service
 public class ResourceRestServiceImpl implements ResourceRestService {
@@ -24,8 +23,8 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         this.resourceRepository = resourceRepository;
     }
 
-    private AddResourceResponseDTO resourceToResourceResponseDTO(Resource resource) {
-        AddResourceResponseDTO addResourceResponseDTO = new AddResourceResponseDTO();
+    private ResourceResponseDTO resourceToResourceResponseDTO(Resource resource) {
+        ResourceResponseDTO addResourceResponseDTO = new ResourceResponseDTO();
         addResourceResponseDTO.setResourceName(resource.getResourceName());
         addResourceResponseDTO.setResourceDescription(resource.getResourceDescription());   
         addResourceResponseDTO.setResourceStock(resource.getResourceStock());
@@ -33,7 +32,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         return addResourceResponseDTO;
     }
     @Override
-    public AddResourceResponseDTO addResource(AddResourceDTO addResourceDTO) {
+    public ResourceResponseDTO addResource(AddResourceDTO addResourceDTO) {
         if (addResourceDTO.getResourcePrice() < 0) {
             throw new IllegalArgumentException("Harga barang tidak boleh kurang dari 0");
         }
@@ -60,7 +59,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
     }
 
     @Override
-    public List<AddResourceResponseDTO> getAllResources() {
+    public List<ResourceResponseDTO> getAllResources() {
         // // Verifikasi token dan dapatkan informasi pengguna
         // EndUserResponseDTO currentUser = profileService.getCurrentUser(token);
         // if (currentUser == null) {
@@ -75,13 +74,13 @@ public class ResourceRestServiceImpl implements ResourceRestService {
     
         // Mengambil semua janji dari database
         List<Resource> resources = resourceRepository.findAll();
-        List<AddResourceResponseDTO> responseDTOs = new ArrayList<>();
+        List<ResourceResponseDTO> responseDTOs = new ArrayList<>();
         resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
         return responseDTOs;
     }
 
     @Override
-    public AddResourceResponseDTO updateResource(UpdateResourceDTO updateResourceDTO, Long idResource) {
+    public ResourceResponseDTO updateResource(UpdateResourceDTO updateResourceDTO, Long idResource) {
 
         Resource resource = resourceRepository.findById(idResource).orElseThrow(() -> new IllegalArgumentException("Resource not found"));
         if (updateResourceDTO.getResourcePrice() < 0) {

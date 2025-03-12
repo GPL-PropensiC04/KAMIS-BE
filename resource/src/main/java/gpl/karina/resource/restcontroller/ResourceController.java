@@ -16,8 +16,7 @@ import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.exception.DataNotFound;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.request.UpdateResourceDTO;
-import gpl.karina.resource.restdto.response.AddResourceResponseDTO;
-import gpl.karina.resource.restdto.response.ListResourceResponseDTO;
+import gpl.karina.resource.restdto.response.ResourceResponseDTO;
 import gpl.karina.resource.restdto.response.BaseResponseDTO;
 import gpl.karina.resource.restservice.ResourceRestService;
 import jakarta.validation.Valid;
@@ -40,9 +39,9 @@ public class ResourceController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<BaseResponseDTO<AddResourceResponseDTO>> addResource(
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResource(
             @Valid @RequestBody AddResourceDTO addResourceDTO, BindingResult bindingResult) {
-        BaseResponseDTO<AddResourceResponseDTO> response = new BaseResponseDTO<>();
+        BaseResponseDTO<ResourceResponseDTO> response = new BaseResponseDTO<>();
         if (bindingResult.hasErrors()) {
             StringBuilder errorMessages = new StringBuilder();
             List<FieldError> errors = bindingResult.getFieldErrors();
@@ -75,13 +74,13 @@ public class ResourceController {
     }
 
     @GetMapping("/viewall")
-    public ResponseEntity<BaseResponseDTO<List<AddResourceResponseDTO>>> getAllResources() {
-        var baseResponseDTO = new BaseResponseDTO<List<AddResourceResponseDTO>>();
+    public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllResources() {
+        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();
         // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
     
         try {
             // Mengirim token ke service
-            List<AddResourceResponseDTO> resources = resourceRestService.getAllResources();
+            List<ResourceResponseDTO> resources = resourceRestService.getAllResources();
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(resources);
@@ -110,13 +109,13 @@ public class ResourceController {
     }
 
     @PutMapping("/update/{idResource}")
-    public ResponseEntity<BaseResponseDTO<AddResourceResponseDTO>> updateResource(@PathVariable Long idResource,
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> updateResource(@PathVariable Long idResource,
             @RequestBody UpdateResourceDTO resourceDTO) {
-        var baseResponseDTO = new BaseResponseDTO<AddResourceResponseDTO>();
+        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
         // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
         
         try {
-            AddResourceResponseDTO updatedResource = resourceRestService.updateResource(resourceDTO, idResource);
+            ResourceResponseDTO updatedResource = resourceRestService.updateResource(resourceDTO, idResource);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(updatedResource);
@@ -141,4 +140,5 @@ public class ResourceController {
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
+    }
 }
