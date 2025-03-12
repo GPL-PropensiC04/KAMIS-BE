@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import gpl.karina.resource.exception.UserNotFound;
 import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.exception.DataNotFound;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
+import gpl.karina.resource.restdto.request.UpdateResourceDTO;
 import gpl.karina.resource.restdto.response.AddResourceResponseDTO;
 import gpl.karina.resource.restdto.response.ListResourceResponseDTO;
 import gpl.karina.resource.restdto.response.BaseResponseDTO;
@@ -21,6 +23,7 @@ import gpl.karina.resource.restservice.ResourceRestService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Date;
 import java.util.List;
@@ -105,4 +108,37 @@ public class ResourceController {
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PutMapping("/update/{idResource}")
+    public ResponseEntity<BaseResponseDTO<AddResourceResponseDTO>> updateResource(@PathVariable Long idResource,
+            @RequestBody UpdateResourceDTO resourceDTO) {
+        var baseResponseDTO = new BaseResponseDTO<AddResourceResponseDTO>();
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+        
+        try {
+            AddResourceResponseDTO updatedResource = resourceRestService.updateResource(resourceDTO, idResource);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(updatedResource);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (DataNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
 }

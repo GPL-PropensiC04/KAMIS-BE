@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import gpl.karina.resource.repository.ResourceRepository;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
+import gpl.karina.resource.restdto.request.UpdateResourceDTO;
 import gpl.karina.resource.restdto.response.AddResourceResponseDTO;
 import gpl.karina.resource.restdto.response.ListResourceResponseDTO;
 
@@ -77,5 +78,22 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         List<AddResourceResponseDTO> responseDTOs = new ArrayList<>();
         resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
         return responseDTOs;
+    }
+
+    @Override
+    public AddResourceResponseDTO updateResource(UpdateResourceDTO updateResourceDTO, Long idResource) {
+
+        Resource resource = resourceRepository.findById(idResource).orElseThrow(() -> new IllegalArgumentException("Resource not found"));
+        if (updateResourceDTO.getResourcePrice() < 0) {
+            throw new IllegalArgumentException("Harga barang tidak boleh kurang dari 0");
+        }
+        if (updateResourceDTO.getResourceDescription() == null) {
+            throw new IllegalArgumentException("Deskripsi barang tidak boleh kosong");
+        }     
+        resource.setResourceDescription(updateResourceDTO.getResourceDescription());
+        resource.setResourcePrice(updateResourceDTO.getResourcePrice());
+        
+        resourceRepository.save(resource);
+        return resourceToResourceResponseDTO(resource);
     }
 }
