@@ -1,8 +1,13 @@
 package gpl.karina.purchase.restservice;
 
+import java.util.Date;
+import java.util.List;
+
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 
 public interface PurchaseRestService {
     PurchaseResponseDTO addPurchase(AddPurchaseDTO addPurchaseDTO);
+    List<PurchaseResponseDTO> getAllPurchase(Integer startNominal, Integer endNominal,
+        Boolean highNominal, Date startDate, Date endDate, Boolean newDate, String type, String idSearch);
 }
