@@ -3,13 +3,16 @@ package gpl.karina.purchase.restcontroller;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
@@ -56,4 +59,38 @@ public class PurchaseController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/viewall")
+    public ResponseEntity<BaseResponseDTO<List<PurchaseResponseDTO>>> getAllPurchase(
+            @RequestParam(required = false) Integer startNominal,
+            @RequestParam(required = false) Integer endNominal,
+            @RequestParam(required = false) Boolean highNominal,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate,
+            @RequestParam(required = false) Boolean newDate,
+            @RequestParam(required = false, defaultValue = "all") String type,
+            @RequestParam(required = false) String idSearch) {
+        
+        var baseResponseDTO = new BaseResponseDTO<List<PurchaseResponseDTO>>();
+        
+        try {
+            List<PurchaseResponseDTO> purchases = purchaseRestService.getAllPurchase(
+                    startNominal, endNominal, highNominal, startDate, endDate, newDate, type, idSearch);
+            
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(purchases);
+            baseResponseDTO.setTimestamp(new Date());
+            
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

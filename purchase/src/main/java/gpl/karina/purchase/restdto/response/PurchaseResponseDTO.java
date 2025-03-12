@@ -19,5 +19,6 @@ public class PurchaseResponseDTO {
     private String purchaseStatus;
     private List<ResourceTempResponseDTO> purchaseResource;
     private AssetTempResponseDTO purchaseAsset;
+    private Integer purchasePrice;
     private String purchaseNote;
 }
