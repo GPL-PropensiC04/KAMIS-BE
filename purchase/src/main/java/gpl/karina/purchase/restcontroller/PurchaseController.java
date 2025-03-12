@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
+import gpl.karina.purchase.restdto.request.AssetTempDTO;
+import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restservice.PurchaseRestService;
@@ -93,4 +95,33 @@ public class PurchaseController {
         }
     }
 
+    @PostMapping("/addAsset")
+    public ResponseEntity<BaseResponseDTO<AssetTempResponseDTO>> addAsset(
+            @Valid @RequestBody AssetTempDTO assetTempDTO, BindingResult bindingResult) {
+        BaseResponseDTO<AssetTempResponseDTO> response = new BaseResponseDTO<>();
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMessages = new StringBuilder();
+            List<FieldError> errors = bindingResult.getFieldErrors();
+            for (FieldError error : errors) {
+                errorMessages.append(error.getDefaultMessage()).append("; ");
+            }
+
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(errorMessages.toString());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        try {
+            response.setStatus(200);
+            response.setMessage("Success");
+            response.setData(purchaseRestService.addAsset(assetTempDTO));
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(400);
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
