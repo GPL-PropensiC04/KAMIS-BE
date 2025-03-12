@@ -68,7 +68,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         // // Periksa apakah pengguna memiliki peran ADMIN atau NURSE
         // String role = currentUser.getRole();
         // if (!"ADMIN".equalsIgnoreCase(role) && !"NURSE".equalsIgnoreCase(role)) {
-        //     throw new UserUnauthorized("You are not authorized to view appointments");
+        //     throw new UserUnauthorized("You are not authorized to view assets");
         // }
     
         // Mengambil semua janji dari database
