@@ -1,9 +1,11 @@
 package gpl.karina.asset.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.asset.dto.response.AssetResponseDTO;
@@ -12,6 +14,7 @@ import gpl.karina.asset.model.Asset;
 
 import java.util.ArrayList;
 
+@Service
 public class AssetServiceImpl implements AssetService {
 
     @Autowired
@@ -32,6 +35,18 @@ public class AssetServiceImpl implements AssetService {
             listAssetResponseDTO.add(assetResponseDTO);
         });
         return listAssetResponseDTO;
+    }
+    
+    @Override
+    public AssetResponseDTO getAssetById(String id) throws Exception {
+        Optional<Asset> optionalAsset = assetDb.findById(id);
+        
+        if (optionalAsset.isPresent()) {
+            Asset asset = optionalAsset.get();
+            return assetToAssetResponseDTO(asset);
+        } else {
+            throw new Exception("Asset tidak ditemukan");
+        }
     }
 
     private AssetResponseDTO assetToAssetResponseDTO(Asset asset) {
