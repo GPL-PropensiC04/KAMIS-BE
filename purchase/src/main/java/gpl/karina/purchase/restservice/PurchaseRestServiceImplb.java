@@ -21,6 +21,7 @@ import gpl.karina.purchase.repository.AssetTempRepository;
 import gpl.karina.purchase.repository.PurchaseRepository;
 import gpl.karina.purchase.repository.ResourceTempRepository;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
+import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.ResourceTempDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
@@ -237,6 +238,31 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             .collect(Collectors.toList());
 
         return filteredPurchases;
+    }
+
+    @Override
+    public AssetTempResponseDTO addAsset(AssetTempDTO assetTempDTO) {
+        if (assetTempDTO.getAssetName() == null) {
+            throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetDescription() == null) {
+            throw new IllegalArgumentException("Deskripsi Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetType() == null) {
+            throw new IllegalArgumentException("Tipe Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetPrice() == null) {
+            throw new IllegalArgumentException("Harga Aset tidak boleh kosong");
+        }
+
+        AssetTemp assetTemp = new AssetTemp();
+        assetTemp.setAssetName(assetTempDTO.getAssetName());
+        assetTemp.setAssetDescription(assetTempDTO.getAssetDescription());
+        assetTemp.setAssetType(assetTempDTO.getAssetType());
+        assetTemp.setAssetPrice(assetTempDTO.getAssetPrice());
+
+        AssetTemp newAssetTemp = assetTempRepository.save(assetTemp);
+        return assetTempToAssetTempResponseDTO(newAssetTemp);
     }
 
 }
