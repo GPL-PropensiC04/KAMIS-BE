@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.asset.dto.response.AssetResponseDTO;
+import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.model.Asset;
 
@@ -41,9 +42,8 @@ public class AssetServiceImpl implements AssetService {
     }
     
     @Override
-    public AssetResponseDTO getAssetById(String id) throws Exception {
-
-        Asset asset = assetDb.findByIdAndNotDeleted(id);
+    public AssetResponseDTO getAssetById(String platNomor) throws Exception {
+        Asset asset = assetDb.findByIdAndNotDeleted(platNomor);
         
         if (asset != null) {
             return assetToAssetResponseDTO(asset);
@@ -54,20 +54,20 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     @Transactional
-    public void deleteAsset(String id) throws Exception {
-        Optional<Asset> optionalAsset = assetDb.findById(id);
+    public void deleteAsset(String platNomor) throws Exception {
+        Optional<Asset> optionalAsset = assetDb.findById(platNomor);
         
         if (optionalAsset.isPresent()) {
-            assetDb.softDeleteById(id);
+            assetDb.softDeleteById(platNomor);
         } else {
-            throw new Exception("Asset dengan ID " + id + " tidak ditemukan");
+            throw new Exception("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
         }
     }
 
 
     @Override
-    public AssetResponseDTO updateAssetImage(String id, byte[] imageData) throws Exception {
-        Optional<Asset> optionalAsset = assetDb.findById(id);
+    public AssetResponseDTO updateAssetImage(String platNomor, byte[] imageData) throws Exception {
+        Optional<Asset> optionalAsset = assetDb.findById(platNomor);
         
         if (optionalAsset.isPresent()) {
             Asset asset = optionalAsset.get();
@@ -79,10 +79,48 @@ public class AssetServiceImpl implements AssetService {
         }
     }
 
+    @Override
+    @Transactional
+    public AssetResponseDTO updateAssetDetails(String platNomor, AssetUpdateRequestDTO updateRequest) throws Exception {
+        Optional<Asset> optionalAsset = assetDb.findById(platNomor);
+        
+        if (optionalAsset.isPresent()) {
+            Asset asset = optionalAsset.get();
+            
+            // Update fields if provided in the request
+            if (updateRequest.getNama() != null) {
+                asset.setNama(updateRequest.getNama());
+            }
+            
+            if (updateRequest.getJenisAset() != null) {
+                asset.setJenisAset(updateRequest.getJenisAset());
+            }
+            
+            if (updateRequest.getStatus() != null) {
+                asset.setStatus(updateRequest.getStatus());
+            }
+            
+            if (updateRequest.getDeskripsi() != null) {
+                asset.setDeskripsi(updateRequest.getDeskripsi());
+            }
+            
+            if (updateRequest.getAssetMaintenance() != null) {
+                asset.setAssetMaintenance(updateRequest.getAssetMaintenance());
+            }
+            
+            Asset updatedAsset = assetDb.save(asset);
+            return assetToAssetResponseDTO(updatedAsset);
+        } else {
+            throw new Exception("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
+        }
+    }
+
     private AssetResponseDTO assetToAssetResponseDTO(Asset asset) {
         var assetResponseDTO = new AssetResponseDTO();
-        assetResponseDTO.setId(asset.getId());
+        assetResponseDTO.setPlatNomor(asset.getPlatNomor());
         assetResponseDTO.setNama(asset.getNama());
+        assetResponseDTO.setJenisAset(asset.getJenisAset());
+        assetResponseDTO.setStatus(asset.getStatus());
         assetResponseDTO.setDeskripsi(asset.getDeskripsi());
         assetResponseDTO.setTanggalPerolehan(asset.getTanggalPerolehan());
         assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());

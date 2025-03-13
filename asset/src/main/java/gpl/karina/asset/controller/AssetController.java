@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
 import gpl.karina.asset.dto.response.BaseResponseDTO;
 import gpl.karina.asset.service.AssetService;
@@ -34,12 +35,12 @@ public class AssetController {
         return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     }
     
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getAssetDetail(@PathVariable("id") String id) {
+    @GetMapping("/{platNomor}")
+    public ResponseEntity<?> getAssetDetail(@PathVariable("platNomor") String platNomor) {
         var baseResponseDTO = new BaseResponseDTO<AssetResponseDTO>();
         
         try {
-            AssetResponseDTO asset = assetService.getAssetById(id);
+            AssetResponseDTO asset = assetService.getAssetById(platNomor);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setData(asset);
             baseResponseDTO.setMessage("Detail Asset berhasil ditemukan");
@@ -48,18 +49,18 @@ public class AssetController {
         } catch (Exception e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setData(null);
-            baseResponseDTO.setMessage("Asset dengan ID " + id + " tidak ditemukan");
+            baseResponseDTO.setMessage("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAsset(@PathVariable("id") String id) {
+    @DeleteMapping("/{platNomor}")
+    public ResponseEntity<?> deleteAsset(@PathVariable("platNomor") String platNomor) {
         var baseResponseDTO = new BaseResponseDTO<Void>();
         
         try {
-            assetService.deleteAsset(id);
+            assetService.deleteAsset(platNomor);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setData(null);
             baseResponseDTO.setMessage("Asset berhasil dihapus");
@@ -73,4 +74,26 @@ public class AssetController {
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
         }
     }
+
+    @PutMapping("/{platNomor}")
+    public ResponseEntity<?> updateAsset(@PathVariable("platNomor") String platNomor, 
+                                       @RequestBody AssetUpdateRequestDTO updateRequest) {
+        var baseResponseDTO = new BaseResponseDTO<AssetResponseDTO>();
+        
+        try {
+            AssetResponseDTO updatedAsset = assetService.updateAssetDetails(platNomor, updateRequest);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setData(updatedAsset);
+            baseResponseDTO.setMessage("Detail Asset berhasil diperbarui");
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
