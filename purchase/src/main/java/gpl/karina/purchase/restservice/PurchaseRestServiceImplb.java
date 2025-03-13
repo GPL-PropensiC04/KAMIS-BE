@@ -4,18 +4,17 @@ import java.util.Date;
 import java.util.HashSet;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.purchase.model.AssetTemp;
 import gpl.karina.purchase.model.Purchase;
@@ -28,21 +27,38 @@ import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.ResourceTempDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
+import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
+import gpl.karina.purchase.restdto.response.ResourceResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
 public class PurchaseRestServiceImplb implements PurchaseRestService {
+
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
     private final ResourceTempRepository resourceTempRepository;
+    private final WebClient webClientResource;
 
-    public PurchaseRestServiceImplb(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository, ResourceTempRepository resourceTempRepository) {
+    public PurchaseRestServiceImplb(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository, 
+                                    ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder) {
         this.purchaseRepository = purchaseRepository;
         this.assetTempRepository = assetTempRepository;
         this.resourceTempRepository = resourceTempRepository;
+        this.webClientResource = webClientBuilder.baseUrl("http://localhost:8085/api").build();
+    }
+
+    private ResourceResponseDTO getResourceFromResourceService(Long resourceId) throws IllegalArgumentException {
+        var response = webClientResource
+                .get()
+                .uri("/resource/" + resourceId)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceResponseDTO>>() {})
+                .block();
+        
+        return response.getData();
     }
 
     private ResourceTempResponseDTO resourceTempToResourceTempResponseDTO (ResourceTemp resourceTemp) {
@@ -128,6 +144,15 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 if (resourceInput.getResourceId() != null && !existingIds.add(resourceInput.getResourceId())) {
                     throw new IllegalArgumentException("Tidak boleh terdapat lebih dari satu resource yang sama!");
                 }
+
+                ResourceResponseDTO resourceCheck = getResourceFromResourceService(resourceInput.getResourceId());
+                if (resourceCheck == null) {
+                    throw new IllegalArgumentException("Resource Tidak Terdaftar pada Sistem.");
+                }
+                if (!resourceCheck.getResourceName().equals(resourceInput.getResourceName())) {
+                    throw new IllegalArgumentException("Nama Resource Tidak Sesuai dengan Id pada Sistem.");
+                }
+
                 ResourceTemp resourceTemp = new ResourceTemp();
                 resourceTemp.setResourceId(resourceInput.getResourceId());
                 resourceTemp.setResourceName(resourceInput.getResourceName());
@@ -280,6 +305,14 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             for (ResourceTempDTO resourceDTO : resourceDTOs) {
                 if (resourceDTO.getResourceId() != null && !existingIds.add(resourceDTO.getResourceId())) {
                     throw new IllegalArgumentException("Tidak boleh terdapat lebih dari satu resource yang sama!");
+                }
+
+                ResourceResponseDTO resourceCheck = getResourceFromResourceService(resourceDTO.getResourceId());
+                if (resourceCheck == null) {
+                    throw new IllegalArgumentException("Resource Tidak Terdaftar pada Sistem.");
+                }
+                if (!resourceCheck.getResourceName().equals(resourceDTO.getResourceName())) {
+                    throw new IllegalArgumentException("Nama Resource Tidak Sesuai dengan Id pada Sistem.");
                 }
 
                 ResourceTemp resourceTemp;

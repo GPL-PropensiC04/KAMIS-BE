@@ -25,6 +25,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private ResourceResponseDTO resourceToResourceResponseDTO(Resource resource) {
         ResourceResponseDTO addResourceResponseDTO = new ResourceResponseDTO();
+        addResourceResponseDTO.setId(resource.getId());
         addResourceResponseDTO.setResourceName(resource.getResourceName());
         addResourceResponseDTO.setResourceDescription(resource.getResourceDescription());   
         addResourceResponseDTO.setResourceStock(resource.getResourceStock());
@@ -93,6 +94,12 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         resource.setResourcePrice(updateResourceDTO.getResourcePrice());
         
         resourceRepository.save(resource);
+        return resourceToResourceResponseDTO(resource);
+    }
+
+    @Override
+    public ResourceResponseDTO getResourceById(Long idResource) {
+        Resource resource = resourceRepository.findById(idResource).orElseThrow(() -> new IllegalArgumentException("Resource not found"));
         return resourceToResourceResponseDTO(resource);
     }
 }
