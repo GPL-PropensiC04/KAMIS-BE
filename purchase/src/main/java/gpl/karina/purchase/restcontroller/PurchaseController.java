@@ -107,7 +107,6 @@ public class PurchaseController {
         }
     }
 
-    @RequestMapping(value = "/addAsset", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PutMapping("/update/{purchaseId}")
     public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchase(@PathVariable String purchaseId,
             @RequestBody UpdatePurchaseDTO updatePurchaseDTO) {
@@ -142,7 +141,7 @@ public class PurchaseController {
         }
     }
 
-    @PostMapping("/addAsset")
+    @RequestMapping(value = "/addAsset", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponseDTO<AssetTempResponseDTO>> addAsset(
             @Valid @ModelAttribute AssetTempDTO assetTempDTO, BindingResult bindingResult) {
         BaseResponseDTO<AssetTempResponseDTO> response = new BaseResponseDTO<>();

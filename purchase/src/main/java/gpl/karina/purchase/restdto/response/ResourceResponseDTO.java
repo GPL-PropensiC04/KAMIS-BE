@@ -1,4 +1,4 @@
-package gpl.karina.resource.restdto.response;
+package gpl.karina.purchase.restdto.response;
 
 import lombok.Data; 
 
