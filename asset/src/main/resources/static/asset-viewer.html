@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .asset-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .asset-item {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex: 1 0 200px;
+        }
+        .asset-item:hover {
+            background-color: #e0e0e0;
+        }
+        .asset-detail {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .asset-image {
+            max-width: 100%;
+            max-height: 300px;
+            margin: 15px auto;
+            display: block;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+        .loading {
+            text-align: center;
+            margin: 20px;
+            color: #666;
+        }
+        .property {
+            margin-bottom: 10px;
+        }
+        .property-name {
+            font-weight: bold;
+            color: #555;
+        }
+        .no-image {
+            text-align: center;
+            color: #999;
+            margin: 15px 0;
+            padding: 30px;
+            background-color: #f9f9f9;
+            border: 1px dashed #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Asset Viewer</h1>
+        
+        <h2>Daftar Asset</h2>
+        <div id="assetList" class="asset-list">
+            <div class="loading">Loading assets...</div>
+        </div>
+        
+        <h2>Detail Asset</h2>
+        <div id="assetDetail" class="asset-detail">
+            <p>Pilih asset dari daftar di atas untuk melihat detailnya.</p>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk mengambil semua asset
+        async function fetchAssets() {
+            try {
+                const response = await fetch('/api/asset/all');
+                const data = await response.json();
+                
+                if (data.status === 200 && data.data) {
+                    displayAssetList(data.data);
+                } else {
+                    document.getElementById('assetList').innerHTML = 
+                        '<p>Gagal memuat data asset. Pesan: ' + data.message + '</p>';
+                }
+            } catch (error) {
+                document.getElementById('assetList').innerHTML = 
+                    '<p>Error: ' + error.message + '</p>';
+            }
+        }
+        
+        // Fungsi untuk mengambil detail asset
+        async function fetchAssetDetail(id) {
+            document.getElementById('assetDetail').innerHTML = '<div class="loading">Loading asset details...</div>';
+            
+            try {
+                const response = await fetch(`/api/asset/${id}`);
+                const data = await response.json();
+                
+                if (data.status === 200 && data.data) {
+                    displayAssetDetail(data.data);
+                } else {
+                    document.getElementById('assetDetail').innerHTML = 
+                        '<p>Gagal memuat detail asset. Pesan: ' + data.message + '</p>';
+                }
+            } catch (error) {
+                document.getElementById('assetDetail').innerHTML = 
+                    '<p>Error: ' + error.message + '</p>';
+            }
+        }
+        
+        // Fungsi untuk menampilkan daftar asset
+        function displayAssetList(assets) {
+            const assetListElement = document.getElementById('assetList');
+            
+            if (!assets || assets.length === 0) {
+                assetListElement.innerHTML = '<p>Tidak ada asset yang tersedia.</p>';
+                return;
+            }
+            
+            let html = '';
+            assets.forEach(asset => {
+                html += `
+                    <div class="asset-item" onclick="fetchAssetDetail('${asset.id}')">
+                        <div><strong>${asset.nama}</strong></div>
+                        <div>Nilai: Rp ${formatNumber(asset.nilaiPerolehan)}</div>
+                        <div>Status: ${asset.assetMaintenance}</div>
+                    </div>
+                `;
+            });
+            
+            assetListElement.innerHTML = html;
+        }
+        
+        // Fungsi untuk menampilkan detail asset
+        function displayAssetDetail(asset) {
+            const assetDetailElement = document.getElementById('assetDetail');
+            
+            let imageHtml = '';
+            if (asset.gambarAsetBase64) {
+                imageHtml = `
+                    <h3>Gambar Asset</h3>
+                    <img src="data:image/png;base64,${asset.gambarAsetBase64}" class="asset-image" alt="${asset.nama}">
+                `;
+            } else {
+                imageHtml = `
+                    <div class="no-image">
+                        Tidak ada gambar tersedia untuk asset ini
+                    </div>
+                `;
+            }
+            
+            let html = `
+                <h3>${asset.nama}</h3>
+                <div class="property">
+                    <span class="property-name">ID:</span> ${asset.id}
+                </div>
+                <div class="property">
+                    <span class="property-name">Deskripsi:</span> ${asset.deskripsi}
+                </div>
+                <div class="property">
+                    <span class="property-name">Tanggal Perolehan:</span> ${formatDate(asset.tanggalPerolehan)}
+                </div>
+                <div class="property">
+                    <span class="property-name">Nilai Perolehan:</span> Rp ${formatNumber(asset.nilaiPerolehan)}
+                </div>
+                <div class="property">
+                    <span class="property-name">Status Maintenance:</span> ${asset.assetMaintenance}
+                </div>
+                ${imageHtml}
+            `;
+            
+            assetDetailElement.innerHTML = html;
+        }
+        
+        // Format tanggal
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('id-ID', options);
+        }
+        
+        // Format angka dengan pemisah ribuan
+        function formatNumber(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+        
+        // Inisialisasi halaman
+        window.onload = function() {
+            fetchAssets();
+        };
+
+        function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // Modifikasi fungsi window.onload
+    window.onload = function() {
+    fetchAssets();
+    
+    // Check if there's an id parameter in the URL
+    const assetId = getUrlParameter('id');
+    if (assetId) {
+        fetchAssetDetail(assetId);
+    }
+    
+    // Check if there's an error parameter in the URL
+    const error = getUrlParameter('error');
+    if (error) {
+        document.getElementById('assetDetail').innerHTML = 
+            '<p class="error" style="color: red;">' + error + '</p>';
+    }
+    };
+    </script>
+</body>
+</html>
