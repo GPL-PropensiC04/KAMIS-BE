@@ -25,6 +25,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private ResourceResponseDTO resourceToResourceResponseDTO(Resource resource) {
         ResourceResponseDTO addResourceResponseDTO = new ResourceResponseDTO();
+        addResourceResponseDTO.setId(resource.getId());
         addResourceResponseDTO.setResourceName(resource.getResourceName());
         addResourceResponseDTO.setResourceDescription(resource.getResourceDescription());   
         addResourceResponseDTO.setResourceStock(resource.getResourceStock());
