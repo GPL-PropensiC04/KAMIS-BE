@@ -53,4 +53,24 @@ public class AssetController {
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAsset(@PathVariable("id") String id) {
+        var baseResponseDTO = new BaseResponseDTO<Void>();
+        
+        try {
+            assetService.deleteAsset(id);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setMessage("Asset berhasil dihapus");
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        }
+    }
 }
