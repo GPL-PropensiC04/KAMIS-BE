@@ -13,6 +13,8 @@ import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.model.Asset;
 
 import java.util.ArrayList;
+import java.util.Base64;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AssetServiceImpl implements AssetService {
@@ -28,7 +30,8 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public List<AssetResponseDTO> getAllAsset() {
-        var listAsset = assetDb.findAll();
+
+        var listAsset = assetDb.findAllActive();
         var listAssetResponseDTO = new ArrayList<AssetResponseDTO>();
         listAsset.forEach(asset -> {
             var assetResponseDTO = assetToAssetResponseDTO(asset);
@@ -39,10 +42,36 @@ public class AssetServiceImpl implements AssetService {
     
     @Override
     public AssetResponseDTO getAssetById(String id) throws Exception {
+
+        Asset asset = assetDb.findByIdAndNotDeleted(id);
+        
+        if (asset != null) {
+            return assetToAssetResponseDTO(asset);
+        } else {
+            throw new Exception("Asset tidak ditemukan");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteAsset(String id) throws Exception {
+        Optional<Asset> optionalAsset = assetDb.findById(id);
+        
+        if (optionalAsset.isPresent()) {
+            assetDb.softDeleteById(id);
+        } else {
+            throw new Exception("Asset dengan ID " + id + " tidak ditemukan");
+        }
+    }
+
+    @Override
+    public AssetResponseDTO updateAssetImage(String id, byte[] imageData) throws Exception {
         Optional<Asset> optionalAsset = assetDb.findById(id);
         
         if (optionalAsset.isPresent()) {
             Asset asset = optionalAsset.get();
+            asset.setGambarAset(imageData);
+            assetDb.save(asset);
             return assetToAssetResponseDTO(asset);
         } else {
             throw new Exception("Asset tidak ditemukan");
@@ -57,7 +86,13 @@ public class AssetServiceImpl implements AssetService {
         assetResponseDTO.setTanggalPerolehan(asset.getTanggalPerolehan());
         assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
         assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
-        // assetResponseDTO.setHistoriMaintenance(asset.getHistoriMaintenance());
+        
+        // Konversi byte array gambar ke Base64 string untuk dikirim ke frontend
+        if (asset.getGambarAset() != null && asset.getGambarAset().length > 0) {
+            String base64Image = Base64.getEncoder().encodeToString(asset.getGambarAset());
+            assetResponseDTO.setGambarAsetBase64(base64Image);
+        }
+        
         return assetResponseDTO;
     }
 }

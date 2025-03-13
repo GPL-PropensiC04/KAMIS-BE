@@ -23,33 +23,33 @@ public class PurchaseApplication {
         SpringApplication.run(PurchaseApplication.class, args);
     }
 
-    @Bean
-    @Transactional
-    CommandLineRunner run(AssetTempRepository assetTempRepository) {
-        return args -> {
-            if (isSeeded) {
-                System.out.println("Data has already been seeded. Skipping generation.");
-                return;
-            }
+    // @Bean
+    // @Transactional
+    // CommandLineRunner run(AssetTempRepository assetTempRepository) {
+    //     return args -> {
+    //         if (isSeeded) {
+    //             System.out.println("Data has already been seeded. Skipping generation.");
+    //             return;
+    //         }
 
-            System.out.println("Generating fake construction vehicle assets...");
+    //         System.out.println("Generating fake construction vehicle assets...");
 
-            String[] vehicleTypes = {
-                "Excavator", "Bulldozer", "Backhoe Loader", "Dump Truck", "Crane",
-                "Concrete Mixer", "Forklift", "Road Roller", "Grader", "Trencher"
-            };
+    //         String[] vehicleTypes = {
+    //             "Excavator", "Bulldozer", "Backhoe Loader", "Dump Truck", "Crane",
+    //             "Concrete Mixer", "Forklift", "Road Roller", "Grader", "Trencher"
+    //         };
 
-            for (int i = 0; i < 10; i++) {
-                AssetTemp asset = new AssetTemp();
-                asset.setAssetName(vehicleTypes[i % vehicleTypes.length] + " " + faker.bothify("##??")); // Unique identifier
-                asset.setAssetDescription("A " + vehicleTypes[i % vehicleTypes.length] + " used for construction work.");
-                asset.setAssetType("Construction Vehicle");
-                asset.setAssetPrice(faker.number().numberBetween(50_000_000, 500_000_000)); // IDR Price range
+    //         for (int i = 0; i < 10; i++) {
+    //             AssetTemp asset = new AssetTemp();
+    //             asset.setAssetName(vehicleTypes[i % vehicleTypes.length] + " " + faker.bothify("##??")); // Unique identifier
+    //             asset.setAssetDescription("A " + vehicleTypes[i % vehicleTypes.length] + " used for construction work.");
+    //             asset.setAssetType("Construction Vehicle");
+    //             asset.setAssetPrice(faker.number().numberBetween(50_000_000, 500_000_000)); // IDR Price range
 
-                assetTempRepository.save(asset); // Save to database
-            }
+    //             assetTempRepository.save(asset); // Save to database
+    //         }
 
-            isSeeded = true; // Mark as seeded
-        };
-    }
+    //         isSeeded = true; // Mark as seeded
+    //     };
+    // }
 }

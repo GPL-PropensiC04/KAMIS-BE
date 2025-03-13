@@ -5,11 +5,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import com.github.javafaker.Faker;
 import gpl.karina.asset.model.Asset;
 import gpl.karina.asset.repository.AssetDb;
 
 import java.util.Date;
 import java.util.UUID;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 public class AssetApplication {
@@ -19,75 +22,42 @@ public class AssetApplication {
     }
     
     @Bean
-    public CommandLineRunner loadSampleData(AssetDb assetDb) {
+    CommandLineRunner initDatabase(AssetDb assetDb) {
         return args -> {
-            // Check if there's already data in the database
-            if (assetDb.count() > 0) {
-                System.out.println("Data already exists, skipping sample data generation");
-                return;
+            Faker faker = new Faker();
+            Random random = new Random();
+            
+            // Generate 10 dummy assets
+            for (int i = 0; i < 10; i++) {
+                Asset asset = new Asset();
+                
+                // Generate a unique ID using UUID
+                asset.setId(UUID.randomUUID().toString());
+                
+                // Set asset name to a random product
+                asset.setNama(faker.commerce().productName());
+                
+                // Generate description
+                asset.setDeskripsi(faker.lorem().paragraph(1));
+                
+                // Generate acquisition date (within the last 3 years)
+                asset.setTanggalPerolehan(faker.date().past(1095, TimeUnit.DAYS));
+                
+                // Generate acquisition value (between 1,000,000 and 50,000,000)
+                asset.setNilaiPerolehan(random.nextFloat() * 49000000 + 1000000);
+                
+                // Set asset maintenance status randomly
+                String[] maintenanceStatus = {"GOOD", "NEEDS_MAINTENANCE", "UNDER_MAINTENANCE"};
+                asset.setAssetMaintenance(maintenanceStatus[random.nextInt(maintenanceStatus.length)]);
+                
+                // Set isDeleted to false for all dummy data
+                asset.setIsDeleted(false);
+                
+                // Save the asset to database
+                assetDb.save(asset);
+                
+                System.out.println("Generated dummy asset: " + asset.getNama());
             }
-            
-            System.out.println("Generating sample asset data...");
-            
-            // Create 5 sample assets
-            createSampleAsset(
-                assetDb,
-                "Laptop Dell XPS 15",
-                "Laptop premium untuk kebutuhan desain dan development dengan spesifikasi high-end",
-                new Date(System.currentTimeMillis() - (365 * 24 * 60 * 60 * 1000L)), // 1 year ago
-                15000000f,
-                "Baik"
-            );
-            
-            createSampleAsset(
-                assetDb,
-                "Printer HP LaserJet Pro",
-                "Printer laser untuk kebutuhan kantor dengan kecepatan cetak tinggi",
-                new Date(System.currentTimeMillis() - (730 * 24 * 60 * 60 * 1000L)), // 2 years ago
-                3500000f,
-                "Memerlukan Service"
-            );
-            
-            createSampleAsset(
-                assetDb,
-                "AC Daikin 1.5 PK",
-                "AC ruangan untuk menjaga suhu server tetap dingin",
-                new Date(System.currentTimeMillis() - (180 * 24 * 60 * 60 * 1000L)), // 6 months ago
-                4800000f,
-                "Baik"
-            );
-            
-            createSampleAsset(
-                assetDb,
-                "Mobil Operasional Toyota Avanza",
-                "Kendaraan operasional perusahaan untuk keperluan transportasi karyawan dan barang",
-                new Date(System.currentTimeMillis() - (1095 * 24 * 60 * 60 * 1000L)), // 3 years ago
-                210000000f,
-                "Dalam Perbaikan"
-            );
-            
-            createSampleAsset(
-                assetDb,
-                "Proyektor Epson EB-U05",
-                "Proyektor untuk meeting room dengan resolusi Full HD",
-                new Date(System.currentTimeMillis() - (548 * 24 * 60 * 60 * 1000L)), // 1.5 years ago
-                7200000f,
-                "Rusak"
-            );
-            
-            System.out.println("Sample data generation completed. Created 5 assets.");
         };
-    }
-    
-    private void createSampleAsset(AssetDb assetDb, String nama, String deskripsi, 
-                                Date tanggalPerolehan, Float nilaiPerolehan, String assetMaintenance) {
-        Asset asset = new Asset();
-        asset.setId(UUID.randomUUID().toString());
-        asset.setNama(nama);
-        asset.setDeskripsi(deskripsi);
-        asset.setTanggalPerolehan(tanggalPerolehan);
-        asset.setNilaiPerolehan(nilaiPerolehan);
-        asset.setAssetMaintenance(assetMaintenance);
-        assetDb.save(asset);
     }
 }

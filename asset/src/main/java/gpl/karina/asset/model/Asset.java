@@ -39,6 +39,15 @@ public class Asset {
     @Column(name = "assetMaintenance", nullable = false)
     private String assetMaintenance;
 
+    @Column(name = "gambarAset", columnDefinition = "BYTEA")
+    private byte[] gambarAset;
+
+    @Column(name = "isDeleted", nullable = false)
+    private Boolean isDeleted = false;
+    
+    @Column(name = "deletedAt")
+    private Date deletedAt;
+
     // @ManyToMany
     // @JoinTable(
     //     name = "AssetMaintenance",

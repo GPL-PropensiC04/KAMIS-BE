@@ -8,4 +8,6 @@ public class AssetTempResponseDTO { //belum add attribut foto
     private String assetDescription;
     private String assetType;
     private Integer assetPrice;
+    private String fotoContentType;
+    private String fotoUrl;
 }
