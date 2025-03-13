@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,8 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import gpl.karina.purchase.model.AssetTemp;
 import gpl.karina.purchase.repository.AssetTempRepository;
+import gpl.karina.purchase.exception.DataNotFound;
+import gpl.karina.purchase.exception.UserUnauthorized;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
+import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
@@ -104,6 +108,41 @@ public class PurchaseController {
     }
 
     @RequestMapping(value = "/addAsset", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping("/update/{purchaseId}")
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchase(@PathVariable String purchaseId,
+            @RequestBody UpdatePurchaseDTO updatePurchaseDTO) {
+        var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+        
+        try {
+            PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchase(updatePurchaseDTO, purchaseId);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(updatedPurchase);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (DataNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/addAsset")
     public ResponseEntity<BaseResponseDTO<AssetTempResponseDTO>> addAsset(
             @Valid @ModelAttribute AssetTempDTO assetTempDTO, BindingResult bindingResult) {
         BaseResponseDTO<AssetTempResponseDTO> response = new BaseResponseDTO<>();

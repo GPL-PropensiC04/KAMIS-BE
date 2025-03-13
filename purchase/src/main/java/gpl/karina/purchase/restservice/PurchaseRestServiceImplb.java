@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -24,11 +26,14 @@ import gpl.karina.purchase.repository.ResourceTempRepository;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.ResourceTempDTO;
+import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
+import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class PurchaseRestServiceImplb implements PurchaseRestService {
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
@@ -129,7 +134,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 resourceTemp.setResourceTotal(resourceInput.getResourceTotal());
                 resourceTemp.setResourcePrice(resourceInput.getResourcePrice());
 
-                purchasePrice += resourceTemp.getResourcePrice();
+                purchasePrice += resourceTemp.getResourcePrice() * resourceTemp.getResourceTotal();
                 resourceTempRepository.save(resourceTemp);
                 resourceTemps.add(resourceTemp);
             }
@@ -145,8 +150,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 throw new IllegalArgumentException("Anda memilih tipe pembelian aset, pastikan tidak menginput data resource.");
             }
 
-            AssetTemp assetTemp = assetTempRepository.findById(addPurchaseDTO.getPurchaseAsset()).orElse(null);
-
+            AssetTemp assetTemp = assetTempRepository.findById(addPurchaseDTO.getPurchaseAsset()).orElseThrow(() -> new IllegalArgumentException("Aset tidak ditemukan dalam database."));
             purchase.setPurchaseAsset(assetTemp.getId());
             purchase.setPurchasePrice(assetTemp.getAssetPrice());
         }
@@ -241,6 +245,84 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             .collect(Collectors.toList());
 
         return filteredPurchases;
+    }
+
+    @Override
+    public PurchaseResponseDTO updatePurchase(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId) {
+        Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));
+        
+        String purchaseStatus = purchase.getPurchaseStatus();
+        if (!purchaseStatus.equals("Diajukan")) {
+            throw new IllegalArgumentException("Detail Pembelian sudah tidak bisa diperbarui.");
+        }
+        
+        purchase.setPurchaseSupplier(updatePurchaseDTO.getPurchaseSupplier());
+        purchase.setPurchaseNote(updatePurchaseDTO.getPurchaseNote());
+
+        boolean purchaseType = purchase.isPurchaseType();
+        if (purchaseType) {
+            List<ResourceTemp> existingResources = new ArrayList<>(purchase.getPurchaseResource());
+            List<ResourceTempDTO> resourceDTOs = updatePurchaseDTO.getPurchaseResource();
+
+            if (resourceDTOs == null || resourceDTOs.isEmpty()) {
+                throw new IllegalArgumentException("Anda memilih tipe pembelian resource, pastikan menginput data resource setidaknya satu.");
+            }
+
+            Set<Long> existingIds = new HashSet<>();
+            List<ResourceTemp> updatedResources = new ArrayList<>();
+            Integer totalPurchasePrice = 0;
+
+            // Mapping existing resources by ID
+            Map<Long, ResourceTemp> existingResourceMap = existingResources.stream()
+                .collect(Collectors.toMap(ResourceTemp::getResourceId, Function.identity()));
+
+            // Iterasi DTO untuk update dan penambahan resource
+            for (ResourceTempDTO resourceDTO : resourceDTOs) {
+                if (resourceDTO.getResourceId() != null && !existingIds.add(resourceDTO.getResourceId())) {
+                    throw new IllegalArgumentException("Tidak boleh terdapat lebih dari satu resource yang sama!");
+                }
+
+                ResourceTemp resourceTemp;
+                
+                if (existingResourceMap.containsKey(resourceDTO.getResourceId())) {
+                    // Update existing resource
+                    resourceTemp = existingResourceMap.get(resourceDTO.getResourceId());
+                } else {
+                    // Create new resource
+                    resourceTemp = new ResourceTemp();
+                    resourceTemp.setResourceId(resourceDTO.getResourceId());
+                }
+
+                resourceTemp.setResourceName(resourceDTO.getResourceName());
+                resourceTemp.setResourceTotal(resourceDTO.getResourceTotal());
+                resourceTemp.setResourcePrice(resourceDTO.getResourcePrice());
+
+                totalPurchasePrice += resourceTemp.getResourcePrice() * resourceTemp.getResourceTotal();
+                updatedResources.add(resourceTemp);
+            }
+
+            // Hapus resource yang tidak ada di DTO
+            List<ResourceTemp> resourcesToRemove = existingResources.stream()
+                .filter(resource -> !existingIds.contains(resource.getResourceId()))
+                .collect(Collectors.toList());
+
+            resourceTempRepository.deleteAll(resourcesToRemove);
+
+            // Simpan perubahan
+            resourceTempRepository.saveAll(updatedResources);
+            purchase.setPurchaseResource(updatedResources);
+            purchase.setPurchasePrice(totalPurchasePrice);
+        }
+
+        if (!purchaseType) {
+            if (updatePurchaseDTO.getPurchaseResource() != null) {
+                throw new IllegalArgumentException("Anda memilih tipe pembelian aset, pastikan tidak menginput data resource.");
+            }
+        }
+
+        Purchase updatedPurchase = purchaseRepository.save(purchase);
+
+        return purchaseToPurchaseResponseDTO(updatedPurchase);
     }
 
     @Override

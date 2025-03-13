@@ -39,6 +39,9 @@ public class Asset {
     @Column(name = "assetMaintenance", nullable = false)
     private String assetMaintenance;
 
+    @Column(name = "gambarAset", columnDefinition = "BYTEA")
+    private byte[] gambarAset;
+
     // @ManyToMany
     // @JoinTable(
     //     name = "AssetMaintenance",
