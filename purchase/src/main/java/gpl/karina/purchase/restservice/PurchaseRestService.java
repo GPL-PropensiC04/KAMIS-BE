@@ -14,5 +14,6 @@ public interface PurchaseRestService {
     List<PurchaseResponseDTO> getAllPurchase(Integer startNominal, Integer endNominal,
         Boolean highNominal, Date startDate, Date endDate, Boolean newDate, String type, String idSearch);
     AssetTempResponseDTO addAsset(AssetTempDTO assetTempDTO);
+    List<AssetTempResponseDTO> getAllAssets();
     PurchaseResponseDTO updatePurchase(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId);
 }
