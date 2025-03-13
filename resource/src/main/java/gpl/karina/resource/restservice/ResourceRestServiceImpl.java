@@ -96,4 +96,10 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
     }
+
+    @Override
+    public ResourceResponseDTO getResourceById(Long idResource) {
+        Resource resource = resourceRepository.findById(idResource).orElseThrow(() -> new IllegalArgumentException("Resource not found"));
+        return resourceToResourceResponseDTO(resource);
+    }
 }

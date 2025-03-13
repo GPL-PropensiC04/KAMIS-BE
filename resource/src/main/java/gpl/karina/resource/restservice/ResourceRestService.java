@@ -10,5 +10,5 @@ public interface ResourceRestService {
     ResourceResponseDTO addResource(AddResourceDTO addResourceDTO);
     List<ResourceResponseDTO> getAllResources();
     ResourceResponseDTO updateResource(UpdateResourceDTO updateResourceDTO, Long idResource);
-
+    ResourceResponseDTO getResourceById(Long idResource);
 }
