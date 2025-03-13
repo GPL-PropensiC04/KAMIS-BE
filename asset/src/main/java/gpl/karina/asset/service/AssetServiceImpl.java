@@ -104,10 +104,6 @@ public class AssetServiceImpl implements AssetService {
                 asset.setDeskripsi(updateRequest.getDeskripsi());
             }
             
-            if (updateRequest.getAssetMaintenance() != null) {
-                asset.setAssetMaintenance(updateRequest.getAssetMaintenance());
-            }
-            
             Asset updatedAsset = assetDb.save(asset);
             return assetToAssetResponseDTO(updatedAsset);
         } else {
