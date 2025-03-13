@@ -400,4 +400,10 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             .collect(Collectors.toList());
     }
 
+    @Override
+    public PurchaseResponseDTO getDetailPurchase(String purchaseId) {
+        Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));   
+        return purchaseToPurchaseResponseDTO(purchase);
+    }
+
 }
