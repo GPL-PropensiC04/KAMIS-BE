@@ -63,6 +63,7 @@ public class AssetServiceImpl implements AssetService {
             throw new Exception("Asset dengan ID " + id + " tidak ditemukan");
         }
     }
+    
 
     @Override
     public AssetResponseDTO updateAssetImage(String id, byte[] imageData) throws Exception {
