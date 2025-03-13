@@ -64,6 +64,7 @@ public class AssetServiceImpl implements AssetService {
         }
     }
 
+
     @Override
     public AssetResponseDTO updateAssetImage(String id, byte[] imageData) throws Exception {
         Optional<Asset> optionalAsset = assetDb.findById(id);
@@ -95,4 +96,5 @@ public class AssetServiceImpl implements AssetService {
         
         return assetResponseDTO;
     }
+    
 }
