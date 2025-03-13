@@ -2,6 +2,7 @@ package gpl.karina.purchase.restservice;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -54,6 +55,8 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         assetTempResponseDTO.setAssetDescription(assetTemp.getAssetDescription());
         assetTempResponseDTO.setAssetType(assetTemp.getAssetType());
         assetTempResponseDTO.setAssetPrice(assetTemp.getAssetPrice());
+        assetTempResponseDTO.setFotoContentType(assetTemp.getFotoContentType());
+        assetTempResponseDTO.setFotoUrl("/api/purchase/asset/" + assetTemp.getId() + "/foto"); // Tambahkan ini
         return assetTempResponseDTO;
     }
 
@@ -261,8 +264,25 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         assetTemp.setAssetType(assetTempDTO.getAssetType());
         assetTemp.setAssetPrice(assetTempDTO.getAssetPrice());
 
+        if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
+            try {
+                assetTemp.setFoto(assetTempDTO.getFoto().getBytes());
+                assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Gagal mengupload foto");
+            }
+        }
+
         AssetTemp newAssetTemp = assetTempRepository.save(assetTemp);
         return assetTempToAssetTempResponseDTO(newAssetTemp);
+    }
+
+    @Override
+    public List<AssetTempResponseDTO> getAllAssets() {
+        List<AssetTemp> assets = assetTempRepository.findAll();
+        return assets.stream()
+            .map(this::assetTempToAssetTempResponseDTO)
+            .collect(Collectors.toList());
     }
 
 }
