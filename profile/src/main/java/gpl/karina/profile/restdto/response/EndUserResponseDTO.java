@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EndUserResponseDTO {
     private String email;
-    private String password;
-    private String name;
+    // private String password;
+    private String username;
 }

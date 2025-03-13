@@ -10,10 +10,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
+import org.springframework.stereotype.Service;
 import gpl.karina.profile.model.EndUser;
 import gpl.karina.profile.repository.EndUserRepository;
 
+@Service
 public class UserDetailsServiceImpl implements UserDetailsService {
     
     private final EndUserRepository endUserRepository;
@@ -31,6 +32,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         String role = endUser.get().getClass().getSimpleName();
         Set<GrantedAuthority> authorities = new HashSet<>();
         authorities.add(new SimpleGrantedAuthority(role));
-        return new User(endUser.get().getName(), endUser.get().getPassword(), authorities);
+        return new User(endUser.get().getUsername(), endUser.get().getPassword(), authorities);
     }
 }

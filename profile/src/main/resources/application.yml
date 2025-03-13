@@ -23,5 +23,12 @@ spring:
       ddl-auto: create
 profile:
   app:
-    jwtSecret: ${JWT_SECRET_KEY:HWlEIJMvCDcKFNTzNOXCVjrArVFkLbcEa}
+    jwtSecret: ${JWT_SECRET_KEY}
     jwtExpirationMs: 86400000
+
+logging:
+  file:
+    name: logs/profile-application.log
+  level:
+    root: INFO
+    gpl.karina.profile: DEBUG
