@@ -23,6 +23,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: create
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 purchase:
   app:
     jwtSecret: ${JWT_SECRET_KEY:}

@@ -17,4 +17,5 @@ public class AssetResponseDTO {
     private Float nilaiPerolehan;
     private String assetMaintenance;
     // private List<String> historiMaintenance;
+    private String gambarAsetBase64; // Menyimpan gambar dalam format base64
 }

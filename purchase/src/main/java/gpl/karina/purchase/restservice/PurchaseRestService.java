@@ -5,6 +5,7 @@ import java.util.List;
 
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
+import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 
@@ -13,4 +14,6 @@ public interface PurchaseRestService {
     List<PurchaseResponseDTO> getAllPurchase(Integer startNominal, Integer endNominal,
         Boolean highNominal, Date startDate, Date endDate, Boolean newDate, String type, String idSearch);
     AssetTempResponseDTO addAsset(AssetTempDTO assetTempDTO);
+    List<AssetTempResponseDTO> getAllAssets();
+    PurchaseResponseDTO updatePurchase(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId);
 }
