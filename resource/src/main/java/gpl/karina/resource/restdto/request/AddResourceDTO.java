@@ -10,8 +10,6 @@ public class AddResourceDTO {
     private String resourceName;
     @NotNull(message = "Deskripsi barang tidak boleh kosong")
     private String resourceDescription;
-    @NotNull(message = "Supplier barang tidak boleh kosong")
-    private String resourceSupplier;
     @NotNull(message = "Stok barang tidak boleh kosong")
     private Integer resourceStock;
     @NotNull(message = "Harga barang tidak boleh kosong")
