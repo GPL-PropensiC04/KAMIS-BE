@@ -25,5 +25,12 @@ spring:
       ddl-auto: create
 resource:
   app:
-    jwtSecret: ${JWT_SECRET_KEY}
-    jwtExpirationMs: 86400000
+    jwtPublicKey: ${JWT_PUBLIC_KEY}
+    jwtExpirationMs: ${JWT_EXPIRATION_MS}
+
+logging:
+  file:
+    name: logs/resource-application.log
+  level:
+    root: INFO
+    gpl.karina.resource: DEBUG

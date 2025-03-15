@@ -27,7 +27,7 @@ profile:
   app:
     jwtSecret: ${JWT_SECRET_KEY}
     jwtPublicKey: ${JWT_PUBLIC_KEY}
-    jwtExpirationMs: 86400000
+    jwtExpirationMs: ${JWT_EXPIRATION_MS}
 
 logging:
   file:
