@@ -22,12 +22,19 @@ spring:
             non_contextual_creation: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
   servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
 purchase:
   app:
-    jwtSecret: ${JWT_SECRET_KEY}
-    jwtExpirationMs: 86400000
+    jwtPublicKey: ${JWT_PUBLIC_KEY}
+    jwtExpirationMs: ${JWT_EXPIRATION_MS}
+
+logging:
+  file:
+    name: logs/purchase-application.log
+  level:
+    root: INFO
+    gpl.karina.purchase: DEBUG

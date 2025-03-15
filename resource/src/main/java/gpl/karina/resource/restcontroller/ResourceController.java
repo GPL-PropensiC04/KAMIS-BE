@@ -149,7 +149,7 @@ public class ResourceController {
     }
 
     @GetMapping("/{idResource}")
-    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable(name = "idResource") Long idResource) {
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable Long idResource) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
         // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
     
