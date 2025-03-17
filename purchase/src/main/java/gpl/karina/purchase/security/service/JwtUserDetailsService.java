@@ -22,6 +22,7 @@ public class JwtUserDetailsService implements UserDetailsService {
     private final JwtUtils jwtUtils;
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUserDetailsService.class);
+
     public JwtUserDetailsService(JwtUtils jwtUtils) {
         this.jwtUtils = jwtUtils;
     }
@@ -37,7 +38,7 @@ public class JwtUserDetailsService implements UserDetailsService {
         String role = jwtUtils.getRoleFromToken(token);
 
         Set<GrantedAuthority> authorities = new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority( role));
+        authorities.add(new SimpleGrantedAuthority(role));
         logger.info("authorities: {}", authorities);
         // Note: password is null since we're authenticating via token
         return new User(username, "", authorities);
