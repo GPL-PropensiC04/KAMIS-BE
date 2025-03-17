@@ -25,5 +25,13 @@ spring:
       ddl-auto: create
 finance.report:
   app:
-    jwtSecret: ${JWT_SECRET_KEY}
-    jwtExpirationMs: 86400000
+    jwtPublicKey: ${JWT_PUBLIC_KEY}
+    jwtExpirationMs: ${JWT_EXPIRATION_MS}
+
+
+logging:
+  file:
+    name: logs/finance-report-application.log
+  level:
+    root: INFO
+    gpl.karina.finance.report: DEBUG
