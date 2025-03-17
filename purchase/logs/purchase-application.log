@@ -1,0 +1,5 @@
+2025-03-18T00:10:22.749+07:00  INFO 34256 --- [purchase] [restartedMain] g.karina.purchase.PurchaseApplication    : Starting PurchaseApplication using Java 21.0.4 with PID 34256 (D:\Kuliah\Propensi\Proyek\c4-gak-pake-lama-be\purchase\build\classes\java\main started by Rizky Prawira N in D:\Kuliah\Propensi\Proyek\c4-gak-pake-lama-be\purchase)
+2025-03-18T00:10:22.754+07:00 DEBUG 34256 --- [purchase] [restartedMain] g.karina.purchase.PurchaseApplication    : Running with Spring Boot v3.4.2, Spring v6.2.2
+2025-03-18T00:10:22.755+07:00  INFO 34256 --- [purchase] [restartedMain] g.karina.purchase.PurchaseApplication    : No active profile set, falling back to 1 default profile: "default"
+2025-03-18T00:10:22.796+07:00  INFO 34256 --- [purchase] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-03-18T00:10:22.803+07:00  INFO 34256 --- [purchase] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
