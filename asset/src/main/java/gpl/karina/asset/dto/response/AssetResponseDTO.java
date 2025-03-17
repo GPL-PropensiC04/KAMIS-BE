@@ -10,12 +10,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssetResponseDTO {
-    private String id;
+    private String platNomor;
     private String nama;
-    private String deskripsi;
+    private String jenisAset;
+    private String status;
     private Date tanggalPerolehan;
     private Float nilaiPerolehan;
+    private String deskripsi;
     private String assetMaintenance;
-    // private List<String> historiMaintenance;
+// private List<String> historiMaintenance;
     private String gambarAsetBase64; // Menyimpan gambar dalam format base64
 }

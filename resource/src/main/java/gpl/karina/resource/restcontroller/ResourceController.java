@@ -55,17 +55,23 @@ public class ResourceController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         try {
-            response.setStatus(200);
+            response.setStatus(HttpStatus.OK.value());
             response.setMessage("Success");
             response.setData(resourceRestService.addResource(addResourceDTO));
             response.setTimestamp(new Date());
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
-            response.setStatus(400);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
             response.setMessage(e.getMessage());
             response.setTimestamp(new Date());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
     }
 
     @GetMapping("/test")
