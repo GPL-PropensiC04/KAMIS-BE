@@ -33,7 +33,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("api/profile/add").permitAll()
                         .requestMatchers("/api/profile/**")
-                        .hasAnyAuthority("admin", "direksi", "finance", "operasional")
+                        .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
