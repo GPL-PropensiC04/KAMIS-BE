@@ -29,5 +29,12 @@ spring:
       max-request-size: 100MB
 purchase:
   app:
-    jwtSecret: ${JWT_SECRET_KEY}
-    jwtExpirationMs: 86400000
+    jwtPublicKey: ${JWT_PUBLIC_KEY}
+    jwtExpirationMs: ${JWT_EXPIRATION_MS}
+
+logging:
+  file:
+    name: logs/purchase-application.log
+  level:
+    root: INFO
+    gpl.karina.purchase: DEBUG
