@@ -18,7 +18,8 @@ public interface PurchaseRestService {
     List<AssetTempResponseDTO> getAllAssets();
     PurchaseResponseDTO updatePurchase(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId);
     PurchaseResponseDTO getDetailPurchase(String purchaseId);
-    PurchaseResponseDTO updatePurchaseStatusToCancelled(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId);
+    PurchaseResponseDTO updatePurchaseStatusToCancelled(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId);
     PurchaseResponseDTO updatePurchaseStatusToNext(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId);
+    PurchaseResponseDTO updatePurchaseStatusPembayaran(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId);
     AssetTempResponseDTO getDetailAsset(Long id);
 }

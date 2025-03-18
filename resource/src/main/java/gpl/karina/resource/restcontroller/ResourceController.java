@@ -183,7 +183,7 @@ public class ResourceController {
         }
     }
 
-    @GetMapping("/addToDb/{idResource}/{StockUpdate}")
+    @PutMapping("/addToDb/{idResource}/{StockUpdate}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable Long idResource, @PathVariable Integer stockUpdate) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
         // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;

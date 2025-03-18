@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class UpdatePurchaseStatusDTO {
     private String purchaseNote;
-    
+    private String platNomor;
 }

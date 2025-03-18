@@ -192,20 +192,6 @@ public class PurchaseController {
         }
     }
 
-    @PutMapping("/updatestatus/cancel/{idPurchase}")
-    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusToCancelled(@PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-        var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-        
-        try {
-            PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchaseStatusToCancelled(updateStatusPurchaseDTO, idPurchase);
-            baseResponseDTO.setStatus(HttpStatus.OK.value());
-            baseResponseDTO.setMessage("OK");
-            baseResponseDTO.setData(updatedPurchase);
-            baseResponseDTO.setTimestamp(new Date());
-            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
-
     @GetMapping("/asset/{idAsset}")
     public ResponseEntity<BaseResponseDTO<AssetTempResponseDTO>> findAssetById(@PathVariable Long idAsset) {
         var baseResponseDTO = new BaseResponseDTO<AssetTempResponseDTO>();
@@ -255,6 +241,74 @@ public class PurchaseController {
         
         try {
             PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchaseStatusToNext(updateStatusPurchaseDTO, idPurchase);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(updatedPurchase);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (DataNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/updatestatus/cancel/{idPurchase}")
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusToCancel(@PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+        var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+        
+        try {
+            PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchaseStatusToCancelled(updateStatusPurchaseDTO, idPurchase);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(updatedPurchase);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (DataNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/updatestatus/pembayaran/{idPurchase}")
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusPembayaran(@PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+        var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+        
+        try {
+            PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchaseStatusPembayaran(updateStatusPurchaseDTO, idPurchase);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(updatedPurchase);
