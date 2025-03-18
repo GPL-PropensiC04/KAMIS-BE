@@ -77,14 +77,14 @@ public class PurchaseController {
 
     @GetMapping("/viewall")
     public ResponseEntity<BaseResponseDTO<List<PurchaseResponseDTO>>> getAllPurchase(
-            @RequestParam(required = false) Integer startNominal,
-            @RequestParam(required = false) Integer endNominal,
-            @RequestParam(required = false) Boolean highNominal,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate,
-            @RequestParam(required = false) Boolean newDate,
-            @RequestParam(required = false, defaultValue = "all") String type,
-            @RequestParam(required = false) String idSearch) {
+            @RequestParam(name = "startNominal", required = false) Integer startNominal,
+            @RequestParam(name = "endNominal", required = false) Integer endNominal,
+            @RequestParam(name = "highNominal", required = false) Boolean highNominal,
+            @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
+            @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate,
+            @RequestParam(name = "newDate", required = false) Boolean newDate,
+            @RequestParam(name = "type", required = false, defaultValue = "all") String type,
+            @RequestParam(name = "idSearch", required = false) String idSearch) {
         
         var baseResponseDTO = new BaseResponseDTO<List<PurchaseResponseDTO>>();
         
@@ -217,6 +217,25 @@ public class PurchaseController {
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
         } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+    
+    @GetMapping("/detail/{purchaseId}")
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> getDetailPurchase(@PathVariable("purchaseId") String purchaseId) {
+        var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
+        try {
+            PurchaseResponseDTO purchaseResponseDTO = purchaseRestService.getDetailPurchase(purchaseId);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(purchaseResponseDTO);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
             baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
             baseResponseDTO.setMessage(e.getMessage());
             baseResponseDTO.setData(null);
