@@ -59,4 +59,8 @@ public class Purchase {
 
     @Column(name = "Asset Dibeli", nullable = true)
     private Long purchaseAsset;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "Tanggal Pembayaran", updatable = false, nullable = false)
+    private Date purchasePaymentDate;
 }
