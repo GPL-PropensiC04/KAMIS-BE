@@ -542,6 +542,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
     @Override
     public PurchaseResponseDTO updatePurchaseStatusPembayaran(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId) {
+        // Cek role apakah finance? jika iya lanjut kan, jika tidak throw exception
         Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));
         
         String purchaseStatus = purchase.getPurchaseStatus();
