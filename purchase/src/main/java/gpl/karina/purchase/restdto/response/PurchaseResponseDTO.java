@@ -21,4 +21,6 @@ public class PurchaseResponseDTO {
     private AssetTempResponseDTO purchaseAsset;
     private Integer purchasePrice;
     private String purchaseNote;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
+    private Date purchasePaymentDate;
 }

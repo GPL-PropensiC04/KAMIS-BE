@@ -50,6 +50,9 @@ public class Asset {
     @Column(name = "gambarAset", columnDefinition = "BYTEA")
     private byte[] gambarAset;
 
+    @Column(name = "foto_content_type")
+    private String fotoContentType;
+
     @Column(name = "isDeleted", nullable = false)
     private Boolean isDeleted = false;
     
