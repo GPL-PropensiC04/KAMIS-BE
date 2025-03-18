@@ -29,7 +29,7 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/test").permitAll()
-                        .requestMatchers("/api/resource/**")
+                        .requestMatchers("/api/purchase/**")
                         .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
