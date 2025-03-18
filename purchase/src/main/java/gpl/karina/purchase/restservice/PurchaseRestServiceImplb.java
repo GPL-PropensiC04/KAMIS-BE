@@ -33,6 +33,7 @@ import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -43,19 +44,23 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     private final AssetTempRepository assetTempRepository;
     private final ResourceTempRepository resourceTempRepository;
     private final WebClient webClientResource;
+    private final HttpServletRequest request;
+
 
     public PurchaseRestServiceImplb(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository, 
-                                    ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder) {
+                                    ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder, HttpServletRequest request) {
         this.purchaseRepository = purchaseRepository;
         this.assetTempRepository = assetTempRepository;
         this.resourceTempRepository = resourceTempRepository;
         this.webClientResource = webClientBuilder.baseUrl("http://localhost:8085/api").build();
+        this.request = request;
     }
 
     private ResourceResponseDTO getResourceFromResourceService(Long resourceId) throws IllegalArgumentException {
         var response = webClientResource
                 .get()
                 .uri("/resource/" + resourceId)
+                .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceResponseDTO>>() {})
                 .block();
@@ -63,6 +68,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         return response.getData();
     }
 
+<<<<<<< HEAD
     private ResourceResponseDTO addResourceToResourceDatabase(Long resourceId, Integer resourceStock) throws IllegalArgumentException {
         var response = webClientResource
                 .get()
@@ -106,6 +112,14 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 .block();
         
         return response.getData();
+=======
+    public String getTokenFromRequest() {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+>>>>>>> 40e8269bd221cad19ce71c2b70741f5b0aaa65e9
     }
 
     private ResourceTempResponseDTO resourceTempToResourceTempResponseDTO (ResourceTemp resourceTemp) {
@@ -564,4 +578,10 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
         return purchaseToPurchaseResponseDTO(updatedPurchase);
     }
+
+    public AssetTempResponseDTO getDetailAsset(Long id) {
+        AssetTemp asset = assetTempRepository.findById(id).orElse(null);
+        return assetTempToAssetTempResponseDTO(asset);
+    }
+
 }

@@ -20,4 +20,5 @@ public interface PurchaseRestService {
     PurchaseResponseDTO getDetailPurchase(String purchaseId);
     PurchaseResponseDTO updatePurchaseStatusToCancelled(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId);
     PurchaseResponseDTO updatePurchaseStatusToNext(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId);
+    AssetTempResponseDTO getDetailAsset(Long id);
 }
