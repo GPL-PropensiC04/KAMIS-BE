@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class AssetTempResponseDTO { //belum add attribut foto
+    private long id;
     private String assetNameString;
     private String assetDescription;
     private String assetType;
