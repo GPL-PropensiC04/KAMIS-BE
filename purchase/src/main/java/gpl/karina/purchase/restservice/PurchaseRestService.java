@@ -17,4 +17,5 @@ public interface PurchaseRestService {
     List<AssetTempResponseDTO> getAllAssets();
     PurchaseResponseDTO updatePurchase(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId);
     PurchaseResponseDTO getDetailPurchase(String purchaseId);
+    AssetTempResponseDTO getDetailAsset(Long id);
 }
