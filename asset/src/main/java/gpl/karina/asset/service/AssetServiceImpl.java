@@ -3,6 +3,8 @@ package gpl.karina.asset.service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Date;
+import java.text.ParseException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.model.Asset;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,7 +76,7 @@ public class AssetServiceImpl implements AssetService {
         
         if (optionalAsset.isPresent()) {
             Asset asset = optionalAsset.get();
-            asset.setGambarAset(imageData);
+            asset.setFoto(imageData);
             assetDb.save(asset);
             return assetToAssetResponseDTO(asset);
         } else {
@@ -122,13 +125,9 @@ public class AssetServiceImpl implements AssetService {
         assetResponseDTO.setDeskripsi(asset.getDeskripsi());
         assetResponseDTO.setTanggalPerolehan(asset.getTanggalPerolehan());
         assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
-        assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
-        
-        // Konversi byte array gambar ke Base64 string untuk dikirim ke frontend
-        if (asset.getGambarAset() != null && asset.getGambarAset().length > 0) {
-            String base64Image = Base64.getEncoder().encodeToString(asset.getGambarAset());
-            assetResponseDTO.setGambarAsetBase64(base64Image);
-        }
+        // assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
+        assetResponseDTO.setFotoContentType(asset.getFotoContentType());
+        assetResponseDTO.setFotoUrl("/api/asset/" + asset.getPlatNomor() + "/foto");
         
         return assetResponseDTO;
     }
@@ -147,16 +146,35 @@ public class AssetServiceImpl implements AssetService {
         if (assetTempDTO.getAssetPrice() == null) {
             throw new IllegalArgumentException("Harga Aset tidak boleh kosong");
         }
+        if (assetTempDTO.getPlatNomor() == null) {
+            throw new IllegalArgumentException("Plat Nomor tidak boleh kosong");
+        }
+        if (assetTempDTO.getStatus() == null) {
+            throw new IllegalArgumentException("Status tidak boleh kosong");
+        }
 
         Asset assetTemp = new Asset();
+        assetTemp.setPlatNomor(assetTempDTO.getPlatNomor());
         assetTemp.setNama(assetTempDTO.getAssetName());
         assetTemp.setDeskripsi(assetTempDTO.getAssetDescription());
         assetTemp.setJenisAset(assetTempDTO.getAssetType());
-        assetTemp.setNilaiPerolehan(assetTempDTO.getAssetPrice().floatValue());
+        assetTemp.setNilaiPerolehan(assetTempDTO.getAssetPrice());
+        assetTemp.setStatus(assetTempDTO.getStatus());
+
+        // Convert string to Date
+        if (assetTempDTO.getTanggalPerolehan() != null) {
+            try {
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                Date tanggalPerolehan = formatter.parse(assetTempDTO.getTanggalPerolehan());
+                assetTemp.setTanggalPerolehan(tanggalPerolehan);
+            } catch (ParseException e) {
+                throw new IllegalArgumentException("Format tanggal tidak valid");
+            }
+        }
 
         if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
             try {
-                assetTemp.setGambarAset(assetTempDTO.getFoto().getBytes());
+                assetTemp.setFoto(assetTempDTO.getFoto().getBytes());
                 assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
             } catch (IOException e) {
                 throw new IllegalArgumentException("Gagal mengupload foto");
@@ -164,7 +182,13 @@ public class AssetServiceImpl implements AssetService {
         }
 
         Asset newAssetTemp = assetDb.save(assetTemp);
+        assetDb.save(assetTemp);
         return assetToAssetResponseDTO(newAssetTemp);
+    }
+
+    @Override
+    public Asset getAssetFoto(String id) {
+        return assetDb.findById(id).orElseThrow(() -> new RuntimeException("Asset not found"));
     }
     
 }

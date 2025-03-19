@@ -37,18 +37,18 @@ public class Asset {
 
     @NotNull
     @Column(name = "nilaiPerolehan", nullable = false, updatable = false)
-    private Float nilaiPerolehan;
+    private Integer nilaiPerolehan;
 
     @NotNull
     @Column(name = "deskripsi", nullable = false)
     private String deskripsi;
 
-    @NotNull
-    @Column(name = "assetMaintenance", nullable = false)
-    private String assetMaintenance;
+    // @NotNull
+    // @Column(name = "assetMaintenance", nullable = false)
+    // private String assetMaintenance;
 
-    @Column(name = "gambarAset", columnDefinition = "BYTEA")
-    private byte[] gambarAset;
+    @Column(name = "fotoAset", columnDefinition = "BYTEA")
+    private byte[] foto;
 
     @Column(name = "foto_content_type")
     private String fotoContentType;

@@ -116,11 +116,10 @@ public class AssetController {
             for (FieldError error : errors) {
                 errorMessages.append(error.getDefaultMessage()).append("; ");
             }
-
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             response.setMessage(errorMessages.toString());
             response.setTimestamp(new Date());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<BaseResponseDTO<AssetResponseDTO>>(response, HttpStatus.BAD_REQUEST);
         }
         try {
             response.setStatus(200);
@@ -136,21 +135,15 @@ public class AssetController {
         }
     }
 
-    @GetMapping("/asset/{id}/foto")
+    @GetMapping("/{id}/foto")
     public ResponseEntity<?> getAssetFoto(@PathVariable String id) {
         try {
-            Asset asset = assetDb.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Asset tidak ditemukan"));
-                
-            if (asset.getGambarAset() == null) {
-                return ResponseEntity.notFound().build();
-            }
-            
+            Asset asset = assetService.getAssetFoto(id);
             return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(asset.getFotoContentType()))
-                .body(asset.getGambarAset());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+                    .contentType(MediaType.parseMediaType(asset.getFotoContentType()))
+                    .body(asset.getFoto());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 }
