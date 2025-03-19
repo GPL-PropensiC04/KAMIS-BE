@@ -11,4 +11,5 @@ public interface ResourceRestService {
     List<ResourceResponseDTO> getAllResources();
     ResourceResponseDTO updateResource(UpdateResourceDTO updateResourceDTO, Long idResource);
     ResourceResponseDTO getResourceById(Long idResource);
+    ResourceResponseDTO addResourceToDbById(Long idResource, Integer stock);
 }
