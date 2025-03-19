@@ -43,3 +43,65 @@
 2025-03-18T23:28:21.567+07:00  WARN 21404 --- [resource] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : Unable to start LiveReload server
 2025-03-18T23:28:21.875+07:00  INFO 21404 --- [resource] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8085 (http) with context path '/'
 2025-03-18T23:28:21.894+07:00  INFO 21404 --- [resource] [restartedMain] g.karina.resource.ResourceApplication    : Started ResourceApplication in 13.085 seconds (process running for 14.102)
+2025-03-19T12:00:31.827+07:00  INFO 11548 --- [resource] [restartedMain] g.karina.resource.ResourceApplication    : Starting ResourceApplication using Java 21.0.4 with PID 11548 (D:\Kuliah\Propensi\Proyek\c4-gak-pake-lama-be\resource\build\classes\java\main started by Rizky Prawira N in D:\Kuliah\Propensi\Proyek\c4-gak-pake-lama-be\resource)
+2025-03-19T12:00:31.830+07:00 DEBUG 11548 --- [resource] [restartedMain] g.karina.resource.ResourceApplication    : Running with Spring Boot v3.4.2, Spring v6.2.2
+2025-03-19T12:00:31.831+07:00  INFO 11548 --- [resource] [restartedMain] g.karina.resource.ResourceApplication    : No active profile set, falling back to 1 default profile: "default"
+2025-03-19T12:00:31.893+07:00  INFO 11548 --- [resource] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-03-19T12:00:31.894+07:00  INFO 11548 --- [resource] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-03-19T12:00:33.397+07:00  INFO 11548 --- [resource] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-03-19T12:00:33.612+07:00  INFO 11548 --- [resource] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 203 ms. Found 1 JPA repository interface.
+2025-03-19T12:00:34.643+07:00  INFO 11548 --- [resource] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8085 (http)
+2025-03-19T12:00:34.664+07:00  INFO 11548 --- [resource] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-03-19T12:00:34.664+07:00  INFO 11548 --- [resource] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2025-03-19T12:00:34.751+07:00  INFO 11548 --- [resource] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-03-19T12:00:34.752+07:00  INFO 11548 --- [resource] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2857 ms
+2025-03-19T12:00:34.776+07:00 DEBUG 11548 --- [resource] [restartedMain] g.karina.resource.security.jwt.JwtUtils  : Initializing JWT public key
+2025-03-19T12:00:34.870+07:00 DEBUG 11548 --- [resource] [restartedMain] g.k.r.security.jwt.JwtTokenFilter        : Filter 'jwtTokenFilter' configured for use
+2025-03-19T12:00:35.124+07:00  INFO 11548 --- [resource] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-03-19T12:00:35.245+07:00  INFO 11548 --- [resource] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
+2025-03-19T12:00:35.319+07:00  INFO 11548 --- [resource] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-03-19T12:00:35.831+07:00  INFO 11548 --- [resource] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-03-19T12:00:35.881+07:00  INFO 11548 --- [resource] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-03-19T12:00:36.671+07:00  INFO 11548 --- [resource] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@c5418ae
+2025-03-19T12:00:36.673+07:00  INFO 11548 --- [resource] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-03-19T12:00:36.738+07:00  WARN 11548 --- [resource] [restartedMain] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-03-19T12:00:36.805+07:00  INFO 11548 --- [resource] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.4
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-03-19T12:00:38.376+07:00  INFO 11548 --- [resource] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-03-19T12:00:38.531+07:00  INFO 11548 --- [resource] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-03-19T12:00:39.098+07:00  WARN 11548 --- [resource] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-03-19T12:00:39.221+07:00  INFO 11548 --- [resource] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name jwtUserDetailsService
+2025-03-19T12:00:40.081+07:00  WARN 11548 --- [resource] [restartedMain] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2025-03-19T12:00:40.359+07:00  WARN 11548 --- [resource] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : Unable to start LiveReload server
+2025-03-19T12:00:40.593+07:00  INFO 11548 --- [resource] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8085 (http) with context path '/'
+2025-03-19T12:00:40.609+07:00  INFO 11548 --- [resource] [restartedMain] g.karina.resource.ResourceApplication    : Started ResourceApplication in 9.984 seconds (process running for 10.826)
+2025-03-19T12:02:51.482+07:00  INFO 11548 --- [resource] [http-nio-8085-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-03-19T12:02:51.482+07:00  INFO 11548 --- [resource] [http-nio-8085-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-03-19T12:02:51.484+07:00  INFO 11548 --- [resource] [http-nio-8085-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-03-19T12:02:51.656+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T12:02:51.658+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T12:02:51.660+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T12:02:51.662+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T12:02:51.664+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T12:02:51.665+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T12:02:51.668+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-4] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T12:03:10.969+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T12:03:10.970+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T12:03:10.973+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T12:03:10.975+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T12:03:10.977+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T12:03:10.978+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T12:03:10.978+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-8] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T12:03:11.174+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T12:03:11.176+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T12:03:11.179+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T12:03:11.182+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T12:03:11.185+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T12:03:11.187+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T12:03:11.188+07:00 DEBUG 11548 --- [resource] [http-nio-8085-exec-9] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
