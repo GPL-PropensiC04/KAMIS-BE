@@ -1,7 +1,338 @@
-2025-03-18T00:07:17.247+07:00 DEBUG 31184 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
-2025-03-18T00:07:17.271+07:00 DEBUG 31184 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
-2025-03-18T00:07:17.273+07:00 DEBUG 31184 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
-2025-03-18T00:07:17.274+07:00 DEBUG 31184 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
-2025-03-18T00:07:17.274+07:00 DEBUG 31184 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
-2025-03-18T00:07:17.318+07:00 DEBUG 31184 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
-2025-03-18T00:07:17.319+07:00 DEBUG 31184 --- [resource] [http-nio-8085-exec-1] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:01:49.230+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:01:49.252+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:01:49.253+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:01:49.254+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:01:49.255+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:01:49.256+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:01:49.256+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:01:50.653+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:01:50.653+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:01:50.653+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:01:50.654+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:01:50.654+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:01:50.654+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:01:50.656+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:01:54.895+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:01:54.895+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:01:54.895+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:01:54.895+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:01:54.896+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:01:54.897+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:01:54.897+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:01:55.034+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:01:55.035+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:01:55.035+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:01:55.037+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:01:55.037+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:01:55.039+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:01:55.039+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:02:01.530+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:02:01.531+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:02:01.531+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:02:01.532+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:02:01.532+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:02:01.533+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:02:01.533+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:02:03.241+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:02:03.242+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:02:03.243+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:02:03.243+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:02:03.244+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:02:03.245+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:02:03.245+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:04:55.629+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:04:55.630+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:04:55.630+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:04:55.631+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:04:55.632+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:04:55.633+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:04:55.633+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:05:23.186+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:05:23.186+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:05:23.192+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:05:23.193+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:05:23.194+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:05:23.195+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:05:23.195+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:06:39.332+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:06:39.333+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:06:39.333+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:06:39.333+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:06:39.333+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:06:39.335+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:06:39.335+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:06:49.179+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:06:49.179+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:06:49.180+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:06:49.181+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:06:49.181+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:06:49.182+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:06:49.182+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:06:51.423+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:06:51.425+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:06:51.425+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:06:51.426+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:06:51.426+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:06:51.427+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:06:51.427+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:08:04.028+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:08:04.029+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:08:04.029+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:08:04.030+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:08:04.030+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:08:04.031+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:08:04.031+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:08:16.722+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:08:16.723+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:08:16.723+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:08:16.725+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:08:16.726+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:08:16.726+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:08:16.727+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:08:24.532+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:08:24.532+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:08:24.533+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:08:24.533+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:08:24.533+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:08:24.534+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:08:24.534+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:08:35.329+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:08:35.330+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:08:35.330+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:08:35.330+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:08:35.331+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:08:35.331+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:08:35.331+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:09:02.093+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:02.095+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:02.095+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:02.096+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:02.096+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:02.096+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:02.097+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:09:08.412+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:08.412+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:08.413+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:08.413+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:08.414+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:08.414+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:08.414+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:09:10.029+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:10.029+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:10.030+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:10.031+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:10.031+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:10.032+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:10.032+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:09:11.538+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:11.539+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:11.540+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:11.541+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:11.541+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:11.542+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:11.542+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:09:24.455+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:24.457+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:24.457+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:24.458+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:24.461+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:24.462+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:24.463+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:09:25.892+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:25.892+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:25.893+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:25.893+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:25.893+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:25.895+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:25.895+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:09:28.273+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:28.273+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:28.274+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:28.274+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:09:28.275+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:09:28.276+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:09:28.276+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:09.810+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:09.810+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:09.810+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:09.811+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:09.811+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:09.811+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:09.812+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:11.366+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:11.368+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:11.369+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:11.370+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:11.370+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:11.371+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:11.372+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:12.217+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:12.218+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:12.218+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:12.219+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:12.219+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:12.220+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:12.220+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:13.554+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:13.555+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:13.556+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:13.557+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:13.557+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:13.558+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:13.558+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:14.792+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:14.793+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:14.793+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:14.793+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:14.793+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:14.795+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:14.795+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:16.473+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:16.473+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:16.474+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:16.474+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:16.474+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:16.474+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:16.475+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:34.749+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:34.750+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:34.751+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:34.752+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:34.752+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:34.754+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:34.754+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:35.775+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:35.775+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:35.775+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:35.776+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:35.776+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:35.776+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:35.777+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:39.191+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:39.191+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:39.192+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:39.192+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:39.193+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:39.194+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:39.194+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:40.561+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:40.562+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:40.562+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:40.563+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:40.563+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:40.565+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:40.565+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:43.790+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:43.790+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:43.791+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:43.792+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:43.792+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:43.793+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:43.793+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:47.266+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:47.267+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:47.268+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:47.269+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:47.270+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:47.270+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:47.271+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:10:48.933+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:48.934+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:48.934+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:48.935+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:10:48.935+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:10:48.936+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:10:48.936+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:11:39.314+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:11:39.315+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:11:39.315+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:11:39.316+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:11:39.317+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:11:39.318+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:11:39.318+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:23.196+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:23.198+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:23.199+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:23.199+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:23.200+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:23.200+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:23.201+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:27.807+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:27.808+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:27.808+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:27.808+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:27.809+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:27.809+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:27.810+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:32.003+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:32.004+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:32.004+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:32.005+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:32.005+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:32.006+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:32.006+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-8] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:41.419+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:41.419+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:41.420+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:41.421+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:41.422+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:41.423+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:41.423+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-9] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:46.195+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:46.196+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:46.196+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:46.196+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:46.197+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:46.198+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:46.198+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-10] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:48.792+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:48.793+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:48.793+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:48.794+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:48.794+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:48.795+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:48.795+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-2] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:51.573+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:51.573+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:51.573+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:51.574+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:51.574+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:51.575+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:51.575+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-3] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:52.699+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:52.700+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:52.700+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:52.701+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:52.701+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:52.701+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:52.702+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-1] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:53.809+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:53.810+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:53.810+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:53.811+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:53.812+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:53.812+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:53.813+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-4] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:21:56.889+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:56.890+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:56.891+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:56.891+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:21:56.892+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:21:56.892+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:21:56.892+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-5] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:22:23.300+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:22:23.301+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:22:23.301+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:22:23.302+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:22:23.303+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:22:23.304+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:22:23.304+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-6] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T00:22:28.983+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:22:28.984+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:22:28.984+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:22:28.984+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : JWT token is valid
+2025-03-19T00:22:28.986+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted username from token: admin
+2025-03-19T00:22:28.986+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.karina.resource.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-19T00:22:28.987+07:00 DEBUG 18088 --- [resource] [http-nio-8085-exec-7] g.k.r.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin' with role 'Admin'
+2025-03-19T03:27:35.507+07:00  WARN 18088 --- [resource] [HikariPool-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3h28s254ms862µs800ns).
+2025-03-19T13:17:26.694+07:00  WARN 18088 --- [resource] [HikariPool-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=9h49m55s189ms606µs900ns).
