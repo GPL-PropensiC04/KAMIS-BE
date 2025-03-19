@@ -12,9 +12,9 @@ public class AssetResponseDTO {
     private String jenisAset;
     private String status;
     private Date tanggalPerolehan;
-    private Float nilaiPerolehan;
+    private Integer nilaiPerolehan;
     private String deskripsi;
     private String assetMaintenance;
-// private List<String> historiMaintenance;
-    private String gambarAsetBase64; // Menyimpan gambar dalam format base64
+    private String fotoContentType;
+    private String fotoUrl;
 }

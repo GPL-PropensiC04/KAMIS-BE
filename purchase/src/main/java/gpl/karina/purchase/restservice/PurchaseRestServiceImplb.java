@@ -121,6 +121,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
     private AssetTempResponseDTO assetTempToAssetTempResponseDTO (AssetTemp assetTemp) {
         AssetTempResponseDTO assetTempResponseDTO = new AssetTempResponseDTO();
+        assetTempResponseDTO.setId(assetTemp.getId());
         assetTempResponseDTO.setAssetNameString(assetTemp.getAssetName());
         assetTempResponseDTO.setAssetDescription(assetTemp.getAssetDescription());
         assetTempResponseDTO.setAssetType(assetTemp.getAssetType());

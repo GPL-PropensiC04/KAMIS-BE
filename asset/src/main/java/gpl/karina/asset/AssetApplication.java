@@ -52,14 +52,14 @@ public class AssetApplication {
                 asset.setTanggalPerolehan(faker.date().past(1095, TimeUnit.DAYS));
                 
                 // Generate acquisition value (between 50,000,000 and 500,000,000)
-                asset.setNilaiPerolehan(random.nextFloat() * 450000000 + 50000000);
+                asset.setNilaiPerolehan(random.nextInt() * 450000000 + 50000000);
                 
                 // Generate description
                 asset.setDeskripsi(faker.lorem().paragraph(1));
                 
                 // Set asset maintenance status randomly
-                String[] maintenanceStatus = {"BAIK", "PERLU_PEMELIHARAAN", "DALAM_PEMELIHARAAN"};
-                asset.setAssetMaintenance(maintenanceStatus[random.nextInt(maintenanceStatus.length)]);
+                // String[] maintenanceStatus = {"BAIK", "PERLU_PEMELIHARAAN", "DALAM_PEMELIHARAAN"};
+                // asset.setAssetMaintenance(maintenanceStatus[random.nextInt(maintenanceStatus.length)]);
                 
                 // Set isDeleted to false for all dummy data
                 asset.setIsDeleted(false);
