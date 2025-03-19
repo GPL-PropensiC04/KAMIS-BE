@@ -174,7 +174,7 @@ public class AssetServiceImpl implements AssetService {
 
         if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
             try {
-                assetTemp.setGambarAset(assetTempDTO.getFoto().getBytes());
+                assetTemp.setFoto(assetTempDTO.getFoto().getBytes());
                 assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
             } catch (IOException e) {
                 throw new IllegalArgumentException("Gagal mengupload foto");
