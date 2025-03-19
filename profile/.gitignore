@@ -39,4 +39,4 @@ out/
 ### ENVIRONMENT ###
 .env
 
-logs
+logs/
