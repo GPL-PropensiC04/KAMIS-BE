@@ -14,12 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import gpl.karina.asset.model.Asset;
-
+import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.dto.request.AssetAddDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
 import gpl.karina.asset.dto.response.BaseResponseDTO;
-import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.service.AssetService;
 import jakarta.validation.Valid;
 
@@ -27,9 +26,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/asset")
 public class AssetController {
     private final AssetService assetService;
+    private final AssetDb assetDb;
 
-    public AssetController(AssetService assetService) {
+    public AssetController(AssetService assetService, AssetDb assetDb) {
         this.assetService = assetService;
+        this.assetDb = assetDb;
     }
 
     @GetMapping("/all")

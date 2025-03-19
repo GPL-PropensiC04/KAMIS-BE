@@ -17,7 +17,7 @@ import java.util.List;
 public class Asset {
     @Id
     @NotNull
-    @Column(name = "platNomor", nullable = false)
+    @Column(name = "platNomor", nullable = false, updatable = false)
     private String platNomor; 
 
     @NotNull
