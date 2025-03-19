@@ -19,7 +19,6 @@ public class AssetAddDTO {
     @NotNull(message = "Harga Aset tidak boleh kosong")
     private Integer assetPrice;
     private MultipartFile foto;
-    private Date tanggalPerolehan;
-    private byte[] gambarAset;
-    private String fotoContentType;
+    private String status = "Available";
+    private String tanggalPerolehan;
 }
