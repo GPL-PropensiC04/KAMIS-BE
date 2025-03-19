@@ -29,6 +29,8 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/test").permitAll()
+                        .requestMatchers("/api/resource/**")
+                        .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
                         .requestMatchers("/api/purchase/add").hasAnyAuthority("Operasional","Admin")
                         .requestMatchers("/api/purchase/viewall**").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")
                         .requestMatchers("/api/purchase/update/**").hasAnyAuthority("Operasional", "Admin")
