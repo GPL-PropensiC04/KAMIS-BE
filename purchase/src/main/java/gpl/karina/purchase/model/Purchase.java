@@ -61,6 +61,6 @@ public class Purchase {
     private Long purchaseAsset;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "Tanggal Pembayaran", updatable = false, nullable = false)
+    @Column(name = "Tanggal Pembayaran", updatable = false)
     private Date purchasePaymentDate;
 }

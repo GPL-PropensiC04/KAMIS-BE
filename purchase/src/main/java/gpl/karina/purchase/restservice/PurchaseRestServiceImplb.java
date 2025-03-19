@@ -140,6 +140,8 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         purchaseResponseDTO.setPurchasePrice(purchase.getPurchasePrice());
         purchaseResponseDTO.setPurchaseNote(purchase.getPurchaseNote());
         purchaseResponseDTO.setPurchasePaymentDate(purchase.getPurchasePaymentDate());
+        purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
+        
 
         Boolean purchaseType = purchase.isPurchaseType();
         if (purchaseType) {
