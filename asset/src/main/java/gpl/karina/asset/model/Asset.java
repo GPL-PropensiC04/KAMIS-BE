@@ -17,7 +17,7 @@ import java.util.List;
 public class Asset {
     @Id
     @NotNull
-    @Column(name = "platNomor", nullable = false)
+    @Column(name = "platNomor", nullable = false, updatable = false)
     private String platNomor; 
 
     @NotNull
@@ -49,6 +49,9 @@ public class Asset {
 
     @Column(name = "gambarAset", columnDefinition = "BYTEA")
     private byte[] gambarAset;
+
+    @Column(name = "foto_content_type")
+    private String fotoContentType;
 
     @Column(name = "isDeleted", nullable = false)
     private Boolean isDeleted = false;

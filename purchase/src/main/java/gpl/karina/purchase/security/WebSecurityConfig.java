@@ -31,6 +31,10 @@ public class WebSecurityConfig {
                         .requestMatchers("/test").permitAll()
                         .requestMatchers("/api/resource/**")
                         .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
+                        .requestMatchers("/api/purchase/add").hasAnyAuthority("Operasional","Admin")
+                        .requestMatchers("/api/purchase/viewall**").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")
+                        .requestMatchers("/api/purchase/update/**").hasAnyAuthority("Operasional", "Admin")
+                        .requestMatchers("/api/purchase/detail/**").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

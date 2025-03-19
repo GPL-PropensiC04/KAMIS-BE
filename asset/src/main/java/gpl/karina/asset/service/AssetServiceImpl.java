@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.asset.dto.response.AssetResponseDTO;
+import gpl.karina.asset.dto.request.AssetAddDTO;
 import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.model.Asset;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,6 +131,40 @@ public class AssetServiceImpl implements AssetService {
         }
         
         return assetResponseDTO;
+    }
+
+    @Override
+    public AssetResponseDTO addAsset(AssetAddDTO assetTempDTO) {
+        if (assetTempDTO.getAssetName() == null) {
+            throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetDescription() == null) {
+            throw new IllegalArgumentException("Deskripsi Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetType() == null) {
+            throw new IllegalArgumentException("Tipe Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetPrice() == null) {
+            throw new IllegalArgumentException("Harga Aset tidak boleh kosong");
+        }
+
+        Asset assetTemp = new Asset();
+        assetTemp.setNama(assetTempDTO.getAssetName());
+        assetTemp.setDeskripsi(assetTempDTO.getAssetDescription());
+        assetTemp.setJenisAset(assetTempDTO.getAssetType());
+        assetTemp.setNilaiPerolehan(assetTempDTO.getAssetPrice().floatValue());
+
+        if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
+            try {
+                assetTemp.setGambarAset(assetTempDTO.getFoto().getBytes());
+                assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Gagal mengupload foto");
+            }
+        }
+
+        Asset newAssetTemp = assetDb.save(assetTemp);
+        return assetToAssetResponseDTO(newAssetTemp);
     }
     
 }
