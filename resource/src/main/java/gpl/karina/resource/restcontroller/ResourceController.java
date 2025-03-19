@@ -81,9 +81,7 @@ public class ResourceController {
 
     @GetMapping("/viewall")
     public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllResources() {
-        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-    
+        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();    
         try {
             // Mengirim token ke service
             List<ResourceResponseDTO> resources = resourceRestService.getAllResources();
@@ -117,9 +115,7 @@ public class ResourceController {
     @PutMapping("/update/{idResource}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> updateResource(@PathVariable Long idResource,
             @RequestBody UpdateResourceDTO resourceDTO) {
-        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-        
+        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();        
         try {
             ResourceResponseDTO updatedResource = resourceRestService.updateResource(resourceDTO, idResource);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -151,7 +147,6 @@ public class ResourceController {
     @GetMapping("/{idResource}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable(name = "idResource") Long idResource) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
     
         try {
             // Mengirim token ke service
@@ -186,7 +181,6 @@ public class ResourceController {
     @PutMapping("/addToDb/{idResource}/{StockUpdate}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable Long idResource, @PathVariable Integer stockUpdate) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
     
         try {
             // Mengirim token ke service
