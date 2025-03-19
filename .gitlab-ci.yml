@@ -36,6 +36,7 @@ build-asset:
       - asset/build/libs/asset-0.0.1-SNAPSHOT.jar
   only:
     - main
+    - gcp-deploy
 
 build-finance:
   image: $IMAGE_OPENJDK_GRADLE
@@ -49,6 +50,7 @@ build-finance:
       - finance.report/build/libs/finance.report-0.0.1-SNAPSHOT.jar
   only:
     - main
+    - gcp-deploy
 
 build-profile:
   image: $IMAGE_OPENJDK_GRADLE
@@ -62,6 +64,7 @@ build-profile:
       - profile/build/libs/profile-0.0.1-SNAPSHOT.jar
   only:
     - main
+    - gcp-deploy
 
 build-project:
   image: $IMAGE_OPENJDK_GRADLE
@@ -75,6 +78,7 @@ build-project:
       - project/build/libs/project-0.0.1-SNAPSHOT.jar
   only:
     - main
+    - gcp-deploy
 
 build-purchase:
   image: $IMAGE_OPENJDK_GRADLE
@@ -88,6 +92,7 @@ build-purchase:
       - purchase/build/libs/purchase-0.0.1-SNAPSHOT.jar
   only:
     - main
+    - gcp-deploy
 
 build-resource:
   image: $IMAGE_OPENJDK_GRADLE
@@ -101,6 +106,7 @@ build-resource:
       - resource/build/libs/resource-0.0.1-SNAPSHOT.jar
   only:
     - main
+    - gcp-deploy
 
 # Separate publish jobs
 publish-asset:
@@ -115,6 +121,7 @@ publish-asset:
     - docker push $IMAGE_REPO/asset:latest
   only:
     - main
+    - gcp-deploy
 
 publish-finance:
   image: $IMAGE_DOCKER_DIND
@@ -126,6 +133,7 @@ publish-finance:
     - docker push $IMAGE_REPO/finance:latest
   only:
     - main
+    - gcp-deploy
 
 publish-profile:
   image: $IMAGE_DOCKER_DIND
@@ -137,6 +145,7 @@ publish-profile:
     - docker push $IMAGE_REPO/profile:latest
   only:
     - main
+    - gcp-deploy
     
 publish-project:
   image: $IMAGE_DOCKER_DIND
@@ -148,6 +157,7 @@ publish-project:
     - docker push $IMAGE_REPO/project:latest
   only:
     - main
+    - gcp-deploy
 
 publish-purchase:
   image: $IMAGE_DOCKER_DIND
@@ -159,6 +169,7 @@ publish-purchase:
     - docker push $IMAGE_REPO/purchase:latest
   only:
     - main
+    - gcp-deploy
 
 publish-resource:
   image: $IMAGE_DOCKER_DIND
@@ -170,6 +181,7 @@ publish-resource:
     - docker push $IMAGE_REPO/resource:latest
   only:
     - main
+    - gcp-deploy
 
 deploy-microservices:
   stage: deploy
@@ -191,6 +203,7 @@ deploy-microservices:
         docker compose -f docker-compose-deploy.yml up -d"
   only:
     - main
+    - gcp-deploy
 
 
 cleaning:
@@ -202,4 +215,5 @@ cleaning:
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "docker system prune -af"
   only:
     - main
+    - gcp-deploy
 

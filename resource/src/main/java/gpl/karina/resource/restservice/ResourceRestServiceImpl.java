@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import gpl.karina.resource.repository.ResourceRepository;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
+import gpl.karina.resource.restdto.request.UpdateResourceDTO;
 import gpl.karina.resource.restdto.response.ResourceResponseDTO;
 
 @Service
@@ -24,6 +25,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private ResourceResponseDTO resourceToResourceResponseDTO(Resource resource) {
         ResourceResponseDTO addResourceResponseDTO = new ResourceResponseDTO();
+        addResourceResponseDTO.setId(resource.getId());
         addResourceResponseDTO.setResourceName(resource.getResourceName());
         addResourceResponseDTO.setResourceDescription(resource.getResourceDescription());   
         addResourceResponseDTO.setResourceStock(resource.getResourceStock());
@@ -76,5 +78,38 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         List<ResourceResponseDTO> responseDTOs = new ArrayList<>();
         resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
         return responseDTOs;
+    }
+
+    @Override
+    public ResourceResponseDTO updateResource(UpdateResourceDTO updateResourceDTO, Long idResource) {
+
+        Resource resource = resourceRepository.findById(idResource).orElseThrow(() -> new IllegalArgumentException("Resource not found"));
+        if (updateResourceDTO.getResourcePrice() < 0) {
+            throw new IllegalArgumentException("Harga barang tidak boleh kurang dari 0");
+        }
+        if (updateResourceDTO.getResourceDescription() == null) {
+            throw new IllegalArgumentException("Deskripsi barang tidak boleh kosong");
+        }     
+        resource.setResourceDescription(updateResourceDTO.getResourceDescription());
+        resource.setResourcePrice(updateResourceDTO.getResourcePrice());
+        
+        resourceRepository.save(resource);
+        return resourceToResourceResponseDTO(resource);
+    }
+
+    @Override
+    public ResourceResponseDTO getResourceById(Long idResource) {
+        Resource resource = resourceRepository.findById(idResource).orElseThrow(() -> new IllegalArgumentException("Resource not found"));
+        return resourceToResourceResponseDTO(resource);
+    }
+
+    @Override
+    public ResourceResponseDTO addResourceToDbById(Long idResource, Integer stock) {
+
+        Resource resource = resourceRepository.findById(idResource).orElseThrow(() -> new IllegalArgumentException("Resource not found"));
+        resource.setResourceStock(resource.getResourceStock() + stock);
+        
+        resourceRepository.save(resource);
+        return resourceToResourceResponseDTO(resource);
     }
 }

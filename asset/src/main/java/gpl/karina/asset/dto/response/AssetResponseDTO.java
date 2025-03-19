@@ -5,16 +5,16 @@ import java.util.Date;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class AssetResponseDTO {
-    private String id;
+    private String platNomor;
     private String nama;
-    private String deskripsi;
+    private String jenisAset;
+    private String status;
     private Date tanggalPerolehan;
     private Float nilaiPerolehan;
+    private String deskripsi;
     private String assetMaintenance;
-    // private List<String> historiMaintenance;
+// private List<String> historiMaintenance;
+    private String gambarAsetBase64; // Menyimpan gambar dalam format base64
 }

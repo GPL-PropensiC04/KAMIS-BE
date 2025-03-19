@@ -9,10 +9,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.asset.dto.response.AssetResponseDTO;
+import gpl.karina.asset.dto.request.AssetAddDTO;
+import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.model.Asset;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AssetServiceImpl implements AssetService {
@@ -28,7 +33,8 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public List<AssetResponseDTO> getAllAsset() {
-        var listAsset = assetDb.findAll();
+
+        var listAsset = assetDb.findAllActive();
         var listAssetResponseDTO = new ArrayList<AssetResponseDTO>();
         listAsset.forEach(asset -> {
             var assetResponseDTO = assetToAssetResponseDTO(asset);
@@ -38,26 +44,127 @@ public class AssetServiceImpl implements AssetService {
     }
     
     @Override
-    public AssetResponseDTO getAssetById(String id) throws Exception {
-        Optional<Asset> optionalAsset = assetDb.findById(id);
+    public AssetResponseDTO getAssetById(String platNomor) throws Exception {
+        Asset asset = assetDb.findByIdAndNotDeleted(platNomor);
         
-        if (optionalAsset.isPresent()) {
-            Asset asset = optionalAsset.get();
+        if (asset != null) {
             return assetToAssetResponseDTO(asset);
         } else {
             throw new Exception("Asset tidak ditemukan");
         }
     }
 
+    @Override
+    @Transactional
+    public void deleteAsset(String platNomor) throws Exception {
+        Optional<Asset> optionalAsset = assetDb.findById(platNomor);
+        
+        if (optionalAsset.isPresent()) {
+            assetDb.softDeleteById(platNomor);
+        } else {
+            throw new Exception("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
+        }
+    }
+
+
+    @Override
+    public AssetResponseDTO updateAssetImage(String platNomor, byte[] imageData) throws Exception {
+        Optional<Asset> optionalAsset = assetDb.findById(platNomor);
+        
+        if (optionalAsset.isPresent()) {
+            Asset asset = optionalAsset.get();
+            asset.setGambarAset(imageData);
+            assetDb.save(asset);
+            return assetToAssetResponseDTO(asset);
+        } else {
+            throw new Exception("Asset tidak ditemukan");
+        }
+    }
+
+    @Override
+    @Transactional
+    public AssetResponseDTO updateAssetDetails(String platNomor, AssetUpdateRequestDTO updateRequest) throws Exception {
+        Optional<Asset> optionalAsset = assetDb.findById(platNomor);
+        
+        if (optionalAsset.isPresent()) {
+            Asset asset = optionalAsset.get();
+            
+            // Update fields if provided in the request
+            if (updateRequest.getNama() != null) {
+                asset.setNama(updateRequest.getNama());
+            }
+            
+            if (updateRequest.getJenisAset() != null) {
+                asset.setJenisAset(updateRequest.getJenisAset());
+            }
+            
+            if (updateRequest.getStatus() != null) {
+                asset.setStatus(updateRequest.getStatus());
+            }
+            
+            if (updateRequest.getDeskripsi() != null) {
+                asset.setDeskripsi(updateRequest.getDeskripsi());
+            }
+            
+            Asset updatedAsset = assetDb.save(asset);
+            return assetToAssetResponseDTO(updatedAsset);
+        } else {
+            throw new Exception("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
+        }
+    }
+
     private AssetResponseDTO assetToAssetResponseDTO(Asset asset) {
         var assetResponseDTO = new AssetResponseDTO();
-        assetResponseDTO.setId(asset.getId());
+        assetResponseDTO.setPlatNomor(asset.getPlatNomor());
         assetResponseDTO.setNama(asset.getNama());
+        assetResponseDTO.setJenisAset(asset.getJenisAset());
+        assetResponseDTO.setStatus(asset.getStatus());
         assetResponseDTO.setDeskripsi(asset.getDeskripsi());
         assetResponseDTO.setTanggalPerolehan(asset.getTanggalPerolehan());
         assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
         assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
-        // assetResponseDTO.setHistoriMaintenance(asset.getHistoriMaintenance());
+        
+        // Konversi byte array gambar ke Base64 string untuk dikirim ke frontend
+        if (asset.getGambarAset() != null && asset.getGambarAset().length > 0) {
+            String base64Image = Base64.getEncoder().encodeToString(asset.getGambarAset());
+            assetResponseDTO.setGambarAsetBase64(base64Image);
+        }
+        
         return assetResponseDTO;
     }
+
+    @Override
+    public AssetResponseDTO addAsset(AssetAddDTO assetTempDTO) {
+        if (assetTempDTO.getAssetName() == null) {
+            throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetDescription() == null) {
+            throw new IllegalArgumentException("Deskripsi Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetType() == null) {
+            throw new IllegalArgumentException("Tipe Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetPrice() == null) {
+            throw new IllegalArgumentException("Harga Aset tidak boleh kosong");
+        }
+
+        Asset assetTemp = new Asset();
+        assetTemp.setNama(assetTempDTO.getAssetName());
+        assetTemp.setDeskripsi(assetTempDTO.getAssetDescription());
+        assetTemp.setJenisAset(assetTempDTO.getAssetType());
+        assetTemp.setNilaiPerolehan(assetTempDTO.getAssetPrice().floatValue());
+
+        if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
+            try {
+                assetTemp.setGambarAset(assetTempDTO.getFoto().getBytes());
+                assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Gagal mengupload foto");
+            }
+        }
+
+        Asset newAssetTemp = assetDb.save(assetTemp);
+        return assetToAssetResponseDTO(newAssetTemp);
+    }
+    
 }

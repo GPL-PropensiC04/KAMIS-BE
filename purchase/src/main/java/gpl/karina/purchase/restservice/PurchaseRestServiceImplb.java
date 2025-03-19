@@ -1,18 +1,21 @@
 package gpl.karina.purchase.restservice;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.purchase.model.AssetTemp;
 import gpl.karina.purchase.model.Purchase;
@@ -21,22 +24,90 @@ import gpl.karina.purchase.repository.AssetTempRepository;
 import gpl.karina.purchase.repository.PurchaseRepository;
 import gpl.karina.purchase.repository.ResourceTempRepository;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
+import gpl.karina.purchase.restdto.request.AssetAddDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.ResourceTempDTO;
+import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
+import gpl.karina.purchase.restdto.request.UpdatePurchaseStatusDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
+import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
+import gpl.karina.purchase.restdto.response.ResourceResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class PurchaseRestServiceImplb implements PurchaseRestService {
+
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
     private final ResourceTempRepository resourceTempRepository;
+    private final WebClient webClientResource;
+    private final WebClient webClientAsset;
+    private final HttpServletRequest request;
 
-    public PurchaseRestServiceImplb(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository, ResourceTempRepository resourceTempRepository) {
+
+    public PurchaseRestServiceImplb(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository, 
+                                    ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder, HttpServletRequest request) {
         this.purchaseRepository = purchaseRepository;
         this.assetTempRepository = assetTempRepository;
         this.resourceTempRepository = resourceTempRepository;
+        this.webClientResource = webClientBuilder.baseUrl("http://localhost:8085/api").build();
+        this.webClientAsset = webClientBuilder.baseUrl("http://localhost:8081/api").build();
+        this.request = request;
+    }
+
+    private ResourceResponseDTO getResourceFromResourceService(Long resourceId) throws IllegalArgumentException {
+        var response = webClientResource
+                .get()
+                .uri("/resource/" + resourceId)
+                .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceResponseDTO>>() {})
+                .block();
+        
+        return response.getData();
+    }
+
+    private ResourceResponseDTO addResourceToResourceDatabase(Long resourceId, Integer resourceStock) throws IllegalArgumentException {
+        var response = webClientResource
+                .put()
+                .uri("/resource/" + resourceId + "/" + resourceStock)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceResponseDTO>>() {})
+                .block();
+        
+        return response.getData();
+    }
+
+    public AssetTempResponseDTO addAssetToAssetDatabase(Map<String, Object> assetAddDTO) {
+    
+        // Menggunakan POST untuk membuat Bill baru
+        var response = webClientAsset.post()
+                                 .uri("/asset/addAsset")  // URL API
+                                //  .header("Authorization", "Bearer " + token)
+                                 .bodyValue(assetAddDTO)  // Mengirimkan body dengan payload
+                                 .retrieve()  // Mengambil response
+                                 .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetTempResponseDTO>>() {})
+                                 .block();  // Menunggu responsenya
+    
+        // Memeriksa apakah response null atau statusnya tidak OK
+        if (response == null || response.getStatus() != 200) {
+            return null;  // Jika response null atau statusnya tidak OK (200), return null
+        }
+    
+        // Mengembalikan data BillResponseDTO jika semuanya baik-baik saja
+        return response.getData();
+    }
+
+    public String getTokenFromRequest() {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     private ResourceTempResponseDTO resourceTempToResourceTempResponseDTO (ResourceTemp resourceTemp) {
@@ -50,10 +121,13 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
     private AssetTempResponseDTO assetTempToAssetTempResponseDTO (AssetTemp assetTemp) {
         AssetTempResponseDTO assetTempResponseDTO = new AssetTempResponseDTO();
+        assetTempResponseDTO.setId(assetTemp.getId());
         assetTempResponseDTO.setAssetNameString(assetTemp.getAssetName());
         assetTempResponseDTO.setAssetDescription(assetTemp.getAssetDescription());
         assetTempResponseDTO.setAssetType(assetTemp.getAssetType());
         assetTempResponseDTO.setAssetPrice(assetTemp.getAssetPrice());
+        assetTempResponseDTO.setFotoContentType(assetTemp.getFotoContentType());
+        assetTempResponseDTO.setFotoUrl("/api/purchase/asset/" + assetTemp.getId() + "/foto"); // Tambahkan ini
         return assetTempResponseDTO;
     }
 
@@ -65,6 +139,9 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         purchaseResponseDTO.setPurchaseSupplier(purchase.getPurchaseSupplier());
         purchaseResponseDTO.setPurchasePrice(purchase.getPurchasePrice());
         purchaseResponseDTO.setPurchaseNote(purchase.getPurchaseNote());
+        purchaseResponseDTO.setPurchasePaymentDate(purchase.getPurchasePaymentDate());
+        purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
+        
 
         Boolean purchaseType = purchase.isPurchaseType();
         if (purchaseType) {
@@ -120,13 +197,22 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 if (resourceInput.getResourceId() != null && !existingIds.add(resourceInput.getResourceId())) {
                     throw new IllegalArgumentException("Tidak boleh terdapat lebih dari satu resource yang sama!");
                 }
+
+                ResourceResponseDTO resourceCheck = getResourceFromResourceService(resourceInput.getResourceId());
+                if (resourceCheck == null) {
+                    throw new IllegalArgumentException("Resource Tidak Terdaftar pada Sistem.");
+                }
+                if (!resourceCheck.getResourceName().equals(resourceInput.getResourceName())) {
+                    throw new IllegalArgumentException("Nama Resource Tidak Sesuai dengan Id pada Sistem.");
+                }
+
                 ResourceTemp resourceTemp = new ResourceTemp();
                 resourceTemp.setResourceId(resourceInput.getResourceId());
                 resourceTemp.setResourceName(resourceInput.getResourceName());
                 resourceTemp.setResourceTotal(resourceInput.getResourceTotal());
                 resourceTemp.setResourcePrice(resourceInput.getResourcePrice());
 
-                purchasePrice += resourceTemp.getResourcePrice();
+                purchasePrice += resourceTemp.getResourcePrice() * resourceTemp.getResourceTotal();
                 resourceTempRepository.save(resourceTemp);
                 resourceTemps.add(resourceTemp);
             }
@@ -142,8 +228,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 throw new IllegalArgumentException("Anda memilih tipe pembelian aset, pastikan tidak menginput data resource.");
             }
 
-            AssetTemp assetTemp = assetTempRepository.findById(addPurchaseDTO.getPurchaseAsset()).orElse(null);
-
+            AssetTemp assetTemp = assetTempRepository.findById(addPurchaseDTO.getPurchaseAsset()).orElseThrow(() -> new IllegalArgumentException("Aset tidak ditemukan dalam database."));
             purchase.setPurchaseAsset(assetTemp.getId());
             purchase.setPurchasePrice(assetTemp.getAssetPrice());
         }
@@ -241,6 +326,92 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     }
 
     @Override
+    public PurchaseResponseDTO updatePurchase(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId) {
+        Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));
+        
+        String purchaseStatus = purchase.getPurchaseStatus();
+        if (!purchaseStatus.equals("Diajukan")) {
+            throw new IllegalArgumentException("Detail Pembelian sudah tidak bisa diperbarui.");
+        }
+        
+        purchase.setPurchaseSupplier(updatePurchaseDTO.getPurchaseSupplier());
+        purchase.setPurchaseNote(updatePurchaseDTO.getPurchaseNote());
+
+        boolean purchaseType = purchase.isPurchaseType();
+        if (purchaseType) {
+            List<ResourceTemp> existingResources = new ArrayList<>(purchase.getPurchaseResource());
+            List<ResourceTempDTO> resourceDTOs = updatePurchaseDTO.getPurchaseResource();
+
+            if (resourceDTOs == null || resourceDTOs.isEmpty()) {
+                throw new IllegalArgumentException("Anda memilih tipe pembelian resource, pastikan menginput data resource setidaknya satu.");
+            }
+
+            Set<Long> existingIds = new HashSet<>();
+            List<ResourceTemp> updatedResources = new ArrayList<>();
+            Integer totalPurchasePrice = 0;
+
+            // Mapping existing resources by ID
+            Map<Long, ResourceTemp> existingResourceMap = existingResources.stream()
+                .collect(Collectors.toMap(ResourceTemp::getResourceId, Function.identity()));
+
+            // Iterasi DTO untuk update dan penambahan resource
+            for (ResourceTempDTO resourceDTO : resourceDTOs) {
+                if (resourceDTO.getResourceId() != null && !existingIds.add(resourceDTO.getResourceId())) {
+                    throw new IllegalArgumentException("Tidak boleh terdapat lebih dari satu resource yang sama!");
+                }
+
+                ResourceResponseDTO resourceCheck = getResourceFromResourceService(resourceDTO.getResourceId());
+                if (resourceCheck == null) {
+                    throw new IllegalArgumentException("Resource Tidak Terdaftar pada Sistem.");
+                }
+                if (!resourceCheck.getResourceName().equals(resourceDTO.getResourceName())) {
+                    throw new IllegalArgumentException("Nama Resource Tidak Sesuai dengan Id pada Sistem.");
+                }
+
+                ResourceTemp resourceTemp;
+                
+                if (existingResourceMap.containsKey(resourceDTO.getResourceId())) {
+                    // Update existing resource
+                    resourceTemp = existingResourceMap.get(resourceDTO.getResourceId());
+                } else {
+                    // Create new resource
+                    resourceTemp = new ResourceTemp();
+                    resourceTemp.setResourceId(resourceDTO.getResourceId());
+                }
+
+                resourceTemp.setResourceName(resourceDTO.getResourceName());
+                resourceTemp.setResourceTotal(resourceDTO.getResourceTotal());
+                resourceTemp.setResourcePrice(resourceDTO.getResourcePrice());
+
+                totalPurchasePrice += resourceTemp.getResourcePrice() * resourceTemp.getResourceTotal();
+                updatedResources.add(resourceTemp);
+            }
+
+            // Hapus resource yang tidak ada di DTO
+            List<ResourceTemp> resourcesToRemove = existingResources.stream()
+                .filter(resource -> !existingIds.contains(resource.getResourceId()))
+                .collect(Collectors.toList());
+
+            resourceTempRepository.deleteAll(resourcesToRemove);
+
+            // Simpan perubahan
+            resourceTempRepository.saveAll(updatedResources);
+            purchase.setPurchaseResource(updatedResources);
+            purchase.setPurchasePrice(totalPurchasePrice);
+        }
+
+        if (!purchaseType) {
+            if (updatePurchaseDTO.getPurchaseResource() != null) {
+                throw new IllegalArgumentException("Anda memilih tipe pembelian aset, pastikan tidak menginput data resource.");
+            }
+        }
+
+        Purchase updatedPurchase = purchaseRepository.save(purchase);
+
+        return purchaseToPurchaseResponseDTO(updatedPurchase);
+    }
+
+    @Override
     public AssetTempResponseDTO addAsset(AssetTempDTO assetTempDTO) {
         if (assetTempDTO.getAssetName() == null) {
             throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
@@ -261,8 +432,139 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         assetTemp.setAssetType(assetTempDTO.getAssetType());
         assetTemp.setAssetPrice(assetTempDTO.getAssetPrice());
 
+        if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
+            try {
+                assetTemp.setFoto(assetTempDTO.getFoto().getBytes());
+                assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Gagal mengupload foto");
+            }
+        }
+
         AssetTemp newAssetTemp = assetTempRepository.save(assetTemp);
         return assetTempToAssetTempResponseDTO(newAssetTemp);
+    }
+
+    @Override
+    public List<AssetTempResponseDTO> getAllAssets() {
+        List<AssetTemp> assets = assetTempRepository.findAll();
+        return assets.stream()
+            .map(this::assetTempToAssetTempResponseDTO)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public PurchaseResponseDTO getDetailPurchase(String purchaseId) {
+        Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));   
+        return purchaseToPurchaseResponseDTO(purchase);
+    }
+
+    @Override
+    public PurchaseResponseDTO updatePurchaseStatusToNext(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId) {
+        Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));
+        
+        String purchaseStatus = purchase.getPurchaseStatus();
+        if (purchaseStatus.equals("Selesai") || purchaseStatus.equals("Dibatalkan") || purchaseStatus.equals("Ditolak")) {
+            throw new IllegalArgumentException("Status Pembelian sudah tidak bisa diperbarui.");
+        }
+        
+        purchase.setPurchaseNote(updatePurchaseStatusDTO.getPurchaseNote());
+
+        if (purchaseStatus.equals("Diajukan")) {
+            // cek role yang mau update, Direksi atau Financial kah? kalo iya, update status ke Disetujui
+            // kalo bukan, throw exception
+            purchase.setPurchaseStatus("Disetujui");
+        } 
+        else if (purchaseStatus.equals("Disetujui")) {
+            // cek role yang mau update, Operational kah? kalo iya, update status ke Diproses
+            purchase.setPurchaseStatus("Diproses");
+        } 
+        else if (purchaseStatus.equals("Diproses")) {
+            // cek role yang mau update, Operational kah? kalo iya, update status ke Selesai
+            if (purchase.isPurchaseType()) {
+                List<ResourceTemp> resources = purchase.getPurchaseResource();
+                for (ResourceTemp resource : resources) {
+                    ResourceResponseDTO resourceUpdate = addResourceToResourceDatabase(resource.getResourceId(), resource.getResourceTotal());
+                }
+            
+            } else {
+                AssetTemp assetTemp = assetTempRepository.findById(purchase.getPurchaseAsset()).orElseThrow(() -> new IllegalArgumentException("Aset tidak ditemukan dalam database."));
+                Map<String, Object> assetRequest = new HashMap<>();
+                assetRequest.put("platNomor", updatePurchaseStatusDTO.getPlatNomor());
+                assetRequest.put("assetName", assetTemp.getAssetName());
+                assetRequest.put("assetDescription", assetTemp.getAssetDescription());
+                assetRequest.put("assetType", assetTemp.getAssetType());
+                assetRequest.put("assetPrice", assetTemp.getAssetPrice());
+                assetRequest.put("tanggalPerolehan", new Date());
+                assetRequest.put("gambarAset", assetTemp.getFoto());
+                assetRequest.put("fotoContentType", assetTemp.getFotoContentType());
+                AssetTempResponseDTO assetUpdate = addAssetToAssetDatabase(assetRequest);
+            }
+
+            // handle supplier di Sprint 2
+            purchase.setPurchaseStatus("Selesai");
+        }
+
+        Purchase updatedPurchase = purchaseRepository.save(purchase);
+
+        return purchaseToPurchaseResponseDTO(updatedPurchase);
+    }
+
+    @Override
+    public PurchaseResponseDTO updatePurchaseStatusToCancelled(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId) {
+        Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));
+        
+        String purchaseStatus = purchase.getPurchaseStatus();
+        if (purchaseStatus.equals("Selesai") || purchaseStatus.equals("Dibatalkan") || purchaseStatus.equals("Ditolak")) {
+            throw new IllegalArgumentException("Status Pembelian sudah tidak bisa diperbarui.");
+        }
+        
+        purchase.setPurchaseNote(updatePurchaseStatusDTO.getPurchaseNote());
+
+        if (purchaseStatus.equals("Diajukan")) {
+            // cek role yang mau update, Direksi atau Financial kah? kalo iya, update status ke Ditolak
+            // kalo bukan, throw exception
+            purchase.setPurchaseStatus("Ditolak");
+        } 
+        else if (purchaseStatus.equals("Disetujui")) {
+            // cek role yang mau update, Operational kah? kalo iya, update status ke Dibatalkan
+            purchase.setPurchaseStatus("Dibatalkan");
+        } 
+        else if (purchaseStatus.equals("Diproses")) {
+            // cek role yang mau update, Operational kah? kalo iya, update status ke Dibatalkan
+            if (purchase.getPurchasePaymentDate() != null) {
+                // Next sprint, handle ini supaya kedetek di laporan (refund lagi uangnya)
+            }
+            purchase.setPurchaseStatus("Dibatalkan");
+        }
+
+        Purchase updatedPurchase = purchaseRepository.save(purchase);
+
+        return purchaseToPurchaseResponseDTO(updatedPurchase);
+    }
+
+    @Override
+    public PurchaseResponseDTO updatePurchaseStatusPembayaran(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId) {
+        // Cek role apakah finance? jika iya lanjut kan, jika tidak throw exception
+        Purchase purchase = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));
+        
+        String purchaseStatus = purchase.getPurchaseStatus();
+        if (!purchaseStatus.equals("Diproses") || !purchaseStatus.equals("Selesai") || purchaseStatus.equals("Ditolak")) {
+            throw new IllegalArgumentException("Status Pembayaran tidak bisa diperbarui karena status pembelian belum diproses atau selesai.");
+        }
+        
+        purchase.setPurchaseNote(updatePurchaseStatusDTO.getPurchaseNote());
+
+        purchase.setPurchasePaymentDate(new Date());
+
+        Purchase updatedPurchase = purchaseRepository.save(purchase);
+
+        return purchaseToPurchaseResponseDTO(updatedPurchase);
+    }
+
+    public AssetTempResponseDTO getDetailAsset(Long id) {
+        AssetTemp asset = assetTempRepository.findById(id).orElse(null);
+        return assetTempToAssetTempResponseDTO(asset);
     }
 
 }

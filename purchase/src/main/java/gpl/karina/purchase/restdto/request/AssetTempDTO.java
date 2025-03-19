@@ -1,5 +1,7 @@
 package gpl.karina.purchase.restdto.request;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -14,4 +16,5 @@ public class AssetTempDTO {
     private String assetType;
     @NotNull(message = "Harga Aset tidak boleh kosong")
     private Integer assetPrice;
+    private MultipartFile foto;
 }

@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,12 +15,14 @@ import gpl.karina.resource.exception.UserNotFound;
 import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.exception.DataNotFound;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
+import gpl.karina.resource.restdto.request.UpdateResourceDTO;
 import gpl.karina.resource.restdto.response.ResourceResponseDTO;
 import gpl.karina.resource.restdto.response.BaseResponseDTO;
 import gpl.karina.resource.restservice.ResourceRestService;
 import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Date;
 import java.util.List;
@@ -52,17 +55,23 @@ public class ResourceController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         try {
-            response.setStatus(200);
+            response.setStatus(HttpStatus.OK.value());
             response.setMessage("Success");
             response.setData(resourceRestService.addResource(addResourceDTO));
             response.setTimestamp(new Date());
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
-            response.setStatus(400);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
             response.setMessage(e.getMessage());
             response.setTimestamp(new Date());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
     }
 
     @GetMapping("/test")
@@ -81,6 +90,110 @@ public class ResourceController {
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(resources);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+    
+        } catch (UserNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/update/{idResource}")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> updateResource(@PathVariable Long idResource,
+            @RequestBody UpdateResourceDTO resourceDTO) {
+        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+        
+        try {
+            ResourceResponseDTO updatedResource = resourceRestService.updateResource(resourceDTO, idResource);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(updatedResource);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (DataNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/{idResource}")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable(name = "idResource") Long idResource) {
+        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+    
+        try {
+            // Mengirim token ke service
+            ResourceResponseDTO resource = resourceRestService.getResourceById(idResource);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(resource);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+    
+        } catch (UserNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/addToDb/{idResource}/{StockUpdate}")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable Long idResource, @PathVariable Integer stockUpdate) {
+        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
+        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+    
+        try {
+            // Mengirim token ke service
+            ResourceResponseDTO resource = resourceRestService.addResourceToDbById(idResource, stockUpdate);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(resource);
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     
