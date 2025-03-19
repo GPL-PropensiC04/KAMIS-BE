@@ -38,5 +38,4 @@ out/
 
 ### ENVIRONMENT ###
 .env
-
 logs/

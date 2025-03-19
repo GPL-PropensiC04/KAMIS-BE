@@ -152,11 +152,11 @@ public class AssetServiceImpl implements AssetService {
         assetTemp.setNama(assetTempDTO.getAssetName());
         assetTemp.setDeskripsi(assetTempDTO.getAssetDescription());
         assetTemp.setJenisAset(assetTempDTO.getAssetType());
-        assetTemp.setNilaiPerolehan(assetTempDTO.getAssetPrice());
+        assetTemp.setNilaiPerolehan(assetTempDTO.getAssetPrice().floatValue());
 
         if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
             try {
-                assetTemp.setFoto(assetTempDTO.getFoto().getBytes());
+                assetTemp.setGambarAset(assetTempDTO.getFoto().getBytes());
                 assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
             } catch (IOException e) {
                 throw new IllegalArgumentException("Gagal mengupload foto");
