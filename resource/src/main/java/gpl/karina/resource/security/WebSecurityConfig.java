@@ -21,7 +21,7 @@ public class WebSecurityConfig {
     public WebSecurityConfig(JwtTokenFilter jwtTokenFilter) {
         this.jwtTokenFilter = jwtTokenFilter;
     }
-
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.securityMatcher("/api/**")
@@ -32,7 +32,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/resource/add").hasAnyAuthority("Admin", "Operasional")
                         .requestMatchers("/api/resource/viewall").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")
                         .requestMatchers("/api/resource/update/**").hasAnyAuthority("Operasional", "Admin")
-                        .requestMatchers("/api/resource/**").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")
+                        .requestMatchers("/api/resource/addToDb/**").hasAnyAuthority("Operasional", "Admin")
+                        .requestMatchers("/api/resource/find/**").hasAnyAuthority("Operasional", "Admin")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

@@ -131,6 +131,7 @@ public class AssetController {
             response.setStatus(400);
             response.setMessage(e.getMessage());
             response.setTimestamp(new Date());
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
