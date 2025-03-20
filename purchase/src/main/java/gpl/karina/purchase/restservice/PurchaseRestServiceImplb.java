@@ -487,6 +487,9 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
     @Override
     public PurchaseResponseDTO updatePurchaseStatusToNext(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId) {
+        if (updatePurchaseStatusDTO.getPurchaseNote() == null) {
+            throw new IllegalArgumentException("Catatan tidak boleh kosong");
+        }
         Purchase purchase = purchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));
     
@@ -533,6 +536,9 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 AssetTemp assetTemp = assetTempRepository.findById(purchase.getPurchaseAsset())
                         .orElseThrow(() -> new IllegalArgumentException("Aset tidak ditemukan dalam database."));
                 Map<String, Object> assetRequest = new HashMap<>();
+                if (updatePurchaseStatusDTO.getPlatNomor() == null) {
+                    throw new IllegalArgumentException("Plat Nomor tidak boleh kosong");
+                }
                 assetRequest.put("platNomor", updatePurchaseStatusDTO.getPlatNomor());
                 assetRequest.put("assetName", assetTemp.getAssetName());
                 assetRequest.put("assetDescription", assetTemp.getAssetDescription());
@@ -557,6 +563,10 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
     @Override
     public PurchaseResponseDTO updatePurchaseStatusToCancelled(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId) {
+        if (updatePurchaseStatusDTO.getPurchaseNote() == null) {
+            throw new IllegalArgumentException("Catatan tidak boleh kosong");
+        }
+        
         Purchase purchase = purchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new IllegalArgumentException("Pembelian dengan Id " + purchaseId + " tidak ditemukan."));
     
@@ -607,6 +617,9 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     @Override
     public PurchaseResponseDTO updatePurchaseStatusPembayaran(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId) {
         // Ambil token dan cek role
+        if (updatePurchaseStatusDTO.getPurchaseNote() == null) {
+            throw new IllegalArgumentException("Catatan tidak boleh kosong");
+        }
         String token = getTokenFromRequest();
         if (token == null) {
             throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
