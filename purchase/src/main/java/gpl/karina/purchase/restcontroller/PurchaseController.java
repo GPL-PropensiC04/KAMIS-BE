@@ -263,6 +263,7 @@ public class PurchaseController {
             baseResponseDTO.setMessage(e.getMessage());
             baseResponseDTO.setData(null);
             baseResponseDTO.setTimestamp(new Date());
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
     }

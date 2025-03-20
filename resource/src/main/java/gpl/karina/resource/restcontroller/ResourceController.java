@@ -144,7 +144,7 @@ public class ResourceController {
         }
     }
 
-    @GetMapping("/{idResource}")
+    @GetMapping("/find/{idResource}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable(name = "idResource") Long idResource) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
     
@@ -178,7 +178,7 @@ public class ResourceController {
         }
     }
 
-    @PutMapping("/addToDb/{idResource}/{StockUpdate}")
+    @PutMapping("/addToDb/{idResource}/{stockUpdate}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable Long idResource, @PathVariable Integer stockUpdate) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
     
