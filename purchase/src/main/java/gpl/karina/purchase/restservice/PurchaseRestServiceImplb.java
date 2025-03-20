@@ -1,12 +1,12 @@
 package gpl.karina.purchase.restservice;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,14 +15,15 @@ import java.util.stream.Collectors;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.client.MultipartBodyBuilder;
-import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import gpl.karina.purchase.security.jwt.JwtUtils;
 import gpl.karina.purchase.model.AssetTemp;
 import gpl.karina.purchase.model.Purchase;
 import gpl.karina.purchase.model.ResourceTemp;
@@ -30,7 +31,6 @@ import gpl.karina.purchase.repository.AssetTempRepository;
 import gpl.karina.purchase.repository.PurchaseRepository;
 import gpl.karina.purchase.repository.ResourceTempRepository;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
-import gpl.karina.purchase.restdto.request.AssetAddDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.ResourceTempDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
@@ -40,6 +40,7 @@ import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
+import gpl.karina.purchase.security.jwt.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
@@ -91,31 +92,38 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         return response.getData();
     }
 
-    public AssetTempResponseDTO addAssetToAssetDatabase(Map<String, Object> assetAddDTO) {
-        MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
+    public AssetTempResponseDTO addAssetToAssetDatabase(Map<String, Object> assetRequest) {
 
-        assetAddDTO.forEach((key, value) -> {
-            if (value != null) {
-                if (value instanceof byte[]) {
-                    // Kalau value adalah file (byte array), masukkan sebagai file part
-                    bodyBuilder.part(key, new ByteArrayResource((byte[]) value) {
-                        @Override
-                        public String getFilename() {
-                            return "asset-image.jpg"; // Optional: kasih nama file
-                        }
-                    }).header(HttpHeaders.CONTENT_TYPE, "image/jpeg");
-                } else {
-                    // Selain file, masukkan sebagai text part biasa
-                    bodyBuilder.part(key, value.toString());
+        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+        formData.add("platNomor", assetRequest.get("platNomor"));
+        formData.add("assetName", assetRequest.get("assetName"));
+        formData.add("assetDescription", assetRequest.get("assetDescription"));
+        formData.add("assetType", assetRequest.get("assetType"));
+        formData.add("assetPrice", assetRequest.get("assetPrice"));
+        formData.add("tanggalPerolehan", assetRequest.get("tanggalPerolehan"));
+
+        // Untuk foto (byte[]), bungkus ke ByteArrayResource agar dianggap file di form-data
+        byte[] fotoBytes = (byte[]) assetRequest.get("foto");
+        if (fotoBytes != null) {
+            ByteArrayResource fotoResource = new ByteArrayResource(fotoBytes) {
+                @Override
+                public String getFilename() {
+                    return "foto.jpg"; // Optional, biar backend baca sebagai file
                 }
-            }
-        });
+            };
+            formData.add("foto", fotoResource);
+        }
+
+        // Kalau fotoContentType mau dipisah / dikirim, bisa juga
+        if (assetRequest.get("fotoContentType") != null) {
+            formData.add("fotoContentType", assetRequest.get("fotoContentType"));
+        }
 
         var response = webClientAsset.post()
                 .uri("/asset/addAsset")
                 .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
+                .body(BodyInserters.fromMultipartData(formData))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetTempResponseDTO>>() {})
                 .block();
@@ -546,7 +554,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 assetRequest.put("assetPrice", assetTemp.getAssetPrice());
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 assetRequest.put("tanggalPerolehan", sdf.format(new Date()));
-                assetRequest.put("gambarAset", assetTemp.getFoto());
+                assetRequest.put("foto", assetTemp.getFoto());
                 assetRequest.put("fotoContentType", assetTemp.getFotoContentType());
                 AssetTempResponseDTO assetUpdate = addAssetToAssetDatabase(assetRequest);
             }

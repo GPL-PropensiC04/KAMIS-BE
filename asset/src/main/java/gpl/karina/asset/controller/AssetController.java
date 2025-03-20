@@ -119,6 +119,7 @@ public class AssetController {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             response.setMessage(errorMessages.toString());
             response.setTimestamp(new Date());
+            System.out.println(errorMessages.toString());
             return new ResponseEntity<BaseResponseDTO<AssetResponseDTO>>(response, HttpStatus.BAD_REQUEST);
         }
         try {
