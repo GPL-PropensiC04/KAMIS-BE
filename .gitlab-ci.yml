@@ -198,21 +198,21 @@ deploy-microservices:
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "mkdir -p ~/microservices-deploy/"
     - rsync -rahv $CI_PROJECT_DIR/docker-compose-deploy.yml "$DEPLOY_USERNAME@$DEPLOY_SERVER:~/microservices-deploy/"
     - >
-      ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "echo 'DATABASE_URL_ASSET=${DATABASE_URL_ASSET}
-      DATABASE_USERNAME=${DATABASE_USERNAME}
-      DATABASE_PASSWORD=${DATABASE_PASSWORD}
-      JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
-      JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
-      DATABASE_URL_FINANCE=${DATABASE_URL_FINANCE}
-      DATABASE_URL_PROFILE=${DATABASE_URL_PROFILE}
-      JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      DATABASE_URL_PROJECT=${DATABASE_URL_PROJECT}
-      DATABASE_URL_PURCHASE=${DATABASE_URL_PURCHASE}
+      ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "echo -e 'DATABASE_URL_ASSET=${DATABASE_URL_ASSET}\n
+      DATABASE_USERNAME=${DATABASE_USERNAME}\n
+      DATABASE_PASSWORD=${DATABASE_PASSWORD}\n
+      JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}\n
+      JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}\n
+      DATABASE_URL_FINANCE=${DATABASE_URL_FINANCE}\n
+      DATABASE_URL_PROFILE=${DATABASE_URL_PROFILE}\n
+      JWT_SECRET_KEY=${JWT_SECRET_KEY}\n
+      DATABASE_URL_PROJECT=${DATABASE_URL_PROJECT}\n
+      DATABASE_URL_PURCHASE=${DATABASE_URL_PURCHASE}\n
       DATABASE_URL_RESOURCE=${DATABASE_URL_RESOURCE}' > ~/microservices-deploy/.env"
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "
         cd ~/microservices-deploy/ && 
         docker compose -f docker-compose-deploy.yml pull && 
-        docker compose -f docker-compose-deploy.yml up -d --env-file .env"
+        docker compose -f docker-compose-deploy.yml up -d"
   only:
     - main
     - gcp-deploy
