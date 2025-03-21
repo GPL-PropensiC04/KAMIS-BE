@@ -1,4 +1,5 @@
 package gpl.karina.asset.config;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig {
     
+    @Value("${app.profileUrl}")
+    private String profileUrl;
+
+    @Value("${app.financeUrl}")
+    private String financeUrl;
+
+    @Value("${app.projectUrl}")
+    private String projectUrl;
+
+    @Value("${app.purchaseUrl}")
+    private String purchaseUrl;
+
+    @Value("${app.resourceUrl}")
+    private String resourceUrl;
+    
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
@@ -15,7 +31,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry){
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173","http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:8083", "http://localhost:8084", "http://localhost:8085")
+                        .allowedOrigins(profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl)
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
                         .allowCredentials(true);

@@ -24,6 +24,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import org.springframework.beans.factory.annotation.Value;
 import gpl.karina.purchase.model.AssetTemp;
 import gpl.karina.purchase.model.Purchase;
 import gpl.karina.purchase.model.ResourceTemp;
@@ -48,6 +49,10 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class PurchaseRestServiceImplb implements PurchaseRestService {
 
+    @Value("${app.resourceUrl}")
+    private String resourceUrl;
+    @Value("${app.assetUrl}")
+    private String assetUrl;
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
     private final ResourceTempRepository resourceTempRepository;
@@ -55,15 +60,15 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     private final WebClient webClientAsset;
     private final HttpServletRequest request;
     private final JwtUtils jwtUtils;
-
+    
 
     public PurchaseRestServiceImplb(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository, 
                                     ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder, HttpServletRequest request, JwtUtils jwtUtils) {
         this.purchaseRepository = purchaseRepository;
         this.assetTempRepository = assetTempRepository;
         this.resourceTempRepository = resourceTempRepository;
-        this.webClientResource = webClientBuilder.baseUrl("http://localhost:8085/api").build();
-        this.webClientAsset = webClientBuilder.baseUrl("http://localhost:8081/api").build();
+        this.webClientResource = webClientBuilder.baseUrl(resourceUrl).build();
+        this.webClientAsset = webClientBuilder.baseUrl(assetUrl).build();
         this.request = request;
         this.jwtUtils = jwtUtils;
     }

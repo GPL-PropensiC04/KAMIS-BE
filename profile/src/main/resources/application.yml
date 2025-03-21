@@ -4,9 +4,9 @@ spring:
   application:
     name: profile
   datasource:
-    url: ${DATABASE_URL_DEV}
-    username: ${DATABASE_USERNAME_DEV}
-    password: ${DATABASE_PASSWORD_DEV}
+    url: ${DATABASE_URL_PROFILE}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
   thymeleaf:
     cache: false
   devtools:
@@ -28,7 +28,11 @@ profile:
     jwtSecret: ${JWT_SECRET_KEY}
     jwtPublicKey: ${JWT_PUBLIC_KEY}
     jwtExpirationMs: ${JWT_EXPIRATION_MS}
-
+    profileUrl: ${PROFILE_URL}
+    financeUrl: ${FINANCE_URL}
+    projectUrl: ${PROJECT_URL}
+    purchaseUrl: ${PURCHASE_URL}
+    resourceUrl: ${RESOURCE_URL}
 logging:
   file:
     name: logs/profile-application.log
