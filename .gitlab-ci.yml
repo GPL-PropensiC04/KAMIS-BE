@@ -197,10 +197,23 @@ deploy-microservices:
     - echo "Deploying to GCP VM..."
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "mkdir -p ~/microservices-deploy/"
     - rsync -rahv $CI_PROJECT_DIR/docker-compose-deploy.yml "$DEPLOY_USERNAME@$DEPLOY_SERVER:~/microservices-deploy/"
+    - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "cat > ~/microservices-deploy/.env <<EOF
+      DATABASE_URL_ASSET=${DATABASE_URL_ASSET}
+      DATABASE_USERNAME=${DATABASE_USERNAME}
+      DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
+      JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
+      DATABASE_URL_FINANCE=${DATABASE_URL_FINANCE}
+      DATABASE_URL_PROFILE=${DATABASE_URL_PROFILE}
+      JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      DATABASE_URL_PROJECT=${DATABASE_URL_PROJECT}
+      DATABASE_URL_PURCHASE=${DATABASE_URL_PURCHASE}
+      DATABASE_URL_RESOURCE=${DATABASE_URL_RESOURCE}
+      EOF"
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "
         cd ~/microservices-deploy/ && 
-        docker compose -f docker-compose-deploy.yml pull && 
-        docker compose -f docker-compose-deploy.yml up -d"
+        docker-compose -f docker-compose-deploy.yml pull && 
+        docker-compose -f docker-compose-deploy.yml up -d --env-file .env"
   only:
     - main
     - gcp-deploy
