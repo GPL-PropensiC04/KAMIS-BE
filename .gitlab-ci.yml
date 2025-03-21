@@ -211,8 +211,8 @@ deploy-microservices:
       DATABASE_URL_RESOURCE=${DATABASE_URL_RESOURCE}' > ~/microservices-deploy/.env"
     - ssh "$DEPLOY_USERNAME@$DEPLOY_SERVER" "
         cd ~/microservices-deploy/ && 
-        docker-compose -f docker-compose-deploy.yml pull && 
-        docker-compose -f docker-compose-deploy.yml up -d --env-file .env"
+        docker compose -f docker-compose-deploy.yml pull && 
+        docker compose -f docker-compose-deploy.yml up -d --env-file .env"
   only:
     - main
     - gcp-deploy
