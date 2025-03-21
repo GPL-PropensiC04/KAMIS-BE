@@ -9,19 +9,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.profileUrl}")
+    @Value("${project.app.profileUrl}")
     private String profileUrl;
 
-    @Value("${app.financeUrl}")
+    @Value("${project.app.financeUrl}")
     private String financeUrl;
 
-    @Value("${app.projectUrl}")
+    @Value("${project.app.projectUrl}")
     private String projectUrl;
 
-    @Value("${app.purchaseUrl}")
+    @Value("${project.app.purchaseUrl}")
     private String purchaseUrl;
 
-    @Value("${app.resourceUrl}")
+    @Value("${project.app.resourceUrl}")
     private String resourceUrl;
 
     @Bean
