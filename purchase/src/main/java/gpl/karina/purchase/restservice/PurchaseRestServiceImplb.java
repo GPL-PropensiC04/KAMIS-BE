@@ -49,9 +49,9 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class PurchaseRestServiceImplb implements PurchaseRestService {
 
-    @Value("${app.resourceUrl}")
+    @Value("${purchase.app.resourceUrl}")
     private String resourceUrl;
-    @Value("${app.assetUrl}")
+    @Value("${purchase.app.assetUrl}")
     private String assetUrl;
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
