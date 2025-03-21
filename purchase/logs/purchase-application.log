@@ -1,0 +1,909 @@
+2025-03-21T00:39:05.318+07:00  INFO 19812 --- [purchase] [restartedMain] g.karina.purchase.PurchaseApplication    : Starting PurchaseApplication using Java 21.0.5 with PID 19812 (E:\Propen\c4-gak-pake-lama-be\purchase\build\classes\java\main started by user in E:\Propen\c4-gak-pake-lama-be\purchase)
+2025-03-21T00:39:05.340+07:00 DEBUG 19812 --- [purchase] [restartedMain] g.karina.purchase.PurchaseApplication    : Running with Spring Boot v3.4.2, Spring v6.2.2
+2025-03-21T00:39:05.342+07:00  INFO 19812 --- [purchase] [restartedMain] g.karina.purchase.PurchaseApplication    : No active profile set, falling back to 1 default profile: "default"
+2025-03-21T00:39:06.064+07:00  INFO 19812 --- [purchase] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-03-21T00:39:06.066+07:00  INFO 19812 --- [purchase] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-03-21T00:39:21.936+07:00  INFO 19812 --- [purchase] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-03-21T00:39:22.510+07:00  INFO 19812 --- [purchase] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 547 ms. Found 3 JPA repository interfaces.
+2025-03-21T00:39:25.518+07:00  INFO 19812 --- [purchase] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8084 (http)
+2025-03-21T00:39:25.559+07:00  INFO 19812 --- [purchase] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-03-21T00:39:25.561+07:00  INFO 19812 --- [purchase] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.34]
+2025-03-21T00:39:26.063+07:00  INFO 19812 --- [purchase] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-03-21T00:39:26.064+07:00  INFO 19812 --- [purchase] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 19996 ms
+2025-03-21T00:39:26.213+07:00 DEBUG 19812 --- [purchase] [restartedMain] g.karina.purchase.security.jwt.JwtUtils  : Initializing JWT public key
+2025-03-21T00:39:26.444+07:00 DEBUG 19812 --- [purchase] [restartedMain] g.k.p.security.jwt.JwtTokenFilter        : Filter 'jwtTokenFilter' configured for use
+2025-03-21T00:39:26.886+07:00  INFO 19812 --- [purchase] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-03-21T00:39:27.371+07:00  INFO 19812 --- [purchase] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.5.Final
+2025-03-21T00:39:27.868+07:00  INFO 19812 --- [purchase] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-03-21T00:39:29.302+07:00  INFO 19812 --- [purchase] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-03-21T00:39:29.475+07:00  INFO 19812 --- [purchase] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-03-21T00:39:31.432+07:00  INFO 19812 --- [purchase] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@6f313549
+2025-03-21T00:39:31.439+07:00  INFO 19812 --- [purchase] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-03-21T00:39:31.760+07:00  WARN 19812 --- [purchase] [restartedMain] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-03-21T00:39:31.905+07:00  INFO 19812 --- [purchase] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.4
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-03-21T00:39:36.109+07:00  INFO 19812 --- [purchase] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-03-21T00:39:36.898+07:00  INFO 19812 --- [purchase] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-03-21T00:39:38.935+07:00  WARN 19812 --- [purchase] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-03-21T00:39:38.992+07:00  INFO 19812 --- [purchase] [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name jwtUserDetailsService
+2025-03-21T00:39:43.629+07:00  WARN 19812 --- [purchase] [restartedMain] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2025-03-21T00:39:58.824+07:00  WARN 19812 --- [purchase] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : Unable to start LiveReload server
+2025-03-21T00:40:07.429+07:00  INFO 19812 --- [purchase] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8084 (http) with context path '/'
+2025-03-21T00:40:07.441+07:00  INFO 19812 --- [purchase] [restartedMain] g.karina.purchase.PurchaseApplication    : Started PurchaseApplication in 72.942 seconds (process running for 82.679)
+2025-03-21T00:43:55.604+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-03-21T00:43:55.605+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-03-21T00:43:55.608+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-03-21T00:43:56.021+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:43:56.025+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:43:56.027+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:43:56.030+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:43:56.032+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:43:56.034+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:43:56.036+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:43:56.040+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:44:10.117+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:10.122+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:10.125+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:10.127+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:10.130+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:10.132+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:10.133+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:44:10.134+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:44:15.728+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:15.731+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:15.733+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:15.735+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:15.738+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:15.740+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:15.741+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:44:15.741+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:44:15.799+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:15.803+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:15.805+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:15.807+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:15.810+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:15.812+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:15.812+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:44:15.813+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:44:18.318+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:18.322+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:18.324+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:18.327+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:18.330+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:18.333+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:18.334+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:44:18.334+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:44:21.453+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:21.455+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:21.457+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:21.459+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:44:21.461+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:44:21.465+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:44:21.465+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:44:21.466+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:01.039+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:01.043+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:01.046+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:01.050+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:01.053+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:01.055+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:01.055+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:01.055+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:02.271+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:02.274+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:02.277+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:02.280+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:02.282+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:02.285+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:02.285+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:02.285+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:04.396+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:04.399+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:04.402+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:04.406+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:04.408+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:04.411+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:04.411+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:04.412+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:10.668+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:10.671+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:10.673+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:10.677+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:10.680+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:10.683+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:10.684+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:10.684+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:13.768+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:13.773+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:13.776+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:13.786+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:13.789+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:13.791+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:13.791+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:13.792+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:16.564+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:16.566+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:16.569+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:16.572+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:16.576+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:16.578+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:16.579+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:16.579+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:20.524+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:20.525+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:20.526+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:20.528+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:20.530+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:20.532+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:20.533+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:20.533+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:20.662+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:20.728+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:20.729+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:20.731+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:20.733+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:20.735+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:20.736+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:20.737+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:20.737+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:29.982+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:29.983+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:29.984+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:29.985+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:29.986+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:29.988+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:29.988+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:29.988+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:30.084+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:30.142+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:30.143+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:30.145+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:30.147+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:30.149+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:30.150+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:30.150+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:30.151+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:49.994+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:49.996+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:49.998+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:49.999+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:50.000+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:50.001+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:50.002+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:50.002+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:50.117+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:50.180+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:50.181+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:50.183+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:50.185+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:50.186+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:50.188+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:50.188+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:50.188+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:45:54.007+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:54.009+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:54.011+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:54.013+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:45:54.019+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:45:54.022+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:45:54.022+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:45:54.022+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:01.056+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:01.059+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:01.063+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:01.066+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:01.068+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:01.072+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:01.072+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:46:01.072+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:02.050+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:02.052+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:02.053+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:02.055+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:02.061+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:02.064+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:02.064+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:46:02.064+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:06.848+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:06.849+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:06.850+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:06.852+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:06.852+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:06.854+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:06.855+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:46:06.855+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:06.967+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:07.023+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:07.024+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:07.026+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:07.028+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:07.029+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:07.031+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:07.031+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:46:07.031+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:19.313+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:19.315+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:19.317+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:19.319+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:19.321+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:19.323+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:19.323+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:46:19.324+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:20.347+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:20.350+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:20.352+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:20.354+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:20.355+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:20.357+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:20.357+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:46:20.357+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:23.393+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:23.395+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:23.395+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:23.397+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:23.398+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:23.399+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:23.400+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:46:23.400+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:23.492+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:23.564+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:23.566+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:23.567+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:23.568+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:23.569+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: admin1
+2025-03-21T00:46:23.572+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Admin
+2025-03-21T00:46:23.572+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.s.service.JwtUserDetailsService    : authorities: [Admin]
+2025-03-21T00:46:23.573+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'admin1' with role 'Admin'
+2025-03-21T00:46:51.711+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:51.713+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:46:51.715+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:46:51.718+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:51.720+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:46:51.722+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:46:51.722+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:46:51.722+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:46:58.468+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:58.470+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:46:58.477+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:46:58.481+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:58.483+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:46:58.485+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:46:58.485+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:46:58.486+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:46:59.972+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:59.974+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:46:59.976+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:46:59.978+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:46:59.979+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:46:59.981+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:46:59.981+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:46:59.981+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:47:04.190+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:04.191+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:04.192+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:04.193+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:04.194+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:04.195+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:04.195+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:47:04.195+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:47:04.291+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:05.173+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:05.174+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:05.175+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:05.177+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:05.178+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:05.179+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:05.179+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:47:05.179+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:47:10.130+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:10.133+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:10.136+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:10.139+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:10.141+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:10.143+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:10.146+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:47:10.146+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:47:11.544+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:11.545+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:11.548+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:11.551+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:11.553+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:11.555+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:11.555+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:47:11.556+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:47:13.046+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:13.047+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:13.049+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:13.056+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:13.058+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:13.059+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:13.060+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:47:13.060+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:47:17.305+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:17.306+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:17.307+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:17.308+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:17.309+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:17.309+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:17.310+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:47:17.310+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:47:17.412+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:18.225+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:18.226+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:18.227+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:18.229+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:18.229+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:47:18.230+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:47:18.230+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:47:18.230+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:47:34.130+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:34.133+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:34.135+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:34.136+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:34.139+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:34.141+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:34.141+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:47:34.142+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:47:35.978+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:35.979+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:35.980+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:35.982+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:35.983+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:35.985+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:35.985+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:47:35.985+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:47:38.208+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:38.212+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:38.214+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:38.215+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:38.219+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:38.221+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:38.222+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:47:38.222+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:47:42.681+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:42.682+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:42.685+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:42.686+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:42.687+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:42.688+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:42.688+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:47:42.688+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:47:42.786+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:43.632+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:43.634+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:43.636+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:43.638+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:43.639+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:43.640+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:43.640+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:47:43.640+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:47:53.126+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:53.127+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:53.128+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:53.129+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:53.130+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:53.131+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:53.131+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:47:53.131+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:47:53.231+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:54.835+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:54.836+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:54.838+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:54.841+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:47:54.842+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:47:54.844+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:47:54.844+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:47:54.844+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:48:01.490+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:01.493+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:01.494+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:01.496+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:01.497+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:01.500+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:01.501+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:48:01.501+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:48:02.622+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:02.624+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:02.626+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:02.628+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:02.629+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:02.631+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:02.631+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:48:02.631+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:48:08.767+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:08.768+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:08.769+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:08.770+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:08.771+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:08.772+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:08.772+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:48:08.772+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:48:08.886+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:10.481+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:10.481+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:10.482+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:10.483+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:10.484+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:10.485+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:10.485+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:48:10.486+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:48:25.916+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:25.918+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:25.920+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:25.923+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:48:25.924+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:48:25.927+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:48:25.928+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:48:25.928+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:49:42.438+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:49:42.440+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:49:42.442+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:49:42.443+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:49:42.445+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:49:42.446+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:49:42.446+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:49:42.446+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:50:26.619+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:26.620+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:26.621+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:26.622+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:26.623+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:26.624+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:26.624+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:50:26.624+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:50:27.097+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:27.098+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:27.098+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:27.099+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:27.100+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:27.101+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:27.101+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:50:27.101+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:50:27.722+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:27.723+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:27.725+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:27.727+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:27.728+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:27.730+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:27.730+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:50:27.730+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:50:38.392+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:38.395+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:38.396+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:38.398+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:38.399+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:38.400+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:38.401+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:50:38.401+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:50:38.952+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:38.953+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:38.954+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:38.955+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:50:38.957+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:50:38.958+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:50:38.959+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:50:38.959+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:51:17.548+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:17.549+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:51:17.552+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:51:17.554+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:17.556+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:51:17.557+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:51:17.557+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:51:17.557+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:51:18.362+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:18.362+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:18.365+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:18.366+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:18.368+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:18.371+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:18.371+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:51:18.371+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:51:18.912+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:18.913+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:51:18.914+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:51:18.915+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:18.917+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:51:18.918+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:51:18.918+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:51:18.918+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:51:22.576+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:22.577+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:22.579+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:22.580+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:22.581+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:22.583+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:22.583+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:51:22.583+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:51:22.688+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:22.753+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:22.754+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:22.755+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:22.756+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:22.757+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:22.758+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:22.758+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:51:22.758+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:51:31.268+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:31.270+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:31.271+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:31.272+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:31.274+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:31.275+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:31.276+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:51:31.276+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:51:31.836+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:31.837+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:31.838+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:31.839+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:51:31.841+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:51:31.842+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:51:31.842+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:51:31.842+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:52:01.636+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:01.638+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:01.639+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:01.639+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:01.640+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:01.641+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:01.641+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:52:01.641+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:52:06.867+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:06.868+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:06.869+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:06.870+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:06.871+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:06.872+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:06.872+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:52:06.872+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:52:07.417+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:07.418+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:07.418+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:07.419+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:07.420+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:07.421+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:07.421+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:52:07.422+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:52:10.953+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:10.953+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:10.953+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:10.954+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:10.955+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:10.955+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:10.955+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:52:10.955+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:52:11.056+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:11.515+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:11.516+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:11.517+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:11.517+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:11.518+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:52:11.519+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:52:11.519+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:52:11.519+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:52:23.307+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:23.309+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:23.310+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:23.312+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:23.314+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:23.316+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:23.316+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:52:23.316+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:52:28.238+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T00:52:30.879+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T00:52:33.460+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T00:52:46.945+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:46.947+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:46.949+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:46.950+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:46.952+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:46.953+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:46.953+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:52:46.953+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:52:54.265+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:54.266+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:54.267+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:54.269+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:54.270+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:54.272+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:54.272+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:52:54.273+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:52:54.837+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:54.838+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:54.839+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:54.840+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:54.841+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:54.842+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:54.842+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:52:54.842+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:52:59.233+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:59.235+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:59.235+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:59.236+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:59.237+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:59.238+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:59.238+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:52:59.238+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:52:59.336+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:59.830+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:59.831+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:59.832+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:59.833+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:52:59.834+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:52:59.835+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:52:59.835+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:52:59.835+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:53:14.914+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:53:14.914+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:53:14.915+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:53:14.916+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:53:14.917+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:53:14.918+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:53:14.918+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:53:14.918+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:53:15.029+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:53:16.107+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:53:16.108+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:53:16.109+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:53:16.110+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:53:16.110+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:53:16.111+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:53:16.111+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:53:16.111+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:53:58.419+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:53:58.421+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:53:58.426+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:53:58.427+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:53:58.429+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T00:53:58.430+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T00:53:58.431+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T00:53:58.431+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T00:59:39.670+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:59:39.670+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:59:39.671+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:59:39.672+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:59:39.673+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:59:39.674+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:59:39.674+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:59:39.674+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T00:59:40.155+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:59:40.156+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:59:40.157+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:59:40.158+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T00:59:40.160+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T00:59:40.161+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T00:59:40.161+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T00:59:40.161+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T01:00:02.563+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:00:02.565+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:00:02.568+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:00:02.569+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:00:02.570+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:00:02.572+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:00:02.572+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:00:02.572+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:00:08.534+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:00:08.535+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:00:08.536+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:00:08.537+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:00:08.538+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:00:08.539+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:00:08.539+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:00:08.539+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:00:09.097+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:00:09.098+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:00:09.099+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:00:09.100+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:00:09.101+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:00:09.102+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:00:09.102+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:00:09.102+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:07:32.628+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:07:32.630+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:07:32.631+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:07:32.632+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:07:32.634+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:07:32.635+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:07:32.636+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:07:32.636+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:07:46.580+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T01:08:16.331+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:16.332+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:16.332+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:16.335+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:16.336+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:16.337+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:16.337+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:08:16.337+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:08:17.969+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:17.970+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:17.970+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:17.971+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:17.971+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:17.972+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:17.972+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:08:17.972+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:08:18.721+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:18.724+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:18.725+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:18.726+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:18.728+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:18.730+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:18.730+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:08:18.731+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:08:27.715+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T01:08:29.650+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T01:08:45.955+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:45.957+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:45.958+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:45.959+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:45.959+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:45.960+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:45.961+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T01:08:45.962+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T01:08:52.822+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:52.823+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:52.824+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:52.825+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:52.826+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:52.827+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:52.828+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T01:08:52.828+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T01:08:53.391+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:53.392+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:53.393+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:53.394+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:53.396+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:53.397+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:53.397+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T01:08:53.397+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T01:08:56.703+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:56.704+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:56.705+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:56.705+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:56.705+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:56.706+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:56.706+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T01:08:56.706+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T01:08:56.802+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:57.336+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:57.336+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:57.337+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:57.338+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:57.338+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: direksi1
+2025-03-21T01:08:57.339+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Direksi
+2025-03-21T01:08:57.339+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Direksi]
+2025-03-21T01:08:57.339+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'direksi1' with role 'Direksi'
+2025-03-21T01:08:59.377+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:59.378+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:59.379+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:59.381+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:59.382+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:59.384+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:59.384+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:08:59.384+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-5] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:08:59.950+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:59.953+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:59.954+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:59.955+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:08:59.956+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:08:59.957+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:08:59.957+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:08:59.957+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:02.715+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:02.717+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:02.719+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:02.721+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:02.722+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:02.726+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:02.726+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:02.726+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-6] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:07.352+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:07.355+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:07.357+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:07.359+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:07.360+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:07.361+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:07.361+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:07.361+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-8] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:08.059+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:08.060+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:08.061+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:08.062+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:08.065+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:08.067+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:08.067+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:08.067+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:09.731+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:09.732+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:09.734+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:09.735+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:09.736+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:09.738+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:09.738+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:09.739+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:11.157+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:11.159+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:11.161+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:11.165+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:11.167+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:11.172+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:11.173+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:11.173+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-1] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:19.347+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:19.348+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:19.350+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:19.351+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:19.353+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:19.354+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:19.354+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:19.354+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-10] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:19.969+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:19.972+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:19.974+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:19.975+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:19.976+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:19.978+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:19.978+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:19.979+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-3] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:27.875+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:27.876+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:27.877+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:27.877+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:27.878+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:27.879+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:27.879+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:27.879+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:09:27.977+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:28.528+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:28.530+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:28.531+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:28.532+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:09:28.535+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:09:28.536+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:09:28.536+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:09:28.536+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:10:08.794+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-8] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T01:10:08.839+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:10:08.841+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:10:08.842+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:08.844+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:10:08.845+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:10:08.846+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:08.846+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:10:08.847+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-9] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:10:09.372+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:10:09.372+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:10:09.373+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:09.374+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:10:09.375+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:10:09.376+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:09.376+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:10:09.376+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-2] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:10:19.693+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-1] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T01:10:20.947+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-10] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T01:10:21.710+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-3] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T01:10:22.162+07:00 ERROR 19812 --- [purchase] [http-nio-8084-exec-5] g.karina.purchase.security.jwt.JwtUtils  : JWT token validation error: Invalid compact JWT string: Compact JWSs must contain exactly 2 period characters, and compact JWEs must contain exactly 4.  Found: 0
+2025-03-21T01:10:38.434+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:10:38.435+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:10:38.435+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:38.435+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:10:38.436+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:10:38.436+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:38.437+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:10:38.437+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
+2025-03-21T01:10:38.536+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-4] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:39.404+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:10:39.404+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:10:39.405+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:39.405+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : JWT token is valid
+2025-03-21T01:10:39.406+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted username from token: operasional1
+2025-03-21T01:10:39.406+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.karina.purchase.security.jwt.JwtUtils  : Extracted role from token: Operasional
+2025-03-21T01:10:39.406+07:00  INFO 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.s.service.JwtUserDetailsService    : authorities: [Operasional]
+2025-03-21T01:10:39.406+07:00 DEBUG 19812 --- [purchase] [http-nio-8084-exec-7] g.k.p.security.jwt.JwtTokenFilter        : Successfully authenticated user 'operasional1' with role 'Operasional'
