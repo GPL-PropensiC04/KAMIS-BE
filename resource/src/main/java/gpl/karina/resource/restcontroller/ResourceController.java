@@ -81,9 +81,7 @@ public class ResourceController {
 
     @GetMapping("/viewall")
     public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllResources() {
-        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-    
+        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();    
         try {
             // Mengirim token ke service
             List<ResourceResponseDTO> resources = resourceRestService.getAllResources();
@@ -117,9 +115,7 @@ public class ResourceController {
     @PutMapping("/update/{idResource}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> updateResource(@PathVariable Long idResource,
             @RequestBody UpdateResourceDTO resourceDTO) {
-        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-        
+        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();        
         try {
             ResourceResponseDTO updatedResource = resourceRestService.updateResource(resourceDTO, idResource);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -148,14 +144,47 @@ public class ResourceController {
         }
     }
 
-    @GetMapping("/{idResource}")
-    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable Long idResource) {
+    @GetMapping("/find/{idResource}")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable(name = "idResource") Long idResource) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
     
         try {
             // Mengirim token ke service
             ResourceResponseDTO resource = resourceRestService.getResourceById(idResource);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(resource);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+    
+        } catch (UserNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/addToDb/{idResource}/{stockUpdate}")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable Long idResource, @PathVariable Integer stockUpdate) {
+        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
+    
+        try {
+            // Mengirim token ke service
+            ResourceResponseDTO resource = resourceRestService.addResourceToDbById(idResource, stockUpdate);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(resource);
