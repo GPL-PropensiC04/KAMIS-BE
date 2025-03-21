@@ -32,6 +32,7 @@ finance.report:
     projectUrl: ${PROJECT_URL}
     purchaseUrl: ${PURCHASE_URL}
     resourceUrl: ${RESOURCE_URL}
+    assetUrl: ${ASSET_URL}
 
 logging:
   file:

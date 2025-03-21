@@ -27,6 +27,7 @@ asset:
   app:
     jwtPublicKey: ${JWT_PUBLIC_KEY}
     jwtExpirationMs: ${JWT_EXPIRATION_MS}
+    assetUrl: ${ASSET_URL}
     profileUrl: ${PROFILE_URL}
     financeUrl: ${FINANCE_URL}
     projectUrl: ${PROJECT_URL}
