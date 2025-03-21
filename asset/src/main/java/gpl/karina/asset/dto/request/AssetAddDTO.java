@@ -23,6 +23,6 @@ public class AssetAddDTO {
     private MultipartFile foto;
     @Column(name = "foto_content_type")
     private String fotoContentType;
-    private String status = "Available";
+    private String status = "Tersedia";
     private String tanggalPerolehan;
 }
