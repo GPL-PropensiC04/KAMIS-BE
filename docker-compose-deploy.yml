@@ -117,5 +117,9 @@ services:
       - RESOURCE_URL=http://resource:8085/api
 
 networks:
+  shared-network:
+    external: true
+    driver: bridge
+    name: kamis-network 
   default:
     driver: bridge
