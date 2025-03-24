@@ -166,7 +166,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         assetTempResponseDTO.setAssetType(assetTemp.getAssetType());
         assetTempResponseDTO.setAssetPrice(assetTemp.getAssetPrice());
         assetTempResponseDTO.setFotoContentType(assetTemp.getFotoContentType());
-        assetTempResponseDTO.setFotoUrl("/api/purchase/asset/" + assetTemp.getId() + "/foto"); // Tambahkan ini
+        assetTempResponseDTO.setFotoUrl("/purchase/asset/" + assetTemp.getId() + "/foto"); // Tambahkan ini
         return assetTempResponseDTO;
     }
 

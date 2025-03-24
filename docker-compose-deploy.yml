@@ -6,44 +6,49 @@ services:
     container_name: asset_service
     restart: always
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
       - DATABASE_URL_ASSET=${DATABASE_URL_ASSET}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
-      - PROFILE_URL=http://asset:8080/api
-      - ASSET_URL=http://finance:8081/api
-      - FINANCE_URL=http://profile:8082/api
+      - PROFILE_URL=http://profile:8080/api
+      - ASSET_URL=http://asset:8081/api 
+      - FINANCE_URL=http://finance:8082/api
       - PROJECT_URL=http://project:8083/api
       - PURCHASE_URL=http://purchase:8084/api
       - RESOURCE_URL=http://resource:8085/api
+    networks:
+      - kamis-network
+
   finance:
     image: gcr.io/propensi-451504/finance:latest
     container_name: finance_service
     restart: always
     ports:
-      - "8081:8081"
+      - "8082:8082"
     environment:
       - DATABASE_URL_FINANCE=${DATABASE_URL_FINANCE}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
-      - PROFILE_URL=http://asset:8080/api
-      - ASSET_URL=http://finance:8081/api
-      - FINANCE_URL=http://profile:8082/api
+      - PROFILE_URL=http://profile:8080/api
+      - ASSET_URL=http://asset:8081/api
+      - FINANCE_URL=http://finance:8082/api
       - PROJECT_URL=http://project:8083/api
       - PURCHASE_URL=http://purchase:8084/api
       - RESOURCE_URL=http://resource:8085/api
+    networks:
+      - kamis-network
 
   profile:
     image: gcr.io/propensi-451504/profile:latest
     container_name: profile_service
     restart: always
     ports:
-      - "8082:8082"
+      - "8080:8080"
     environment:
       - DATABASE_URL_PROFILE=${DATABASE_URL_PROFILE}
       - DATABASE_USERNAME=${DATABASE_USERNAME}
@@ -51,13 +56,14 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
-      - PROFILE_URL=http://asset:8080/api
-      - ASSET_URL=http://finance:8081/api
-      - FINANCE_URL=http://profile:8082/api
+      - PROFILE_URL=http://profile:8080/api
+      - ASSET_URL=http://asset:8081/api
+      - FINANCE_URL=http://finance:8082/api
       - PROJECT_URL=http://project:8083/api
       - PURCHASE_URL=http://purchase:8084/api
       - RESOURCE_URL=http://resource:8085/api
-    
+    networks:
+      - kamis-network
 
   project:
     image: gcr.io/propensi-451504/project:latest
@@ -71,12 +77,14 @@ services:
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
-      - PROFILE_URL=http://asset:8080/api
-      - ASSET_URL=http://finance:8081/api
-      - FINANCE_URL=http://profile:8082/api
+      - PROFILE_URL=http://profile:8080/api
+      - ASSET_URL=http://asset:8081/api
+      - FINANCE_URL=http://finance:8082/api
       - PROJECT_URL=http://project:8083/api
       - PURCHASE_URL=http://purchase:8084/api
       - RESOURCE_URL=http://resource:8085/api  
+    networks:
+      - kamis-network
 
   purchase:
     image: gcr.io/propensi-451504/purchase:latest
@@ -90,12 +98,14 @@ services:
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
-      - PROFILE_URL=http://asset:8080/api
-      - ASSET_URL=http://finance:8081/api
-      - FINANCE_URL=http://profile:8082/api
+      - PROFILE_URL=http://profile:8080/api
+      - ASSET_URL=http://asset:8081/api
+      - FINANCE_URL=http://finance:8082/api
       - PROJECT_URL=http://project:8083/api
       - PURCHASE_URL=http://purchase:8084/api
       - RESOURCE_URL=http://resource:8085/api
+    networks:
+      - kamis-network
 
   resource:
     image: gcr.io/propensi-451504/resource:latest
@@ -109,15 +119,17 @@ services:
       - DATABASE_PASSWORD=${DATABASE_PASSWORD}
       - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
-      - PROFILE_URL=http://asset:8080/api
-      - ASSET_URL=http://finance:8081/api
-      - FINANCE_URL=http://profile:8082/api
+      - PROFILE_URL=http://profile:8080/api
+      - ASSET_URL=http://asset:8081/api
+      - FINANCE_URL=http://finance:8082/api
       - PROJECT_URL=http://project:8083/api
       - PURCHASE_URL=http://purchase:8084/api
       - RESOURCE_URL=http://resource:8085/api
+    networks:
+      - kamis-network
 
 networks:
-  shared-network:
+  kamis-network:
     external: true
     driver: bridge
     name: kamis-network 

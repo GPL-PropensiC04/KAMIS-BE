@@ -175,7 +175,7 @@ public class PurchaseController {
     }
 
     @GetMapping("/asset/{id}/foto")
-    public ResponseEntity<?> getAssetFoto(@PathVariable Long id) {
+    public ResponseEntity<?> getAssetFoto(@PathVariable(name = "id") Long id) {
         try {
             AssetTemp asset = assetTempRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Asset tidak ditemukan"));
