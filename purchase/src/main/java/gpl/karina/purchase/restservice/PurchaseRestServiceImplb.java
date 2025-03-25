@@ -86,6 +86,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     }
 
     private ResourceResponseDTO addResourceToResourceDatabase(Long resourceId, Integer resourceStock) throws IllegalArgumentException {
+        System.out.println(resourceUrl);
         var response = webClientResource
                 .put()
                 .uri("/resource/addToDb/" + resourceId + "/" + resourceStock)
@@ -98,7 +99,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     }
 
     public AssetTempResponseDTO addAssetToAssetDatabase(Map<String, Object> assetRequest) {
-
+        System.out.println(assetUrl);
         MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
         formData.add("platNomor", assetRequest.get("platNomor"));
         formData.add("assetName", assetRequest.get("assetName"));
