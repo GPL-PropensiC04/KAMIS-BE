@@ -31,7 +31,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl, "https://www.sikamis.com", "http://localhost:5173/", "http://localhost:5174/")
+                        .allowedOrigins(profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl, "https://www.sikamis.com")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
