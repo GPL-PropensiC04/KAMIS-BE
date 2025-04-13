@@ -4,9 +4,9 @@ spring:
   application:
     name: finance.report
   datasource:
-    url: ${DATABASE_URL_DEV}
-    username: ${DATABASE_USERNAME_DEV}
-    password: ${DATABASE_PASSWORD_DEV}
+    url: ${DATABASE_URL_FINANCE}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
   thymeleaf:
     cache: false
   devtools:
@@ -22,12 +22,17 @@ spring:
             non_contextual_creation: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 finance.report:
   app:
     jwtPublicKey: ${JWT_PUBLIC_KEY}
     jwtExpirationMs: ${JWT_EXPIRATION_MS}
-
+    profileUrl: ${PROFILE_URL}
+    financeUrl: ${FINANCE_URL}
+    projectUrl: ${PROJECT_URL}
+    purchaseUrl: ${PURCHASE_URL}
+    resourceUrl: ${RESOURCE_URL}
+    assetUrl: ${ASSET_URL}
 
 logging:
   file:
