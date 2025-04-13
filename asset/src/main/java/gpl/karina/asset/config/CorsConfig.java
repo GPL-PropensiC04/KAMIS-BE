@@ -25,13 +25,16 @@ public class CorsConfig {
     @Value("${asset.app.resourceUrl}")
     private String resourceUrl;
 
+    @Value("${asset.app.frontendUrl}")
+    private String frontendUrl;
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl, "https://www.sikamis.com")
+                        .allowedOrigins(profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl, frontendUrl)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

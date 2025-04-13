@@ -33,7 +33,7 @@ finance.report:
     purchaseUrl: ${PURCHASE_URL}
     resourceUrl: ${RESOURCE_URL}
     assetUrl: ${ASSET_URL}
-
+    frontendUrl: ${FRONTEND_URL}
 logging:
   file:
     name: logs/finance-report-application.log

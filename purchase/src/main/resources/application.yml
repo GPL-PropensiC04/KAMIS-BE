@@ -37,7 +37,7 @@ purchase:
     projectUrl: ${PROJECT_URL}
     purchaseUrl: ${PURCHASE_URL}
     resourceUrl: ${RESOURCE_URL}
-
+    frontendUrl: ${FRONTEND_URL}
 logging:
   file:
     name: logs/purchase-application.log

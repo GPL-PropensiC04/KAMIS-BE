@@ -24,13 +24,15 @@ public class CorsConfig {
     @Value("${profile.app.resourceUrl}")
     private String resourceUrl;
 
+    @Value("${profile.app.frontendUrl}")
+    private String frontendurl;
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry){
                 registry.addMapping("/**")
-                        .allowedOrigins("https://www.sikamis.com",profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl, "http://localhost:5173")
+                        .allowedOrigins(frontendurl,profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl)
                         .allowedMethods("GET", "POST", "PUT", "DELETE" , "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

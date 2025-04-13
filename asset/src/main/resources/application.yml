@@ -33,6 +33,7 @@ asset:
     projectUrl: ${PROJECT_URL}
     purchaseUrl: ${PURCHASE_URL}
     resourceUrl: ${RESOURCE_URL}
+    frontendUrl: ${FRONTEND_URL}
 logging:
   file:
     name: logs/asset-application.log
