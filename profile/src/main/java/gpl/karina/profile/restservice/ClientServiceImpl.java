@@ -1,5 +1,9 @@
 package gpl.karina.profile.restservice;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import gpl.karina.profile.model.Client;
@@ -53,4 +57,22 @@ public class ClientServiceImpl implements ClientService {
 
         return clientToClientResponseDTO(newClient);
     }
+
+    @Override
+    public List<ClientResponseDTO> getAllClient() {
+        var listClient = clientRepository.findAll();
+        var listClientResponseDTO = new ArrayList<ClientResponseDTO>();
+        listClient.forEach(asset -> {
+            var clientResponseDTO = clientToClientResponseDTO(asset);
+            listClientResponseDTO.add(clientResponseDTO);
+        });
+        return listClientResponseDTO;
+    }
+
+    // @Override
+    // public ClientResponseDTO getClientById(UUID id) {
+    //     return clientRepository.findById(id)
+    //         .map(this::clientToClientResponseDTO)
+    //         .orElse(null);
+    // }
 }
