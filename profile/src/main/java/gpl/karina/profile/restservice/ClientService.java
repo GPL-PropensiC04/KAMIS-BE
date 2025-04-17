@@ -9,5 +9,5 @@ import gpl.karina.profile.restdto.response.ClientResponseDTO;
 public interface ClientService {
     public ClientResponseDTO addClient(AddClientRequestDTO addClientRequestDTO);
     List<ClientResponseDTO> getAllClient();
-    // ClientResponseDTO getClientById(UUID id) throws Exception;
+    ClientResponseDTO getClientById(UUID id) throws Exception;
 }

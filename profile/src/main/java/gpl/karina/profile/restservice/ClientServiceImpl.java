@@ -69,10 +69,10 @@ public class ClientServiceImpl implements ClientService {
         return listClientResponseDTO;
     }
 
-    // @Override
-    // public ClientResponseDTO getClientById(UUID id) {
-    //     return clientRepository.findById(id)
-    //         .map(this::clientToClientResponseDTO)
-    //         .orElse(null);
-    // }
+    @Override
+    public ClientResponseDTO getClientById(UUID id) {
+        return clientRepository.findById(id)
+            .map(this::clientToClientResponseDTO)
+            .orElse(null);
+    }
 }
