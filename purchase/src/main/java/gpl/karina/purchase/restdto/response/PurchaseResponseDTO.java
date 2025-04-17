@@ -23,5 +23,4 @@ public class PurchaseResponseDTO {
     private String purchaseNote;
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
     private Date purchasePaymentDate;
-    private List<LogPurchaseResponseDTO> purchaseLogs;
 }
