@@ -72,23 +72,23 @@ public class ClientRestController {
         return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     }
 
-    // @GetMapping("/{id}")
-    // public ResponseEntity<?> getClientDetail(@PathVariable("id") UUID id) {
-    //     var baseResponseDTO = new BaseResponseDTO<ClientResponseDTO>();
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getClientDetail(@PathVariable("id") UUID id) {
+        var baseResponseDTO = new BaseResponseDTO<ClientResponseDTO>();
         
-    //     try {
-    //         ClientResponseDTO client = clientService.getClientById(id);
-    //         baseResponseDTO.setStatus(HttpStatus.OK.value());
-    //         baseResponseDTO.setData(client);
-    //         baseResponseDTO.setMessage("Detail Client berhasil ditemukan");
-    //         baseResponseDTO.setTimestamp(new Date());
-    //         return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
-    //     } catch (Exception e) {
-    //         baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
-    //         baseResponseDTO.setData(null);
-    //         baseResponseDTO.setMessage("Client dengan ID " + id + " tidak ditemukan");
-    //         baseResponseDTO.setTimestamp(new Date());
-    //         return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
-    //     }
-    // }
+        try {
+            ClientResponseDTO client = clientService.getClientById(id);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setData(client);
+            baseResponseDTO.setMessage("Detail Client berhasil ditemukan");
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setMessage("Client dengan ID " + id + " tidak ditemukan");
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        }
+    }
 }
