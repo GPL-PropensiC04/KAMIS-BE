@@ -65,7 +65,7 @@ public class ClientRestController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> listClient(
+    public ResponseEntity<BaseResponseDTO<List<ClientListResponseDTO>>> listClient(
             @RequestParam(required = false) String nameClient, @RequestParam(required = false) Boolean typeClient) {
             var baseResponseDTO = new BaseResponseDTO<List<ClientListResponseDTO>>();
         List<ClientListResponseDTO> listClient;
@@ -89,7 +89,7 @@ public class ClientRestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getClientDetail(@PathVariable("id") UUID id) {
+    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> getClientDetail(@PathVariable("id") UUID id) {
         var baseResponseDTO = new BaseResponseDTO<ClientResponseDTO>();
         
         try {
