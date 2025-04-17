@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,9 +27,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import org.springframework.beans.factory.annotation.Value;
 import gpl.karina.purchase.model.AssetTemp;
+import gpl.karina.purchase.model.LogPurchase;
 import gpl.karina.purchase.model.Purchase;
 import gpl.karina.purchase.model.ResourceTemp;
 import gpl.karina.purchase.repository.AssetTempRepository;
+import gpl.karina.purchase.repository.LogPurchaseRepository;
 import gpl.karina.purchase.repository.PurchaseRepository;
 import gpl.karina.purchase.repository.ResourceTempRepository;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
@@ -38,6 +41,7 @@ import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseStatusDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
+import gpl.karina.purchase.restdto.response.LogPurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
@@ -60,6 +64,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
     private final ResourceTempRepository resourceTempRepository;
+    private final LogPurchaseRepository logPurchaseRepository;
     private final WebClient.Builder webClientBuilder;
     private final HttpServletRequest request;
     private final JwtUtils jwtUtils;
@@ -71,13 +76,14 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
     public PurchaseRestServiceImplb(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository,
             ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder,
-            HttpServletRequest request, JwtUtils jwtUtils) {
+            HttpServletRequest request, JwtUtils jwtUtils, LogPurchaseRepository logPurchaseRepository) {
         this.purchaseRepository = purchaseRepository;
         this.assetTempRepository = assetTempRepository;
         this.resourceTempRepository = resourceTempRepository;
         this.webClientBuilder = webClientBuilder;
         this.request = request;
         this.jwtUtils = jwtUtils;
+        this.logPurchaseRepository = logPurchaseRepository;
     }
 
     @PostConstruct
@@ -215,6 +221,15 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         return assetTempResponseDTO;
     }
 
+    private LogPurchaseResponseDTO logPurchaseToLogPurchaseResponseDTO(LogPurchase logPurchase) {
+        LogPurchaseResponseDTO logPurchaseResponseDTO = new LogPurchaseResponseDTO();
+        logPurchaseResponseDTO.setId(logPurchase.getId());
+        logPurchaseResponseDTO.setUser(logPurchase.getUsername());
+        logPurchaseResponseDTO.setAction(logPurchase.getAction());
+        logPurchaseResponseDTO.setActionDate(logPurchase.getActionDate());
+        return logPurchaseResponseDTO;
+    }
+
     private PurchaseResponseDTO purchaseToPurchaseResponseDTO(Purchase purchase) {
         PurchaseResponseDTO purchaseResponseDTO = new PurchaseResponseDTO();
         purchaseResponseDTO.setPurchaseId(purchase.getId());
@@ -244,8 +259,31 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         }
 
         purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
+        
+        List<LogPurchase> logs = purchase.getPurchaseLogs();
+        List<LogPurchaseResponseDTO> logsDTO = new ArrayList<>();
+        for (LogPurchase log : logs) {
+            logsDTO.add(logPurchaseToLogPurchaseResponseDTO(log));
+        }
+        purchaseResponseDTO.setPurchaseLogs(logsDTO);
 
         return purchaseResponseDTO;
+    }
+
+    private LogPurchase addLog(String action) {
+        LogPurchase log = new LogPurchase();
+
+        String username = jwtUtils.getUserNameFromJwtToken(getTokenFromRequest());
+
+        log.setUsername(username);
+        log.setAction(action);
+        
+        Date now = new Date();
+        log.setActionDate(now);
+
+        LogPurchase newLog = logPurchaseRepository.save(log);
+
+        return newLog;
     }
 
     @Override
@@ -335,6 +373,11 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         id += String.format("%03d", newIdNumber);
         purchase.setId(id);
 
+        purchase.setPurchaseLogs(new ArrayList<>());
+
+        LogPurchase newLog = addLog("Menambahkan Pembelian " + purchase.getId());
+        purchase.getPurchaseLogs().add(newLog);
+
         Purchase newPurchase = purchaseRepository.save(purchase);
 
         return purchaseToPurchaseResponseDTO(newPurchase);
@@ -422,10 +465,40 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             throw new IllegalArgumentException("Detail Pembelian sudah tidak bisa diperbarui.");
         }
 
+        StringBuilder logBuilder = new StringBuilder("Memperbarui Pembelian:\n");
+
+        boolean hasChange = false;
+
+        // Cek perubahan supplier
+        if (!Objects.equals(purchase.getPurchaseSupplier(), updatePurchaseDTO.getPurchaseSupplier())) {
+            logBuilder.append("  - Mengubah supplier menjadi ").append(updatePurchaseDTO.getPurchaseSupplier()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan note
+        if (!Objects.equals(purchase.getPurchaseNote(), updatePurchaseDTO.getPurchaseNote())) {
+            logBuilder.append("  - Mengubah catatan menjadi '").append(updatePurchaseDTO.getPurchaseNote()).append("'\n");
+            hasChange = true;
+        }
+
+        // Jika tipe resource, cek perubahan resource
+        boolean purchaseType = purchase.isPurchaseType();
+        if (purchaseType) {
+            logBuilder.append("  - Memperbarui daftar resource (total: ")
+                    .append(updatePurchaseDTO.getPurchaseResource().size())
+                    .append(" item)\n");
+            hasChange = true;
+        }
+
+        if (!hasChange) {
+            logBuilder.append("  - Tidak ada perubahan signifikan\n");
+        }
+
+        LogPurchase newLog = addLog(logBuilder.toString());
+        purchase.getPurchaseLogs().add(newLog);
+
         purchase.setPurchaseSupplier(updatePurchaseDTO.getPurchaseSupplier());
         purchase.setPurchaseNote(updatePurchaseDTO.getPurchaseNote());
-
-        boolean purchaseType = purchase.isPurchaseType();
         if (purchaseType) {
             List<ResourceTemp> existingResources = new ArrayList<>(purchase.getPurchaseResource());
             List<ResourceTempDTO> resourceDTOs = updatePurchaseDTO.getPurchaseResource();
@@ -495,6 +568,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                         "Anda memilih tipe pembelian aset, pastikan tidak menginput data resource.");
             }
         }
+
 
         Purchase updatedPurchase = purchaseRepository.save(purchase);
 
@@ -621,6 +695,10 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         }
         purchase.setPurchaseNote(updatePurchaseStatusDTO.getPurchaseNote());
         purchase.setPurchaseUpdateDate(new Date());
+
+        LogPurchase newLog = addLog("Mengubah Status Pembelian menjadi " + purchase.getPurchaseStatus());
+        purchase.getPurchaseLogs().add(newLog);
+
         Purchase updatedPurchase = purchaseRepository.save(purchase);
         return purchaseToPurchaseResponseDTO(updatedPurchase);
     }
@@ -676,6 +754,10 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         }
         purchase.setPurchaseNote(updatePurchaseStatusDTO.getPurchaseNote());
         purchase.setPurchaseUpdateDate(new Date());
+
+        LogPurchase newLog = addLog("Mengubah Status Pembelian menjadi " + purchase.getPurchaseStatus());
+        purchase.getPurchaseLogs().add(newLog);
+
         Purchase updatedPurchase = purchaseRepository.save(purchase);
         return purchaseToPurchaseResponseDTO(updatedPurchase);
     }
@@ -731,6 +813,9 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         purchase.setPurchaseNote(updatePurchaseStatusDTO.getPurchaseNote());
         purchase.setPurchasePaymentDate(new Date());
         purchase.setPurchaseUpdateDate(new Date());
+
+        LogPurchase newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
+        purchase.getPurchaseLogs().add(newLog);
 
         Purchase updatedPurchase = purchaseRepository.save(purchase);
         return purchaseToPurchaseResponseDTO(updatedPurchase);
