@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import gpl.karina.profile.model.Client;
 import gpl.karina.profile.repository.ClientRepository;
 import gpl.karina.profile.restdto.request.AddClientRequestDTO;
+import gpl.karina.profile.restdto.request.UpdateClientRequestDTO;
 import gpl.karina.profile.restdto.response.ClientResponseDTO;
 import jakarta.transaction.Transactional;
 
@@ -74,5 +75,27 @@ public class ClientServiceImpl implements ClientService {
         return clientRepository.findById(id)
             .map(this::clientToClientResponseDTO)
             .orElse(null);
+    }
+
+    @Override
+    public ClientResponseDTO updateClient(UUID id, UpdateClientRequestDTO updateClientRequestDTO) {
+        Client client = clientRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Client not found"));
+
+        if (updateClientRequestDTO.getNameClient() != null) {
+            client.setNameClient(updateClientRequestDTO.getNameClient());
+        }
+        if (updateClientRequestDTO.getNoTelpClient() != null) {
+            client.setNoTelpClient(updateClientRequestDTO.getNoTelpClient());
+        }
+        if (updateClientRequestDTO.getEmailClient() != null) {
+            client.setEmailClient(updateClientRequestDTO.getEmailClient());
+        }
+        if (updateClientRequestDTO.getAddressClient() != null) {
+            client.setAddressClient(updateClientRequestDTO.getAddressClient());
+        }
+
+        Client updatedClient = clientRepository.save(client);
+        return clientToClientResponseDTO(updatedClient);
     }
 }
