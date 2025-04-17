@@ -6,17 +6,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import gpl.karina.project.model.Project;
+import gpl.karina.project.model.ProjectAssetUsage;
+import gpl.karina.project.model.ProjectResourceUsage;
+
 import org.springframework.core.ParameterizedTypeReference;
 
-import gpl.karina.project.restdto.AssetDetailDTO;
-import gpl.karina.project.restdto.ClientDetailDTO;
-import gpl.karina.project.restdto.ResourceDetailDTO;
+import gpl.karina.project.restdto.AssetUsageDTO;
+import gpl.karina.project.restdto.ResourceUsageDTO;
+import gpl.karina.project.restdto.fetch.AssetDetailDTO;
+import gpl.karina.project.restdto.fetch.ClientDetailDTO;
+import gpl.karina.project.restdto.fetch.ResourceDetailDTO;
 import gpl.karina.project.restdto.request.ProjectRequestDTO;
-
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseDTO;
 import gpl.karina.project.repository.ProjectRepository;
@@ -95,35 +102,36 @@ public class ProjectServiceImpl implements ProjectService {
         return clientDetailDTO;
     }
 
-    private Long fetchAssetById(String id) {
+    private AssetDetailDTO fetchAssetDetailById(String id) {
         var response = webClientAsset
                 .get()
                 .uri("/api/asset/" + id)
                 .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<Long>>() {
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {
                 })
                 .block();
         if (response == null || response.getData() == null) {
             throw new IllegalArgumentException("Asset not found with id: " + id);
         }
-        Long assetId = response.getData();
-        return assetId;
+        
+        return response.getData();
     }
-    private Long fetchResourceById(String id) {
+
+    private ResourceDetailDTO fetchResourceDetailById(String id) {
         var response = webClientResource
                 .get()
-                .uri("/api/resource/" + id)
+                .uri("/api/resource/find/" + id)
                 .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<Long>>() {
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {
                 })
                 .block();
         if (response == null || response.getData() == null) {
             throw new IllegalArgumentException("Resource not found with id: " + id);
         }
-        Long resourceId = response.getData();
-        return resourceId;
+        
+        return response.getData();
     }
 
     private Boolean validateResource(String id) {
@@ -145,6 +153,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
         return isValid;
     }
+
 
     private Boolean validateAsset(String platNomor) {
         var response = webClientAsset
@@ -213,64 +222,132 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectDescription(project.getProjectDescription());
         projectResponseDTO.setProjectDeliveryAddress(project.getProjectDeliveryAddress());
         projectResponseDTO.setProjectPickupAddress(project.getProjectPickupAddress());
-        projectResponseDTO.setProjectUseAsset(project.getProjectUseAsset());
-        projectResponseDTO.setProjectUseResource(project.getProjectUseResource());
+        projectResponseDTO.setProjectPHLCount(project.getProjectPHLCount());
+        projectResponseDTO.setProjectTotalPemasukkan(project.getProjectTotalPemasukkan());
+        projectResponseDTO.setProjectTotalPengeluaran(project.getProjectTotalPengeluaran());
+
+        // Instead, map the asset usages
+        if (project.getProjectUseAsset() != null) {
+            System.out.println("Project Use Asset: " + project.getProjectUseAsset().size());
+            // Map the asset usages to DTOs
+            List<AssetUsageDTO> assetUsageDTOs = project.getProjectUseAsset().stream()
+                .map(assetUsage -> {
+                    AssetUsageDTO dto = new AssetUsageDTO();
+                    dto.setPlatNomor(assetUsage.getPlatNomor());
+                    dto.setAssetFuelCost(assetUsage.getAssetFuelCost());
+                    dto.setAssetUseCost(assetUsage.getAssetUseCost());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+            projectResponseDTO.setProjectUseAsset(assetUsageDTOs);
+        }
+        
+        // Map the resource usages
+        if (project.getProjectUseResource() != null) {
+            System.out.println("Project Use Resource: " + project.getProjectUseResource().size());
+            List<ResourceUsageDTO> resourceUsageDTOs = project.getProjectUseResource().stream()
+                .map(resourceUsage -> {
+                    ResourceUsageDTO dto = new ResourceUsageDTO();
+                    dto.setResourceId(resourceUsage.getResourceId());
+                    dto.setResourceStockUsed(resourceUsage.getQuantityUsed());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+            projectResponseDTO.setProjectUseResource(resourceUsageDTOs);
+        }
+
         return projectResponseDTO;
     }
+    
 
     @Override
     public ProjectResponseDTO addProject(ProjectRequestDTO projectRequestDTO) throws Exception {
         if (fetchClientById(projectRequestDTO.getProjectClientId()).getId() == null) {
             throw new IllegalArgumentException("Pastikan ID Klien sudah terdaftar dalam sistem");
         }
+
         Calendar calendar = Calendar.getInstance();
         Date today = new Date();
         calendar.setTime(today);
+
         String id = "";
         Project newProject = new Project();
+
         Long projectNumber = fetchTodayProjectCount(today) + 1;
         String todayFormatted = String.format("%02d", calendar.get(Calendar.YEAR) % 100)
                 + String.format("%02d", calendar.get(Calendar.MONTH) + 1)
                 + String.format("%02d", calendar.get(Calendar.DAY_OF_MONTH));
+        
+        Long totalPemasukkan = 0L;
+        Long totalPengeluaran = 0L;
         newProject.setProjectName(projectRequestDTO.getProjectName());
         newProject.setProjectStatus("Direncanakan");
         newProject.setProjectDescription(projectRequestDTO.getProjectDescription());
         newProject.setProjectClientId(projectRequestDTO.getProjectClientId());
         newProject.setProjectType(projectRequestDTO.getProjectType());
+
         if (newProject.getProjectType()) {// Distribusi
+            List<ProjectAssetUsage> projectAssetUsages = new ArrayList<>();
+            id = "D" + String.format("%03d", projectNumber) + todayFormatted;
+            
             if (projectRequestDTO.getProjectUseAsset() != null) {
-                for (String assetId : projectRequestDTO.getProjectUseAsset()) {
-                    if (!validateAsset(assetId)) {
+                for (AssetUsageDTO assetItem : projectRequestDTO.getProjectUseAsset()) {
+                    if (!validateAsset(assetItem.getPlatNomor())) {
                         throw new IllegalArgumentException("Pastikan ID Aset sudah terdaftar dalam sistem");
                     }
+                    AssetDetailDTO assetDetail = fetchAssetDetailById(assetItem.getPlatNomor());
+                    totalPengeluaran += assetDetail.getNilaiPerolehan();
+                    ProjectAssetUsage projectAssetUsage = new ProjectAssetUsage();
+                    projectAssetUsage.setPlatNomor(assetItem.getPlatNomor());
+                    projectAssetUsage.setProject(newProject);
+                    projectAssetUsage.setAssetFuelCost(assetItem.getAssetFuelCost());
+                    projectAssetUsage.setAssetUseCost(assetItem.getAssetUseCost());
+                    projectAssetUsages.add(projectAssetUsage);
                 }
             }
-            id = "D" + String.format("%03d", projectNumber) + todayFormatted;
+            
             newProject.setId(id);
             newProject.setProjectDeliveryAddress(projectRequestDTO.getProjectDeliveryAddress());
             newProject.setProjectPickupAddress(projectRequestDTO.getProjectPickupAddress());
-            newProject.setProjectUseAsset(projectRequestDTO.getProjectUseAsset());
             newProject.setProjectPHLCount(projectRequestDTO.getProjectPHLCount());
             newProject.setProjectUseResource(null);
+            newProject.setProjectTotalPengeluaran(totalPengeluaran);
+            newProject.setProjectUseAsset(projectAssetUsages);
             newProject.setProjectStartDate(projectRequestDTO.getProjectStartDate());
             newProject.setProjectEndDate(projectRequestDTO.getProjectEndDate());
+
+            
         } else {// Penjualan
+            List<ProjectResourceUsage> projectResourceUsages = new ArrayList<>();
+            id = "P" + String.format("%03d", projectNumber) + todayFormatted;
+
             if (projectRequestDTO.getProjectUseResource() != null) {
-                for (String resourceId : projectRequestDTO.getProjectUseResource()) {
-                    if (!validateResource(resourceId)) {
+                for (ResourceUsageDTO resourceItem : projectRequestDTO.getProjectUseResource()) {
+                    if (!validateResource(resourceItem.getResourceId())) {
                         throw new IllegalArgumentException("Pastikan ID Resource sudah terdaftar dalam sistem");
                     }
+                    ResourceDetailDTO resourceDetail = fetchResourceDetailById(resourceItem.getResourceId());
+                    totalPemasukkan += resourceDetail.getResourcePrice();
+                    ProjectResourceUsage projectResourceUsage = new ProjectResourceUsage();
+                    projectResourceUsage.setResourceId(resourceItem.getResourceId());
+                    projectResourceUsage.setSellPrice(resourceDetail.getResourcePrice());
+                    projectResourceUsage.setQuantityUsed(resourceDetail.getResourceStock());
+                    projectResourceUsage.setProject(newProject);
+                    projectResourceUsages.add(projectResourceUsage);
                 }
             }
-            id = "P" + String.format("%03d", projectNumber) + todayFormatted;
+
+            newProject.setProjectTotalPemasukkan(totalPemasukkan);
             newProject.setId(id);
-            newProject.setProjectUseResource(projectRequestDTO.getProjectUseResource());
             newProject.setProjectUseAsset(null);
             newProject.setProjectDeliveryAddress(projectRequestDTO.getProjectDeliveryAddress());
             newProject.setProjectPickupAddress(null);
             newProject.setProjectPHLCount(null);
             newProject.setProjectStartDate(projectRequestDTO.getProjectStartDate());
             newProject.setProjectEndDate(projectRequestDTO.getProjectEndDate());
+            newProject.setProjectUseResource(projectResourceUsages);
+
+
         }
         newProject.setCreatedDate(today);
         Project savedProject = projectRepository.save(newProject);

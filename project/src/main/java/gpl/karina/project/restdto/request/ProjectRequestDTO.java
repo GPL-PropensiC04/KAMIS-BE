@@ -7,6 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import gpl.karina.project.restdto.AssetUsageDTO;
+import gpl.karina.project.restdto.ResourceUsageDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,10 +33,9 @@ public class ProjectRequestDTO {
     @NotNull(message = "ID Klien tidak boleh kosong")
     private String projectClientId;
 
-    List<String> projectUseAsset;
+    List<AssetUsageDTO> projectUseAsset;
+    List<ResourceUsageDTO> projectUseResource;
 
-    List<String> projectUseResource;
-    
     @NotNull(message = "Alamat pengiriman tidak boleh kosong")
     private String projectDeliveryAddress;
     
@@ -47,4 +48,9 @@ public class ProjectRequestDTO {
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
     private Date projectEndDate;
+
+    
+    private Long projectTotalPemasukkan;
+    
+    private Long projectTotalPengeluaran;
 }

@@ -1,4 +1,4 @@
-package gpl.karina.project.restdto;
+package gpl.karina.project.restdto.fetch;
 
 import lombok.Data;
 

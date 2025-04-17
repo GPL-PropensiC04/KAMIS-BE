@@ -3,17 +3,17 @@ package gpl.karina.project.restdto.response;
 import java.util.Date;
 import java.util.List;
 
-import org.hibernate.annotations.CreationTimestamp;
+
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+
+import gpl.karina.project.restdto.AssetUsageDTO;
+import gpl.karina.project.restdto.ResourceUsageDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,10 +32,10 @@ public class ProjectResponseDTO {
     private String projectClientId;
 
     
-    List<String> projectUseAsset;
+    List<AssetUsageDTO> projectUseAsset;
 
     
-    List<String> projectUseResource;
+    List<ResourceUsageDTO> projectUseResource;
     
     
     private String projectDeliveryAddress;
@@ -51,4 +51,8 @@ public class ProjectResponseDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
 
     private Date projectEndDate;
+
+    private Long projectTotalPemasukkan;
+    
+    private Long projectTotalPengeluaran;
 }

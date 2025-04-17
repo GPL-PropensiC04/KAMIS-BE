@@ -1,13 +1,16 @@
 package gpl.karina.project.restdto;
 
+
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class ClientDetailDTO {
-    private String id;
-    private String ClientName;
+public class AssetUsageDTO {
+    private String platNomor;
+    private Integer assetUseCost;    
+    private Integer assetFuelCost;
 }
