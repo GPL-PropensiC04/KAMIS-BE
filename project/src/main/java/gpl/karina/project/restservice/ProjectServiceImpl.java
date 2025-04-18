@@ -30,6 +30,7 @@ import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 import gpl.karina.project.restdto.response.SellResponseDTO;
+import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -202,17 +203,27 @@ public class ProjectServiceImpl implements ProjectService {
         return projectsCountToday;
     }
 
-    // private ProjectResponseDTO projectToProjectResponseAllDTO(Project project) {
-    // ProjectResponseDTO projectResponseDTO = new ProjectResponseDTO();
-    // projectResponseDTO.setId(project.getId());
-    // projectResponseDTO.setProjectName(project.getProjectName());
-    // projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
-    // projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
-    // projectResponseDTO.setProjectType(project.getProjectType());
-    // projectResponseDTO.setProjectStatus(project.getProjectStatus());
-    // projectResponseDTO.setProjectClientId(project.getProjectClientId());
-    // return projectResponseDTO;
-    // }
+    private listProjectResponseDTO projectToProjectResponseAllDTO(Project project) {
+        listProjectResponseDTO projectResponseDTO = new listProjectResponseDTO();
+        projectResponseDTO.setId(project.getId());
+        projectResponseDTO.setProjectName(project.getProjectName());
+        projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
+        projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
+        projectResponseDTO.setProjectType(project.getProjectType());
+        projectResponseDTO.setProjectStatus(project.getProjectStatus());
+        projectResponseDTO.setProjectClientId(project.getProjectClientId());
+        projectResponseDTO.setProjectDescription(project.getProjectDescription());
+        projectResponseDTO.setProjectTotalPemasukkan(project.getProjectTotalPemasukkan());
+
+        if (project instanceof Distribution) {
+            Distribution distributionProject = (Distribution) project;
+            Long totalPengeluaran = distributionProject.getProjectTotalPengeluaran();
+            projectResponseDTO.setProjectTotalPengeluaran(totalPengeluaran);
+        }
+
+        return projectResponseDTO;
+    }
+
     private ProjectResponseWrapperDTO projectToProjectResponseDetailDTO(Project project) {
         if (project instanceof Distribution) {
             // Cast to Distribution subclass to access specific fields
@@ -345,7 +356,7 @@ public class ProjectServiceImpl implements ProjectService {
                     projectAssetUsages.add(projectAssetUsage);
                 }
             }
-
+            distributionProject.setProjectTotalPemasukkan(projectRequestDTO.getProjectTotalPemasukkan());
             distributionProject.setProjectUseAsset(projectAssetUsages);
             distributionProject.setProjectTotalPengeluaran(totalPengeluaran);
 
@@ -407,4 +418,40 @@ public class ProjectServiceImpl implements ProjectService {
         return projectToProjectResponseDetailDTO(savedProject);
     }
 
+    @Override
+    public List<listProjectResponseDTO> getAllProject(
+            String idSearch, String projectStatus, String projectType,
+            String projectName, String projectClientId, Date projectStartDate,
+            Date projectEndDate
+    ) throws Exception {
+
+        final Date adjustedEndDate;
+        if (projectEndDate != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(projectEndDate);
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            calendar.set(Calendar.MILLISECOND, 999);
+            adjustedEndDate = calendar.getTime();
+        } else {
+            adjustedEndDate = null;
+        }
+
+        List<Project> projects = projectRepository.findAll();
+
+        List<Project> filteredProjects = projects.stream()
+                .filter(project -> idSearch == null || project.getId().toLowerCase().contains(idSearch.toLowerCase()))
+                .filter(project -> projectStatus == null || project.getProjectStatus().equalsIgnoreCase(projectStatus))
+                .filter(project -> projectType == null || project.getProjectType().toString().equalsIgnoreCase(projectType))
+                .filter(project -> projectName == null || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
+                .filter(project -> projectClientId == null || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
+                .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(projectStartDate))
+                .filter(project -> adjustedEndDate == null || !project.getProjectEndDate().after(adjustedEndDate))
+                .collect(Collectors.toList());
+
+        return filteredProjects.stream()
+                .map(this::projectToProjectResponseAllDTO)
+                .collect(Collectors.toList());
+    }
 }
