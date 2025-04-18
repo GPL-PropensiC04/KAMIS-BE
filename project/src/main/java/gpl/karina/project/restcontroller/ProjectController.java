@@ -115,7 +115,8 @@ public class ProjectController {
             @RequestBody UpdateProjectStatusRequestDTO updateProjectStatusDTO) {
         BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
         try {
-            ProjectResponseWrapperDTO updatedProject = projectService.updateProjectStatus(id, updateProjectStatusDTO.getProjectStatus());
+            ProjectResponseWrapperDTO updatedProject = projectService.updateProjectStatus(id,
+                    updateProjectStatusDTO.getProjectStatus());
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Status proyek berhasil diperbarui");
             response.setTimestamp(new Date());

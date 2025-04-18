@@ -209,6 +209,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
         projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
         projectResponseDTO.setProjectType(project.getProjectType());
+        projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
         projectResponseDTO.setProjectStatus(project.getProjectStatus());
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
         projectResponseDTO.setProjectDescription(project.getProjectDescription());
@@ -232,6 +233,7 @@ public class ProjectServiceImpl implements ProjectService {
                 DistributionResponseDTO dto = new DistributionResponseDTO();
                 dto.setId(distributionProject.getId());
                 dto.setProjectType(distributionProject.getProjectType());
+                dto.setProjectPaymentStatus(distributionProject.getProjectPaymentStatus());
                 dto.setProjectStatus(distributionProject.getProjectStatus());
                 dto.setProjectName(distributionProject.getProjectName());
                 dto.setProjectClientId(distributionProject.getProjectClientId());
@@ -241,6 +243,7 @@ public class ProjectServiceImpl implements ProjectService {
                 // Distribution-specific fields
                 dto.setProjectPickupAddress(distributionProject.getProjectPickupAddress());
                 dto.setProjectPHLCount(distributionProject.getProjectPHLCount());
+                dto.setProjectPHLPay(distributionProject.getProjectPHLPay());
                 dto.setProjectTotalPemasukkan(distributionProject.getProjectTotalPemasukkan());
                 dto.setProjectTotalPengeluaran(distributionProject.getProjectTotalPengeluaran());
                 dto.setProjectStartDate(distributionProject.getProjectStartDate());
@@ -272,6 +275,7 @@ public class ProjectServiceImpl implements ProjectService {
 
                 SellResponseDTO dto = new SellResponseDTO();
                 dto.setId(sellProject.getId());
+                dto.setProjectPaymentStatus(sellProject.getProjectPaymentStatus());
                 dto.setProjectType(sellProject.getProjectType());
                 dto.setProjectStatus(sellProject.getProjectStatus());
                 dto.setProjectName(sellProject.getProjectName());
@@ -335,6 +339,7 @@ public class ProjectServiceImpl implements ProjectService {
             // Set distribution-specific properties
             distributionProject.setProjectPickupAddress(projectRequestDTO.getProjectPickupAddress());
             distributionProject.setProjectPHLCount(projectRequestDTO.getProjectPHLCount());
+            distributionProject.setProjectPHLPay(projectRequestDTO.getProjectPHLPay());
 
             // Handle asset usage
             Long totalPengeluaran = 0L;
@@ -402,6 +407,7 @@ public class ProjectServiceImpl implements ProjectService {
         // Set common properties for all project types
         project.setProjectName(projectRequestDTO.getProjectName());
         project.setProjectStatus("Direncanakan");
+        project.setProjectPaymentStatus("Belum Dibayar");
         project.setProjectDescription(projectRequestDTO.getProjectDescription());
         project.setProjectClientId(projectRequestDTO.getProjectClientId());
         project.setProjectType(projectRequestDTO.getProjectType());
