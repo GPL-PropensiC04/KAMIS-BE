@@ -17,7 +17,8 @@ public class SellResponseDTO {
 
     private String id;
     private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
-    private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
+    private Boolean projectPaymentStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
+    private Integer projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
 
     private String projectName;
 
@@ -36,4 +37,6 @@ public class SellResponseDTO {
     private Date projectEndDate;
 
     private Long projectTotalPemasukkan;
+
+    private List<LogProjectResponseDTO> projectLogs;
 }

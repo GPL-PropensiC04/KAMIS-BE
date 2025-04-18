@@ -115,13 +115,22 @@ public class ProjectController {
             @RequestBody UpdateProjectStatusRequestDTO updateProjectStatusDTO) {
         BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
         try {
-            ProjectResponseWrapperDTO updatedProject = projectService.updateProjectStatus(id, updateProjectStatusDTO.getProjectStatus());
+            ProjectResponseWrapperDTO updatedProject = projectService.updateProjectStatus(id,
+                    updateProjectStatusDTO.getProjectStatus());
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Status proyek berhasil diperbarui");
             response.setTimestamp(new Date());
             response.setData(updatedProject);
             return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            // Untuk error validasi, gunakan BAD_REQUEST
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Gagal memperbarui status proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
+            // Untuk error lain (misal project benar-benar tidak ditemukan)
             response.setStatus(HttpStatus.NOT_FOUND.value());
             response.setMessage("Gagal memperbarui status proyek: " + e.getMessage());
             response.setTimestamp(new Date());

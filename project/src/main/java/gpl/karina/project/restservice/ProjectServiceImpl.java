@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import gpl.karina.project.model.Distribution;
+import gpl.karina.project.model.LogProject;
 import gpl.karina.project.model.Project;
 import gpl.karina.project.model.ProjectAssetUsage;
 import gpl.karina.project.model.ProjectResourceUsage;
@@ -28,9 +29,12 @@ import gpl.karina.project.restdto.fetch.ResourceDetailDTO;
 import gpl.karina.project.restdto.request.ProjectRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
+import gpl.karina.project.restdto.response.LogProjectResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 import gpl.karina.project.restdto.response.SellResponseDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
+import gpl.karina.project.security.jwt.JwtUtils;
+import gpl.karina.project.repository.LogProjectRepository;
 import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,13 +59,17 @@ public class ProjectServiceImpl implements ProjectService {
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     private final ProjectRepository projectRepository;
+    private final LogProjectRepository logProjectRepository;
     private final WebClient.Builder webClientBuilder;
+    private final JwtUtils jwtUtils;
 
     public ProjectServiceImpl(ProjectRepository projectRepository, WebClient.Builder webClientBuilder,
-            HttpServletRequest request) {
+            HttpServletRequest request, JwtUtils jwtUtils, LogProjectRepository logProjectRepository) {
         this.projectRepository = projectRepository;
         this.request = request;
         this.webClientBuilder = webClientBuilder;
+        this.jwtUtils = jwtUtils;
+        this.logProjectRepository = logProjectRepository;
     }
 
     @PostConstruct
@@ -202,6 +210,31 @@ public class ProjectServiceImpl implements ProjectService {
         return projectsCountToday;
     }
 
+    private LogProject addLog(String action) {
+        LogProject log = new LogProject();
+
+        String username = jwtUtils.getUserNameFromJwtToken(getTokenFromRequest());
+
+        log.setUsername(username);
+        log.setAction(action);
+        
+        Date now = new Date();
+        log.setActionDate(now);
+
+        LogProject newLog = logProjectRepository.save(log);
+
+        return newLog;
+    }
+
+    private LogProjectResponseDTO logProjectToLogProjectResponseDTO(LogProject logProject) {
+        LogProjectResponseDTO logProjectResponseDTO = new LogProjectResponseDTO();
+        logProjectResponseDTO.setId(logProject.getId());
+        logProjectResponseDTO.setUser(logProject.getUsername());
+        logProjectResponseDTO.setAction(logProject.getAction());
+        logProjectResponseDTO.setActionDate(logProject.getActionDate());
+        return logProjectResponseDTO;
+    }
+
     private listProjectResponseDTO projectToProjectResponseAllDTO(Project project) {
         listProjectResponseDTO projectResponseDTO = new listProjectResponseDTO();
         projectResponseDTO.setId(project.getId());
@@ -209,6 +242,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
         projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
         projectResponseDTO.setProjectType(project.getProjectType());
+        projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
         projectResponseDTO.setProjectStatus(project.getProjectStatus());
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
         projectResponseDTO.setProjectDescription(project.getProjectDescription());
@@ -232,6 +266,7 @@ public class ProjectServiceImpl implements ProjectService {
                 DistributionResponseDTO dto = new DistributionResponseDTO();
                 dto.setId(distributionProject.getId());
                 dto.setProjectType(distributionProject.getProjectType());
+                dto.setProjectPaymentStatus(distributionProject.getProjectPaymentStatus());
                 dto.setProjectStatus(distributionProject.getProjectStatus());
                 dto.setProjectName(distributionProject.getProjectName());
                 dto.setProjectClientId(distributionProject.getProjectClientId());
@@ -241,6 +276,7 @@ public class ProjectServiceImpl implements ProjectService {
                 // Distribution-specific fields
                 dto.setProjectPickupAddress(distributionProject.getProjectPickupAddress());
                 dto.setProjectPHLCount(distributionProject.getProjectPHLCount());
+                dto.setProjectPHLPay(distributionProject.getProjectPHLPay());
                 dto.setProjectTotalPemasukkan(distributionProject.getProjectTotalPemasukkan());
                 dto.setProjectTotalPengeluaran(distributionProject.getProjectTotalPengeluaran());
                 dto.setProjectStartDate(distributionProject.getProjectStartDate());
@@ -260,6 +296,13 @@ public class ProjectServiceImpl implements ProjectService {
                     dto.setProjectUseAsset(assetUsageDTOs);
                 }
 
+                List<LogProject> logs = project.getProjectLogs();
+                List<LogProjectResponseDTO> logsDTO = new ArrayList<>();
+                for (LogProject log : logs) {
+                    logsDTO.add(logProjectToLogProjectResponseDTO(log));
+                }
+                dto.setProjectLogs(logsDTO);
+
                 return ProjectResponseWrapperDTO.fromDistributionResponse(dto);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Error processing Distribution project: " + e.getMessage(), e);
@@ -272,6 +315,7 @@ public class ProjectServiceImpl implements ProjectService {
 
                 SellResponseDTO dto = new SellResponseDTO();
                 dto.setId(sellProject.getId());
+                dto.setProjectPaymentStatus(sellProject.getProjectPaymentStatus());
                 dto.setProjectType(sellProject.getProjectType());
                 dto.setProjectStatus(sellProject.getProjectStatus());
                 dto.setProjectName(sellProject.getProjectName());
@@ -295,6 +339,14 @@ public class ProjectServiceImpl implements ProjectService {
                             .collect(Collectors.toList());
                     dto.setProjectUseResource(resourceUsageDTOs);
                 }
+
+                List<LogProject> logs = project.getProjectLogs();
+                List<LogProjectResponseDTO> logsDTO = new ArrayList<>();
+                for (LogProject log : logs) {
+                    logsDTO.add(logProjectToLogProjectResponseDTO(log));
+                }
+                dto.setProjectLogs(logsDTO);
+
                 return ProjectResponseWrapperDTO.fromSellResponse(dto);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Error processing Sell project: " + e.getMessage(), e);
@@ -335,6 +387,7 @@ public class ProjectServiceImpl implements ProjectService {
             // Set distribution-specific properties
             distributionProject.setProjectPickupAddress(projectRequestDTO.getProjectPickupAddress());
             distributionProject.setProjectPHLCount(projectRequestDTO.getProjectPHLCount());
+            distributionProject.setProjectPHLPay(projectRequestDTO.getProjectPHLPay());
 
             // Handle asset usage
             Long totalPengeluaran = 0L;
@@ -401,7 +454,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Set common properties for all project types
         project.setProjectName(projectRequestDTO.getProjectName());
-        project.setProjectStatus("Direncanakan");
+        project.setProjectStatus(0);
+        project.setProjectPaymentStatus(false);
         project.setProjectDescription(projectRequestDTO.getProjectDescription());
         project.setProjectClientId(projectRequestDTO.getProjectClientId());
         project.setProjectType(projectRequestDTO.getProjectType());
@@ -409,6 +463,11 @@ public class ProjectServiceImpl implements ProjectService {
         project.setProjectStartDate(projectRequestDTO.getProjectStartDate());
         project.setProjectEndDate(projectRequestDTO.getProjectEndDate());
         project.setCreatedDate(today);
+
+        project.setProjectLogs(new ArrayList<>());
+
+        LogProject newLog = addLog("Menambahkan " + project.getId());
+        project.getProjectLogs().add(newLog);
 
         // Save the project (polymorphic save)
         Project savedProject = projectRepository.save(project);
@@ -441,7 +500,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         List<Project> filteredProjects = projects.stream()
                 .filter(project -> idSearch == null || project.getId().toLowerCase().contains(idSearch.toLowerCase()))
-                .filter(project -> projectStatus == null || project.getProjectStatus().equalsIgnoreCase(projectStatus))
+                .filter(project -> projectStatus == null || String.valueOf(project.getProjectStatus()).equalsIgnoreCase(projectStatus))
                 .filter(project -> projectType == null || project.getProjectType().toString().equalsIgnoreCase(projectType))
                 .filter(project -> projectName == null || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
                 .filter(project -> projectClientId == null || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
@@ -455,10 +514,36 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseWrapperDTO updateProjectStatus(String id, String projectStatus) throws Exception {
+    public ProjectResponseWrapperDTO updateProjectStatus(String id, Integer newStatus) throws Exception {
         Project project = projectRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
-        project.setProjectStatus(projectStatus);
+        Integer currentStatus = project.getProjectStatus();
+
+        // Tidak bisa update jika sudah selesai (2) atau batal (3)
+        if (currentStatus == 2 || currentStatus == 3) {
+            throw new IllegalArgumentException("Status proyek sudah selesai atau batal, tidak bisa diubah lagi.");
+        }
+
+        // Tidak bisa kembali ke 0 (Direncanakan) dari status 1 (Dilaksanakan)
+        if (currentStatus == 1 && newStatus == 0) {
+            throw new IllegalArgumentException("Status proyek tidak bisa dikembalikan ke 'Direncanakan' dari 'Dilaksanakan'.");
+        }
+
+        // Status batal (3) hanya bisa dari 0 (Direncanakan) atau 1 (Dilaksanakan), tidak dari 2 (Selesai)
+        if (newStatus == 3 && currentStatus == 2) {
+            throw new IllegalArgumentException("Status proyek tidak bisa dibatalkan jika sudah selesai.");
+        }
+
+        // Validasi selesai: tidak bisa kembali ke status sebelumnya
+        if (currentStatus == 0 && newStatus == 2) {
+            throw new IllegalArgumentException("Status proyek tidak bisa langsung menjadi 'Selesai' dari 'Direncanakan'.");
+        }
+
+        project.setProjectStatus(newStatus);
+
+        LogProject newLog = addLog("Mengubah Status menjadi " + newStatus);
+        project.getProjectLogs().add(newLog);
+
         Project updatedProject = projectRepository.save(project);
         return projectToProjectResponseDetailDTO(updatedProject);
     }
