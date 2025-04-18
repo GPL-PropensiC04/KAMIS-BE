@@ -1,52 +1,46 @@
-package gpl.karina.project.restdto.request;
+package gpl.karina.project.restdto.response;
 
 import java.util.Date;
 import java.util.List;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import gpl.karina.project.restdto.AssetUsageDTO;
-import gpl.karina.project.restdto.ResourceUsageDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.NotNull;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ProjectRequestDTO {
-    @NotNull(message = "Tipe Proyek tidak boleh kosong")
+public class DistributionResponseDTO {
+
+    private String id;
     private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
-    
-    // private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
-    @NotNull(message = "Nama Proyek tidak boleh kosong")
+    private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
+
     private String projectName;
-    
+
     private String projectDescription;
-    @NotNull(message = "ID Klien tidak boleh kosong")
+
     private String projectClientId;
 
     List<AssetUsageDTO> projectUseAsset;
-    List<ResourceUsageDTO> projectUseResource;
 
-    @NotNull(message = "Alamat pengiriman tidak boleh kosong")
     private String projectDeliveryAddress;
-    
+
     private String projectPickupAddress;
 
     private Integer projectPHLCount;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "Asia/Jakarta")
     private Date projectStartDate;
-    
-    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "Asia/Jakarta")
+
     private Date projectEndDate;
 
-    
     private Long projectTotalPemasukkan;
-    
+
     private Long projectTotalPengeluaran;
 }

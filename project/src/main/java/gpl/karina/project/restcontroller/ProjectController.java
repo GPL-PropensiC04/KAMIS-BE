@@ -7,7 +7,7 @@ import gpl.karina.project.restservice.ProjectService;
 import jakarta.validation.Valid;
 import gpl.karina.project.restdto.request.ProjectRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
-import gpl.karina.project.restdto.response.ProjectResponseDTO;
+import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -30,12 +30,12 @@ public class ProjectController {
 
 
     @PostMapping("/add")
-    public ResponseEntity<BaseResponseDTO<ProjectResponseDTO>> addProject(
+    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> addProject(
         @Valid
         @RequestBody ProjectRequestDTO projectRequestDTO,
         BindingResult bindingResult) throws Exception {
         // @Valid annotation will validate the request body and if there are any errors, it will be stored in bindingResult
-        BaseResponseDTO<ProjectResponseDTO> response = new BaseResponseDTO<>();
+        BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
         if(bindingResult.hasErrors()){
             StringBuilder errorMessage = new StringBuilder();
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -49,7 +49,7 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         try {
-            ProjectResponseDTO projectResponseDTO = projectService.addProject(projectRequestDTO);
+            ProjectResponseWrapperDTO projectResponseDTO = projectService.addProject(projectRequestDTO);
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Berhasil menambahkan proyek baru");
             response.setTimestamp(new Date());
