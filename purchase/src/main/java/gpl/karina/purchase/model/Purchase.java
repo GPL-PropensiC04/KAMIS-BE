@@ -63,4 +63,8 @@ public class Purchase {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "Tanggal Pembayaran")
     private Date purchasePaymentDate;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "purchase_id")
+    List<LogPurchase> purchaseLogs;
 }

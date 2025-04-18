@@ -19,7 +19,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class AssetTemp { //TODO: Belum add attribute foto
+public class AssetTemp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
