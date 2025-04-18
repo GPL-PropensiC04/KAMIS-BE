@@ -11,4 +11,7 @@ import gpl.karina.profile.model.Client;
 @Repository
 public interface ClientRepository extends JpaRepository<Client, UUID> {
     List<Client> findAll();
+    List<Client> findByNameClientContainingIgnoreCaseAndTypeClient(String nameClient, boolean typeClient);
+    List<Client> findByNameClientContainingIgnoreCase(String nameClient);
+    List<Client> findByTypeClient(boolean typeClient);
 }

@@ -7,7 +7,9 @@ import gpl.karina.project.restservice.ProjectService;
 import jakarta.validation.Valid;
 import gpl.karina.project.restdto.request.ProjectRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
-import gpl.karina.project.restdto.response.ProjectResponseDTO;
+import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
+import gpl.karina.project.restdto.response.listProjectResponseDTO;
+import gpl.karina.project.restdto.request.UpdateProjectStatusRequestDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -17,7 +19,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/project")
@@ -28,15 +34,14 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-
     @PostMapping("/add")
-    public ResponseEntity<BaseResponseDTO<ProjectResponseDTO>> addProject(
-        @Valid
-        @RequestBody ProjectRequestDTO projectRequestDTO,
-        BindingResult bindingResult) throws Exception {
-        // @Valid annotation will validate the request body and if there are any errors, it will be stored in bindingResult
-        BaseResponseDTO<ProjectResponseDTO> response = new BaseResponseDTO<>();
-        if(bindingResult.hasErrors()){
+    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> addProject(
+            @Valid @RequestBody ProjectRequestDTO projectRequestDTO,
+            BindingResult bindingResult) throws Exception {
+        // @Valid annotation will validate the request body and if there are any errors,
+        // it will be stored in bindingResult
+        BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
+        if (bindingResult.hasErrors()) {
             StringBuilder errorMessage = new StringBuilder();
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
             for (FieldError fieldError : fieldErrors) {
@@ -49,7 +54,7 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         try {
-            ProjectResponseDTO projectResponseDTO = projectService.addProject(projectRequestDTO);
+            ProjectResponseWrapperDTO projectResponseDTO = projectService.addProject(projectRequestDTO);
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Berhasil menambahkan proyek baru");
             response.setTimestamp(new Date());
@@ -61,8 +66,7 @@ public class ProjectController {
             response.setTimestamp(new Date());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Gagal menambahkan proyek baru: " + e.getMessage());
             response.setTimestamp(new Date());
@@ -70,6 +74,60 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
 
+    @GetMapping("/all")
+    public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getListProject(
+            @RequestParam(name = "idProject", required = false) String idSearch,
+            @RequestParam(name = "statusProject", required = false) String projectStatus,
+            @RequestParam(name = "tipeProject", required = false) String projectType,
+            @RequestParam(name = "namaProject", required = false) String projectName,
+            @RequestParam(name = "clientProject", required = false) String projectClientId,
+            @RequestParam(name = "tanggalMulai", required = false) Date projectStartDate,
+            @RequestParam(name = "tanggalSelesai", required = false) Date projectEndDate) {
+        BaseResponseDTO<List<listProjectResponseDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<listProjectResponseDTO> listProject = projectService.getAllProject(idSearch, projectStatus,
+                    projectType, projectName, projectClientId, projectStartDate, projectEndDate);
+            if (listProject.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada proyek yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan daftar proyek");
+            response.setTimestamp(new Date());
+            response.setData(listProject);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Gagal mendapatkan daftar proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/update-status/{id}")
+    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProjectStatus(
+            @PathVariable String id,
+            @RequestBody UpdateProjectStatusRequestDTO updateProjectStatusDTO) {
+        BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
+        try {
+            ProjectResponseWrapperDTO updatedProject = projectService.updateProjectStatus(id,
+                    updateProjectStatusDTO.getProjectStatus());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Status proyek berhasil diperbarui");
+            response.setTimestamp(new Date());
+            response.setData(updatedProject);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("Gagal memperbarui status proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
 }
