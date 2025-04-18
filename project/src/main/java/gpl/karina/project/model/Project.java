@@ -34,7 +34,7 @@ public class Project {
     private String id;
     @Column(nullable = false, name = "tipe_proyek")// Value 0 = Penjualan, Value 1 = Pengiriman
     private Boolean projectType; 
-    @Column(name = "status_pembayaran")// Status yang belum lunas, telah dibayar
+    @Column(name = "status_pembayaran")// Status yang belum lunas, telah lunas
     private String projectPaymentStatus; 
     @Column(nullable = false, name = "status_proyek")
     private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai
