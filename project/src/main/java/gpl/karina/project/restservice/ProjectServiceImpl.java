@@ -547,4 +547,22 @@ public class ProjectServiceImpl implements ProjectService {
         Project updatedProject = projectRepository.save(project);
         return projectToProjectResponseDetailDTO(updatedProject);
     }
+
+    @Override
+    public ProjectResponseWrapperDTO updateProjectPayment(String id, boolean projectPaymentStatus) throws Exception {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+    
+        if (Boolean.TRUE.equals(project.getProjectPaymentStatus())) {
+            throw new IllegalArgumentException("Proyek sudah dibayar, tidak dapat dibuah statusnya.");
+        }
+
+        project.setProjectPaymentStatus(projectPaymentStatus);
+
+        LogProject newLog = addLog("Mengubah Status Pembayaran menjadi " + projectPaymentStatus);
+        project.getProjectLogs().add(newLog);
+
+        Project updatedProject = projectRepository.save(project);
+        return projectToProjectResponseDetailDTO(updatedProject);
+    }
 }
