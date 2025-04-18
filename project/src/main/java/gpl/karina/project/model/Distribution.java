@@ -32,6 +32,9 @@ public class Distribution extends Project {
     @Column(name = "jumlah_phl_yang_dipekerjakan")
     private Integer projectPHLCount;
 
+    @Column(name = "biaya_phl")
+    private Long projectPHLPay;
+
     @Column(name = "total_pengeluaran")
     private Long projectTotalPengeluaran;
     

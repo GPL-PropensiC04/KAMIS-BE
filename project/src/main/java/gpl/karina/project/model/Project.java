@@ -32,10 +32,12 @@ public class Project {
     @Id
     @Column(name = "id", nullable = false)
     private String id;
-    @Column(nullable = false, name = "tipe_proyek")
-    private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
+    @Column(nullable = false, name = "tipe_proyek")// Value 0 = Penjualan, Value 1 = Pengiriman
+    private Boolean projectType; 
+    @Column(name = "status_pembayaran")// Status yang belum lunas, telah lunas
+    private String projectPaymentStatus; 
     @Column(nullable = false, name = "status_proyek")
-    private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
+    private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai
     @Column(nullable = false, name = "nama_proyek")
     private String projectName;
     @Column(name = "deskripsi_proyek")
@@ -61,4 +63,6 @@ public class Project {
 
     @Column(name = "total_pemasukkan")
     private Long projectTotalPemasukkan;
+
+    
 }

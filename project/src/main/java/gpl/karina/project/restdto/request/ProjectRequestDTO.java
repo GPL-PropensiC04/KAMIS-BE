@@ -39,13 +39,14 @@ public class ProjectRequestDTO {
 
     private Integer projectPHLCount;
 
+    private Long projectPHLPay;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
     private Date projectStartDate;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
     private Date projectEndDate;
 
-    
     private Long projectTotalPemasukkan;
     
     private Long projectTotalPengeluaran;

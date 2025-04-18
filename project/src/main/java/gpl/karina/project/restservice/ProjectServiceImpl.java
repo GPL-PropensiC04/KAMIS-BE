@@ -30,11 +30,11 @@ import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 import gpl.karina.project.restdto.response.SellResponseDTO;
+import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
-import lombok.var;
 
 @Service
 @Transactional
@@ -202,17 +202,28 @@ public class ProjectServiceImpl implements ProjectService {
         return projectsCountToday;
     }
 
-    // private ProjectResponseDTO projectToProjectResponseAllDTO(Project project) {
-    // ProjectResponseDTO projectResponseDTO = new ProjectResponseDTO();
-    // projectResponseDTO.setId(project.getId());
-    // projectResponseDTO.setProjectName(project.getProjectName());
-    // projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
-    // projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
-    // projectResponseDTO.setProjectType(project.getProjectType());
-    // projectResponseDTO.setProjectStatus(project.getProjectStatus());
-    // projectResponseDTO.setProjectClientId(project.getProjectClientId());
-    // return projectResponseDTO;
-    // }
+    private listProjectResponseDTO projectToProjectResponseAllDTO(Project project) {
+        listProjectResponseDTO projectResponseDTO = new listProjectResponseDTO();
+        projectResponseDTO.setId(project.getId());
+        projectResponseDTO.setProjectName(project.getProjectName());
+        projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
+        projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
+        projectResponseDTO.setProjectType(project.getProjectType());
+        projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
+        projectResponseDTO.setProjectStatus(project.getProjectStatus());
+        projectResponseDTO.setProjectClientId(project.getProjectClientId());
+        projectResponseDTO.setProjectDescription(project.getProjectDescription());
+        projectResponseDTO.setProjectTotalPemasukkan(project.getProjectTotalPemasukkan());
+
+        if (project instanceof Distribution) {
+            Distribution distributionProject = (Distribution) project;
+            Long totalPengeluaran = distributionProject.getProjectTotalPengeluaran();
+            projectResponseDTO.setProjectTotalPengeluaran(totalPengeluaran);
+        }
+
+        return projectResponseDTO;
+    }
+
     private ProjectResponseWrapperDTO projectToProjectResponseDetailDTO(Project project) {
         if (project instanceof Distribution) {
             // Cast to Distribution subclass to access specific fields
@@ -222,6 +233,7 @@ public class ProjectServiceImpl implements ProjectService {
                 DistributionResponseDTO dto = new DistributionResponseDTO();
                 dto.setId(distributionProject.getId());
                 dto.setProjectType(distributionProject.getProjectType());
+                dto.setProjectPaymentStatus(distributionProject.getProjectPaymentStatus());
                 dto.setProjectStatus(distributionProject.getProjectStatus());
                 dto.setProjectName(distributionProject.getProjectName());
                 dto.setProjectClientId(distributionProject.getProjectClientId());
@@ -231,6 +243,7 @@ public class ProjectServiceImpl implements ProjectService {
                 // Distribution-specific fields
                 dto.setProjectPickupAddress(distributionProject.getProjectPickupAddress());
                 dto.setProjectPHLCount(distributionProject.getProjectPHLCount());
+                dto.setProjectPHLPay(distributionProject.getProjectPHLPay());
                 dto.setProjectTotalPemasukkan(distributionProject.getProjectTotalPemasukkan());
                 dto.setProjectTotalPengeluaran(distributionProject.getProjectTotalPengeluaran());
                 dto.setProjectStartDate(distributionProject.getProjectStartDate());
@@ -262,6 +275,7 @@ public class ProjectServiceImpl implements ProjectService {
 
                 SellResponseDTO dto = new SellResponseDTO();
                 dto.setId(sellProject.getId());
+                dto.setProjectPaymentStatus(sellProject.getProjectPaymentStatus());
                 dto.setProjectType(sellProject.getProjectType());
                 dto.setProjectStatus(sellProject.getProjectStatus());
                 dto.setProjectName(sellProject.getProjectName());
@@ -325,6 +339,7 @@ public class ProjectServiceImpl implements ProjectService {
             // Set distribution-specific properties
             distributionProject.setProjectPickupAddress(projectRequestDTO.getProjectPickupAddress());
             distributionProject.setProjectPHLCount(projectRequestDTO.getProjectPHLCount());
+            distributionProject.setProjectPHLPay(projectRequestDTO.getProjectPHLPay());
 
             // Handle asset usage
             Long totalPengeluaran = 0L;
@@ -345,7 +360,7 @@ public class ProjectServiceImpl implements ProjectService {
                     projectAssetUsages.add(projectAssetUsage);
                 }
             }
-
+            distributionProject.setProjectTotalPemasukkan(projectRequestDTO.getProjectTotalPemasukkan());
             distributionProject.setProjectUseAsset(projectAssetUsages);
             distributionProject.setProjectTotalPengeluaran(totalPengeluaran);
 
@@ -392,6 +407,7 @@ public class ProjectServiceImpl implements ProjectService {
         // Set common properties for all project types
         project.setProjectName(projectRequestDTO.getProjectName());
         project.setProjectStatus("Direncanakan");
+        project.setProjectPaymentStatus("Belum Dibayar");
         project.setProjectDescription(projectRequestDTO.getProjectDescription());
         project.setProjectClientId(projectRequestDTO.getProjectClientId());
         project.setProjectType(projectRequestDTO.getProjectType());
@@ -407,4 +423,49 @@ public class ProjectServiceImpl implements ProjectService {
         return projectToProjectResponseDetailDTO(savedProject);
     }
 
+    @Override
+    public List<listProjectResponseDTO> getAllProject(
+            String idSearch, String projectStatus, String projectType,
+            String projectName, String projectClientId, Date projectStartDate,
+            Date projectEndDate
+    ) throws Exception {
+
+        final Date adjustedEndDate;
+        if (projectEndDate != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(projectEndDate);
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            calendar.set(Calendar.MILLISECOND, 999);
+            adjustedEndDate = calendar.getTime();
+        } else {
+            adjustedEndDate = null;
+        }
+
+        List<Project> projects = projectRepository.findAll();
+
+        List<Project> filteredProjects = projects.stream()
+                .filter(project -> idSearch == null || project.getId().toLowerCase().contains(idSearch.toLowerCase()))
+                .filter(project -> projectStatus == null || project.getProjectStatus().equalsIgnoreCase(projectStatus))
+                .filter(project -> projectType == null || project.getProjectType().toString().equalsIgnoreCase(projectType))
+                .filter(project -> projectName == null || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
+                .filter(project -> projectClientId == null || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
+                .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(projectStartDate))
+                .filter(project -> adjustedEndDate == null || !project.getProjectEndDate().after(adjustedEndDate))
+                .collect(Collectors.toList());
+
+        return filteredProjects.stream()
+                .map(this::projectToProjectResponseAllDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ProjectResponseWrapperDTO updateProjectStatus(String id, String projectStatus) throws Exception {
+        Project project = projectRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+        project.setProjectStatus(projectStatus);
+        Project updatedProject = projectRepository.save(project);
+        return projectToProjectResponseDetailDTO(updatedProject);
+    }
 }
