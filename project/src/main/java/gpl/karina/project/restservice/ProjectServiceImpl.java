@@ -35,7 +35,6 @@ import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
-import lombok.var;
 
 @Service
 @Transactional
@@ -453,5 +452,14 @@ public class ProjectServiceImpl implements ProjectService {
         return filteredProjects.stream()
                 .map(this::projectToProjectResponseAllDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ProjectResponseWrapperDTO updateProjectStatus(String id, String projectStatus) throws Exception {
+        Project project = projectRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+        project.setProjectStatus(projectStatus);
+        Project updatedProject = projectRepository.save(project);
+        return projectToProjectResponseDetailDTO(updatedProject);
     }
 }

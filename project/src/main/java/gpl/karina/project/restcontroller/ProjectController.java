@@ -9,6 +9,7 @@ import gpl.karina.project.restdto.request.ProjectRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
+import gpl.karina.project.restdto.request.UpdateProjectStatusRequestDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -18,8 +19,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
@@ -106,4 +109,24 @@ public class ProjectController {
         }
     }
 
+    @PutMapping("/update-status/{id}")
+    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProjectStatus(
+            @PathVariable String id,
+            @RequestBody UpdateProjectStatusRequestDTO updateProjectStatusDTO) {
+        BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
+        try {
+            ProjectResponseWrapperDTO updatedProject = projectService.updateProjectStatus(id, updateProjectStatusDTO.getProjectStatus());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Status proyek berhasil diperbarui");
+            response.setTimestamp(new Date());
+            response.setData(updatedProject);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("Gagal memperbarui status proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
 }
