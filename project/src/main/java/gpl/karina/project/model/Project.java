@@ -23,6 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "project")
 public class Project {
+    //TODO, Split into 2 classes, one for Sell and one for Distribution
     @Id
     @Column(name = "id", nullable = false)
     private String id;

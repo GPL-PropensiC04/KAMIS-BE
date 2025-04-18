@@ -25,7 +25,9 @@ import gpl.karina.project.restdto.fetch.ClientDetailDTO;
 import gpl.karina.project.restdto.fetch.ResourceDetailDTO;
 import gpl.karina.project.restdto.request.ProjectRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
-import gpl.karina.project.restdto.response.ProjectResponseDTO;
+import gpl.karina.project.restdto.response.DistributionResponseDTO;
+import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
+import gpl.karina.project.restdto.response.SellResponseDTO;
 import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -198,70 +200,87 @@ public class ProjectServiceImpl implements ProjectService {
         return projectsCountToday;
     }
 
-    private ProjectResponseDTO projectToProjectResponseAllDTO(Project project) {
-        ProjectResponseDTO projectResponseDTO = new ProjectResponseDTO();
-        projectResponseDTO.setId(project.getId());
-        projectResponseDTO.setProjectName(project.getProjectName());
-        projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
-        projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
-        projectResponseDTO.setProjectType(project.getProjectType());
-        projectResponseDTO.setProjectStatus(project.getProjectStatus());
-        projectResponseDTO.setProjectClientId(project.getProjectClientId());
-        return projectResponseDTO;
-    }
+    // private ProjectResponseDTO projectToProjectResponseAllDTO(Project project) {
+    //     ProjectResponseDTO projectResponseDTO = new ProjectResponseDTO();
+    //     projectResponseDTO.setId(project.getId());
+    //     projectResponseDTO.setProjectName(project.getProjectName());
+    //     projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
+    //     projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
+    //     projectResponseDTO.setProjectType(project.getProjectType());
+    //     projectResponseDTO.setProjectStatus(project.getProjectStatus());
+    //     projectResponseDTO.setProjectClientId(project.getProjectClientId());
+    //     return projectResponseDTO;
+    // }
 
-    private ProjectResponseDTO projectToProjectResponseDetailDTO(Project project) {
-        ProjectResponseDTO projectResponseDTO = new ProjectResponseDTO();
-        projectResponseDTO.setId(project.getId());
-        projectResponseDTO.setProjectName(project.getProjectName());
-        projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
-        projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
-        projectResponseDTO.setProjectType(project.getProjectType());
-        projectResponseDTO.setProjectStatus(project.getProjectStatus());
-        projectResponseDTO.setProjectClientId(project.getProjectClientId());
-        projectResponseDTO.setProjectDescription(project.getProjectDescription());
-        projectResponseDTO.setProjectDeliveryAddress(project.getProjectDeliveryAddress());
-        projectResponseDTO.setProjectPickupAddress(project.getProjectPickupAddress());
-        projectResponseDTO.setProjectPHLCount(project.getProjectPHLCount());
-        projectResponseDTO.setProjectTotalPemasukkan(project.getProjectTotalPemasukkan());
-        projectResponseDTO.setProjectTotalPengeluaran(project.getProjectTotalPengeluaran());
-
-        // Instead, map the asset usages
-        if (project.getProjectUseAsset() != null) {
-            System.out.println("Project Use Asset: " + project.getProjectUseAsset().size());
-            // Map the asset usages to DTOs
-            List<AssetUsageDTO> assetUsageDTOs = project.getProjectUseAsset().stream()
-                .map(assetUsage -> {
-                    AssetUsageDTO dto = new AssetUsageDTO();
-                    dto.setPlatNomor(assetUsage.getPlatNomor());
-                    dto.setAssetFuelCost(assetUsage.getAssetFuelCost());
-                    dto.setAssetUseCost(assetUsage.getAssetUseCost());
-                    return dto;
-                })
-                .collect(Collectors.toList());
-            projectResponseDTO.setProjectUseAsset(assetUsageDTOs);
+    private ProjectResponseWrapperDTO projectToProjectResponseDetailDTO(Project project) {
+        if (project.getProjectType()) {
+            // DISTRIBUTION project
+            DistributionResponseDTO dto = new DistributionResponseDTO();
+            dto.setId(project.getId());
+            dto.setProjectType(project.getProjectType());
+            dto.setProjectStatus(project.getProjectStatus());
+            dto.setProjectName(project.getProjectName());
+            dto.setProjectClientId(project.getProjectClientId());
+            dto.setProjectDescription(project.getProjectDescription());
+            dto.setProjectDeliveryAddress(project.getProjectDeliveryAddress());
+            dto.setProjectPickupAddress(project.getProjectPickupAddress());
+            dto.setProjectPHLCount(project.getProjectPHLCount());
+            dto.setProjectTotalPemasukkan(project.getProjectTotalPemasukkan());
+            dto.setProjectTotalPengeluaran(project.getProjectTotalPengeluaran());
+            dto.setProjectStartDate(project.getProjectStartDate());
+            dto.setProjectEndDate(project.getProjectEndDate());
+            // Set all distribution-specific fields
+            
+            // Map asset usages
+            if (project.getProjectUseAsset() != null) {
+                List<AssetUsageDTO> assetUsageDTOs = project.getProjectUseAsset().stream()
+                    .map(assetUsage -> {
+                        AssetUsageDTO assetDto = new AssetUsageDTO();
+                        assetDto.setPlatNomor(assetUsage.getPlatNomor());
+                        assetDto.setAssetFuelCost(assetUsage.getAssetFuelCost());
+                        assetDto.setAssetUseCost(assetUsage.getAssetUseCost());
+                        return assetDto;
+                    })
+                    .collect(Collectors.toList());
+                dto.setProjectUseAsset(assetUsageDTOs);
+            }
+            
+            return ProjectResponseWrapperDTO.fromDistributionResponse(dto);
+        } else {
+            // SELL project
+            SellResponseDTO dto = new SellResponseDTO();
+            dto.setId(project.getId());
+            dto.setProjectType(project.getProjectType());
+            dto.setProjectStatus(project.getProjectStatus());
+            dto.setProjectName(project.getProjectName());
+            dto.setProjectDescription(project.getProjectDescription());
+            dto.setProjectClientId(project.getProjectClientId());
+            dto.setProjectDeliveryAddress(project.getProjectDeliveryAddress());
+            dto.setProjectTotalPemasukkan(project.getProjectTotalPemasukkan());
+            dto.setProjectStartDate(project.getProjectStartDate());
+            dto.setProjectEndDate(project.getProjectEndDate());
+            // Set all sell-specific fields
+            
+            // Map resource usages
+            if (project.getProjectUseResource() != null) {
+                List<ResourceUsageDTO> resourceUsageDTOs = project.getProjectUseResource().stream()
+                    .map(resourceUsage -> {
+                        ResourceUsageDTO resourceDto = new ResourceUsageDTO();
+                        resourceDto.setResourceId(resourceUsage.getResourceId());
+                        resourceDto.setResourceStockUsed(resourceUsage.getQuantityUsed());
+                        resourceDto.setSellPrice(resourceUsage.getSellPrice());
+                        return resourceDto;
+                    })
+                    .collect(Collectors.toList());
+                dto.setProjectUseResource(resourceUsageDTOs);
+            }
+            
+            return ProjectResponseWrapperDTO.fromSellResponse(dto);
         }
-        
-        // Map the resource usages
-        if (project.getProjectUseResource() != null) {
-            System.out.println("Project Use Resource: " + project.getProjectUseResource().size());
-            List<ResourceUsageDTO> resourceUsageDTOs = project.getProjectUseResource().stream()
-                .map(resourceUsage -> {
-                    ResourceUsageDTO dto = new ResourceUsageDTO();
-                    dto.setResourceId(resourceUsage.getResourceId());
-                    dto.setResourceStockUsed(resourceUsage.getQuantityUsed());
-                    return dto;
-                })
-                .collect(Collectors.toList());
-            projectResponseDTO.setProjectUseResource(resourceUsageDTOs);
-        }
-
-        return projectResponseDTO;
     }
-    
 
     @Override
-    public ProjectResponseDTO addProject(ProjectRequestDTO projectRequestDTO) throws Exception {
+    public ProjectResponseWrapperDTO addProject(ProjectRequestDTO projectRequestDTO) throws Exception {
         if (fetchClientById(projectRequestDTO.getProjectClientId()).getId() == null) {
             throw new IllegalArgumentException("Pastikan ID Klien sudah terdaftar dalam sistem");
         }
@@ -295,8 +314,7 @@ public class ProjectServiceImpl implements ProjectService {
                     if (!validateAsset(assetItem.getPlatNomor())) {
                         throw new IllegalArgumentException("Pastikan ID Aset sudah terdaftar dalam sistem");
                     }
-                    AssetDetailDTO assetDetail = fetchAssetDetailById(assetItem.getPlatNomor());
-                    totalPengeluaran += assetDetail.getNilaiPerolehan();
+                    totalPengeluaran += assetItem.getAssetFuelCost() + assetItem.getAssetUseCost();
                     ProjectAssetUsage projectAssetUsage = new ProjectAssetUsage();
                     projectAssetUsage.setPlatNomor(assetItem.getPlatNomor());
                     projectAssetUsage.setProject(newProject);
@@ -311,6 +329,7 @@ public class ProjectServiceImpl implements ProjectService {
             newProject.setProjectPickupAddress(projectRequestDTO.getProjectPickupAddress());
             newProject.setProjectPHLCount(projectRequestDTO.getProjectPHLCount());
             newProject.setProjectUseResource(null);
+            newProject.setProjectTotalPemasukkan(projectRequestDTO.getProjectTotalPemasukkan());
             newProject.setProjectTotalPengeluaran(totalPengeluaran);
             newProject.setProjectUseAsset(projectAssetUsages);
             newProject.setProjectStartDate(projectRequestDTO.getProjectStartDate());
@@ -334,6 +353,9 @@ public class ProjectServiceImpl implements ProjectService {
                     projectResourceUsage.setQuantityUsed(resourceDetail.getResourceStock());
                     projectResourceUsage.setProject(newProject);
                     projectResourceUsages.add(projectResourceUsage);
+
+                    // TODO: Update resource stock in the resource service
+                    // webClientResource.put()
                 }
             }
 

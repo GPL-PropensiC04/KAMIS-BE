@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ProjectResponseDTO {
+public class SellResponseDTO {
     
     private String id;
     private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
@@ -28,31 +28,17 @@ public class ProjectResponseDTO {
     
     private String projectDescription;
 
-    
     private String projectClientId;
 
-    
-    List<AssetUsageDTO> projectUseAsset;
+    private String projectDeliveryAddress;
 
-    
     List<ResourceUsageDTO> projectUseResource;
     
-    
-    private String projectDeliveryAddress;
-    
-    private String projectPickupAddress;
-
-    
-    private Integer projectPHLCount;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
     private Date projectStartDate;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
-
     private Date projectEndDate;
 
     private Long projectTotalPemasukkan;
-    
-    private Long projectTotalPengeluaran;
 }
