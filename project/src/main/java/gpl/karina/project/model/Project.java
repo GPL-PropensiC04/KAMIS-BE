@@ -2,11 +2,15 @@ package gpl.karina.project.model;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import jakarta.persistence.CascadeType;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -14,16 +18,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.Date;
-import java.util.List;
+
 
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "jenis_proyek", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "project")
 public class Project {
-    //TODO, Split into 2 classes, one for Sell and one for Distribution
     @Id
     @Column(name = "id", nullable = false)
     private String id;
@@ -39,27 +44,13 @@ public class Project {
     @Column(nullable = false, name = "id_klien")
     private String projectClientId;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Column(name = "id_aset_yang_digunakan")
-    List<ProjectAssetUsage> projectUseAsset;
-
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Column(name = "id_resource_yang_digunakan")
-    List<ProjectResourceUsage> projectUseResource;
-    
     @Column(nullable = false, name = "alamat_pengiriman")
     private String projectDeliveryAddress;
-    @Column(name = "alamat_pengambilan")
-    private String projectPickupAddress;
-
-    @Column(name = "jumlah_phl_yang_dipekerjakan")
-    private Integer projectPHLCount;
 
     @CreationTimestamp
     @Column(name = "tanggal_pembuatan_proyek")
     private Date createdDate;
 
-    
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "tanggal_mulai_proyek")
     private Date projectStartDate;
@@ -70,6 +61,4 @@ public class Project {
 
     @Column(name = "total_pemasukkan")
     private Long projectTotalPemasukkan;
-    @Column(name = "total_pengeluaran")
-    private Long projectTotalPengeluaran;
 }
