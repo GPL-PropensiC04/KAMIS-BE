@@ -17,6 +17,7 @@ public class DistributionResponseDTO {
 
     private String id;
     private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
+    private String projectPaymentStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
     private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
 
     private String projectName;
@@ -32,6 +33,7 @@ public class DistributionResponseDTO {
     private String projectPickupAddress;
 
     private Integer projectPHLCount;
+    private Long projectPHLPay;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "Asia/Jakarta")
     private Date projectStartDate;
