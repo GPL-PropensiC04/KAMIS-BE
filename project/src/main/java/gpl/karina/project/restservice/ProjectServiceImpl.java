@@ -243,6 +243,7 @@ public class ProjectServiceImpl implements ProjectService {
                 // Distribution-specific fields
                 dto.setProjectPickupAddress(distributionProject.getProjectPickupAddress());
                 dto.setProjectPHLCount(distributionProject.getProjectPHLCount());
+                dto.setProjectPHLPay(distributionProject.getProjectPHLPay());
                 dto.setProjectTotalPemasukkan(distributionProject.getProjectTotalPemasukkan());
                 dto.setProjectTotalPengeluaran(distributionProject.getProjectTotalPengeluaran());
                 dto.setProjectStartDate(distributionProject.getProjectStartDate());
@@ -338,6 +339,7 @@ public class ProjectServiceImpl implements ProjectService {
             // Set distribution-specific properties
             distributionProject.setProjectPickupAddress(projectRequestDTO.getProjectPickupAddress());
             distributionProject.setProjectPHLCount(projectRequestDTO.getProjectPHLCount());
+            distributionProject.setProjectPHLPay(projectRequestDTO.getProjectPHLPay());
 
             // Handle asset usage
             Long totalPengeluaran = 0L;
