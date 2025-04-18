@@ -5,13 +5,18 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.profile.model.Client;
 import gpl.karina.profile.repository.ClientRepository;
 import gpl.karina.profile.restdto.request.AddClientRequestDTO;
 import gpl.karina.profile.restdto.request.UpdateClientRequestDTO;
 import gpl.karina.profile.restdto.response.ClientResponseDTO;
+import gpl.karina.profile.restdto.response.ProjectResponseDTO;
+import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
 import jakarta.transaction.Transactional;
 
@@ -20,9 +25,32 @@ import jakarta.transaction.Transactional;
 public class ClientServiceImpl implements ClientService {
 
     private final ClientRepository clientRepository;
+    @Value("${profile.app.projectUrl}")
+    private String projectUrl;
+
+    private final WebClient webClientProject = WebClient.create();
 
     public ClientServiceImpl(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
+    }
+
+    private List<ProjectResponseDTO> fetchProjectsByClientId(UUID clientId) {
+        String url = projectUrl + "/api/project/all?clientProject=" + clientId;
+        BaseResponseDTO<List<ProjectResponseDTO>> response = webClientProject
+            .get()
+            .uri(url)
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<ProjectResponseDTO>>>() {})
+            .block();
+
+        if (response == null || response.getData() == null) {
+            return new ArrayList<>();
+        }
+        List<ProjectResponseDTO> projects = response.getData();
+        for (ProjectResponseDTO dto : projects) {
+            dto.calculateProfit();
+        }
+        return response.getData();
     }
 
     private ClientResponseDTO clientToClientResponseDTO(Client client) {
@@ -33,6 +61,7 @@ public class ClientServiceImpl implements ClientService {
         clientResponseDTO.setEmailClient(client.getEmailClient());
         clientResponseDTO.setCompanyClient(client.getCompanyClient());
         clientResponseDTO.setAddressClient(client.getAddressClient());
+        clientResponseDTO.setProjects(fetchProjectsByClientId(client.getId()));
         clientResponseDTO.setCreatedDate(client.getCreatedDate());
         clientResponseDTO.setUpdatedDate(client.getUpdatedDate());
 
