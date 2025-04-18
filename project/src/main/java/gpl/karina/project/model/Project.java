@@ -21,8 +21,6 @@ import lombok.AllArgsConstructor;
 import java.util.Date;
 import java.util.List;
 
-
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -37,9 +35,9 @@ public class Project {
     @Column(nullable = false, name = "tipe_proyek")// Value 0 = Penjualan, Value 1 = Pengiriman
     private Boolean projectType; 
     @Column(name = "status_pembayaran")// Status yang belum lunas, telah lunas
-    private String projectPaymentStatus; 
+    private Boolean projectPaymentStatus; 
     @Column(nullable = false, name = "status_proyek")
-    private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai
+    private Integer projectStatus; // 0 : Direncanakan, 1 : dilaksanakan, 2 : selesai, 3 : batal
     @Column(nullable = false, name = "nama_proyek")
     private String projectName;
     @Column(name = "deskripsi_proyek")

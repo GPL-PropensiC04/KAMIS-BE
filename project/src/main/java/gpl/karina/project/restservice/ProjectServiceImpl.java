@@ -454,8 +454,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Set common properties for all project types
         project.setProjectName(projectRequestDTO.getProjectName());
-        project.setProjectStatus("Direncanakan");
-        project.setProjectPaymentStatus("Belum Dibayar");
+        project.setProjectStatus(0);
+        project.setProjectPaymentStatus(false);
         project.setProjectDescription(projectRequestDTO.getProjectDescription());
         project.setProjectClientId(projectRequestDTO.getProjectClientId());
         project.setProjectType(projectRequestDTO.getProjectType());
@@ -500,7 +500,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         List<Project> filteredProjects = projects.stream()
                 .filter(project -> idSearch == null || project.getId().toLowerCase().contains(idSearch.toLowerCase()))
-                .filter(project -> projectStatus == null || project.getProjectStatus().equalsIgnoreCase(projectStatus))
+                .filter(project -> projectStatus == null || String.valueOf(project.getProjectStatus()).equalsIgnoreCase(projectStatus))
                 .filter(project -> projectType == null || project.getProjectType().toString().equalsIgnoreCase(projectType))
                 .filter(project -> projectName == null || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
                 .filter(project -> projectClientId == null || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
@@ -514,12 +514,52 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseWrapperDTO updateProjectStatus(String id, String projectStatus) throws Exception {
+    public ProjectResponseWrapperDTO updateProjectStatus(String id, Integer newStatus) throws Exception {
         Project project = projectRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
-        project.setProjectStatus(projectStatus);
+        Integer currentStatus = project.getProjectStatus();
 
-        LogProject newLog = addLog("Mengubah Status menjadi " + project.getProjectStatus());
+        // Tidak bisa update jika sudah selesai (2) atau batal (3)
+        if (currentStatus == 2 || currentStatus == 3) {
+            throw new IllegalArgumentException("Status proyek sudah selesai atau batal, tidak bisa diubah lagi.");
+        }
+
+        // Tidak bisa kembali ke 0 (Direncanakan) dari status 1 (Dilaksanakan)
+        if (currentStatus == 1 && newStatus == 0) {
+            throw new IllegalArgumentException("Status proyek tidak bisa dikembalikan ke 'Direncanakan' dari 'Dilaksanakan'.");
+        }
+
+        // Status batal (3) hanya bisa dari 0 (Direncanakan) atau 1 (Dilaksanakan), tidak dari 2 (Selesai)
+        if (newStatus == 3 && currentStatus == 2) {
+            throw new IllegalArgumentException("Status proyek tidak bisa dibatalkan jika sudah selesai.");
+        }
+
+        // Validasi selesai: tidak bisa kembali ke status sebelumnya
+        if (currentStatus == 0 && newStatus == 2) {
+            throw new IllegalArgumentException("Status proyek tidak bisa langsung menjadi 'Selesai' dari 'Direncanakan'.");
+        }
+
+        project.setProjectStatus(newStatus);
+
+        LogProject newLog = addLog("Mengubah Status menjadi " + newStatus);
+        project.getProjectLogs().add(newLog);
+
+        Project updatedProject = projectRepository.save(project);
+        return projectToProjectResponseDetailDTO(updatedProject);
+    }
+
+    @Override
+    public ProjectResponseWrapperDTO updateProjectPayment(String id, boolean projectPaymentStatus) throws Exception {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+    
+        if (Boolean.TRUE.equals(project.getProjectPaymentStatus())) {
+            throw new IllegalArgumentException("Proyek sudah dibayar, tidak dapat dibuah statusnya.");
+        }
+
+        project.setProjectPaymentStatus(projectPaymentStatus);
+
+        LogProject newLog = addLog("Mengubah Status Pembayaran menjadi " + projectPaymentStatus);
         project.getProjectLogs().add(newLog);
 
         Project updatedProject = projectRepository.save(project);

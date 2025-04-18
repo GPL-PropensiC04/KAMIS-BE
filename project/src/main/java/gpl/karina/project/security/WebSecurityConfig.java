@@ -30,6 +30,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/test").permitAll()
                         .requestMatchers("/api/project/**").permitAll()
+                        .requestMatchers("/api/project/update-status/**").hasAnyAuthority("Operasional")
+                        .requestMatchers("/api/project/update-payment/**").hasAnyAuthority("Finance")
                         // .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
