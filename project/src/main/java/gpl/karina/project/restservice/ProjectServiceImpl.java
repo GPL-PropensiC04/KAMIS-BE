@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import gpl.karina.project.model.Distribution;
+import gpl.karina.project.model.LogProject;
 import gpl.karina.project.model.Project;
 import gpl.karina.project.model.ProjectAssetUsage;
 import gpl.karina.project.model.ProjectResourceUsage;
@@ -28,9 +29,12 @@ import gpl.karina.project.restdto.fetch.ResourceDetailDTO;
 import gpl.karina.project.restdto.request.ProjectRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
+import gpl.karina.project.restdto.response.LogProjectResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 import gpl.karina.project.restdto.response.SellResponseDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
+import gpl.karina.project.security.jwt.JwtUtils;
+import gpl.karina.project.repository.LogProjectRepository;
 import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,13 +59,17 @@ public class ProjectServiceImpl implements ProjectService {
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     private final ProjectRepository projectRepository;
+    private final LogProjectRepository logProjectRepository;
     private final WebClient.Builder webClientBuilder;
+    private final JwtUtils jwtUtils;
 
     public ProjectServiceImpl(ProjectRepository projectRepository, WebClient.Builder webClientBuilder,
-            HttpServletRequest request) {
+            HttpServletRequest request, JwtUtils jwtUtils, LogProjectRepository logProjectRepository) {
         this.projectRepository = projectRepository;
         this.request = request;
         this.webClientBuilder = webClientBuilder;
+        this.jwtUtils = jwtUtils;
+        this.logProjectRepository = logProjectRepository;
     }
 
     @PostConstruct
@@ -202,6 +210,31 @@ public class ProjectServiceImpl implements ProjectService {
         return projectsCountToday;
     }
 
+    private LogProject addLog(String action) {
+        LogProject log = new LogProject();
+
+        String username = jwtUtils.getUserNameFromJwtToken(getTokenFromRequest());
+
+        log.setUsername(username);
+        log.setAction(action);
+        
+        Date now = new Date();
+        log.setActionDate(now);
+
+        LogProject newLog = logProjectRepository.save(log);
+
+        return newLog;
+    }
+
+    private LogProjectResponseDTO logProjectToLogProjectResponseDTO(LogProject logProject) {
+        LogProjectResponseDTO logProjectResponseDTO = new LogProjectResponseDTO();
+        logProjectResponseDTO.setId(logProject.getId());
+        logProjectResponseDTO.setUser(logProject.getUsername());
+        logProjectResponseDTO.setAction(logProject.getAction());
+        logProjectResponseDTO.setActionDate(logProject.getActionDate());
+        return logProjectResponseDTO;
+    }
+
     private listProjectResponseDTO projectToProjectResponseAllDTO(Project project) {
         listProjectResponseDTO projectResponseDTO = new listProjectResponseDTO();
         projectResponseDTO.setId(project.getId());
@@ -263,6 +296,13 @@ public class ProjectServiceImpl implements ProjectService {
                     dto.setProjectUseAsset(assetUsageDTOs);
                 }
 
+                List<LogProject> logs = project.getProjectLogs();
+                List<LogProjectResponseDTO> logsDTO = new ArrayList<>();
+                for (LogProject log : logs) {
+                    logsDTO.add(logProjectToLogProjectResponseDTO(log));
+                }
+                dto.setProjectLogs(logsDTO);
+
                 return ProjectResponseWrapperDTO.fromDistributionResponse(dto);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Error processing Distribution project: " + e.getMessage(), e);
@@ -299,6 +339,14 @@ public class ProjectServiceImpl implements ProjectService {
                             .collect(Collectors.toList());
                     dto.setProjectUseResource(resourceUsageDTOs);
                 }
+
+                List<LogProject> logs = project.getProjectLogs();
+                List<LogProjectResponseDTO> logsDTO = new ArrayList<>();
+                for (LogProject log : logs) {
+                    logsDTO.add(logProjectToLogProjectResponseDTO(log));
+                }
+                dto.setProjectLogs(logsDTO);
+
                 return ProjectResponseWrapperDTO.fromSellResponse(dto);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Error processing Sell project: " + e.getMessage(), e);
@@ -416,6 +464,11 @@ public class ProjectServiceImpl implements ProjectService {
         project.setProjectEndDate(projectRequestDTO.getProjectEndDate());
         project.setCreatedDate(today);
 
+        project.setProjectLogs(new ArrayList<>());
+
+        LogProject newLog = addLog("Menambahkan " + project.getId());
+        project.getProjectLogs().add(newLog);
+
         // Save the project (polymorphic save)
         Project savedProject = projectRepository.save(project);
 
@@ -465,6 +518,10 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
         project.setProjectStatus(projectStatus);
+
+        LogProject newLog = addLog("Mengubah Status menjadi " + project.getProjectStatus());
+        project.getProjectLogs().add(newLog);
+
         Project updatedProject = projectRepository.save(project);
         return projectToProjectResponseDetailDTO(updatedProject);
     }

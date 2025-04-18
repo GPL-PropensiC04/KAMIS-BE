@@ -45,4 +45,6 @@ public class DistributionResponseDTO {
     private Long projectTotalPemasukkan;
 
     private Long projectTotalPengeluaran;
+
+    private List<LogProjectResponseDTO> projectLogs;
 }

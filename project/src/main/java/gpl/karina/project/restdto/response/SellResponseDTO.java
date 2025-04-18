@@ -37,4 +37,6 @@ public class SellResponseDTO {
     private Date projectEndDate;
 
     private Long projectTotalPemasukkan;
+
+    private List<LogProjectResponseDTO> projectLogs;
 }
