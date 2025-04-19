@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
 import gpl.karina.project.restdto.AssetUsageDTO;
+import gpl.karina.project.restdto.ResourceStockUpdateDTO;
 import gpl.karina.project.restdto.ResourceUsageDTO;
 import gpl.karina.project.restdto.fetch.AssetDetailDTO;
 import gpl.karina.project.restdto.fetch.ClientDetailDTO;
@@ -213,7 +214,7 @@ public class ProjectServiceImpl implements ProjectService {
                     })
                     .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
                         return Mono.error(new IllegalArgumentException(
-                                "Layanan resource sedang tidak tersedia, silakan coba lagi nanti"));
+                                "Layanan resource sEedang tidak tersedia, silakan coba lagi nanti"));
                     })
                     .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {
                     })
@@ -247,6 +248,89 @@ public class ProjectServiceImpl implements ProjectService {
         } catch (Exception e) {
             logger.error("Unexpected error validating resource: {}", e.getMessage());
             throw new IllegalArgumentException("Gagal memvalidasi resource: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Deducts stock from a resource
+     * @param resourceId The resource ID
+     * @param quantity The quantity to deduct (must be positive)
+     * @throws IllegalArgumentException if the operation fails
+     */
+    private void deductResourceStock(String resourceId, Integer quantity) {
+        try {
+            var response = webClientResource
+                    .put()
+                    .uri("/api/resource/" + resourceId + "/deduct-stock")
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                    .bodyValue(new ResourceStockUpdateDTO(quantity))                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                        if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
+                            return clientResponse.bodyToMono(String.class)
+                                    .flatMap(body -> Mono.error(new IllegalArgumentException(
+                                            "Gagal mengurangi stok resource: " + body)));
+                        }
+                        return Mono.error(new IllegalArgumentException(
+                                "Gagal mengurangi stok resource: " + clientResponse.statusCode()));
+                    })
+                    .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
+                        return Mono.error(new IllegalArgumentException(
+                                "Layanan resource sedang tidak tersedia, silakan coba lagi nanti"));
+                    })
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {})
+                    .block();
+            
+            if (response == null || response.getData() == null) {
+                System.out.println(response);
+                throw new IllegalArgumentException("ERR BEGO");
+            }
+            
+            logger.info("Successfully deducted {} units from resource {}", quantity, resourceId);
+        } catch (WebClientRequestException e) {
+            logger.error("Network error updating resource stock: {}", e.getMessage());
+            throw new IllegalArgumentException("Gagal terhubung ke layanan resource: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Adds stock to a resource
+     * @param resourceId The resource ID
+     * @param quantity The quantity to add (must be positive)
+     * @throws IllegalArgumentException if the operation fails
+     */
+    private void addResourceStock(String resourceId, Integer quantity) {
+        try {
+            var response = webClientResource
+                    .put()
+                    .uri("/api/resource/" + resourceId + "/add-stock")
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                    .bodyValue(new ResourceStockUpdateDTO(quantity))
+                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                        if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
+                            return clientResponse.bodyToMono(String.class)
+                                    .flatMap(body -> Mono.error(new IllegalArgumentException(
+                                            "Gagal menambah stok resource: " + body)));
+                        }
+                        return Mono.error(new IllegalArgumentException(
+                                "Gagal menambah stok resource: " + clientResponse.statusCode()));
+                    })
+                    .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
+                        return Mono.error(new IllegalArgumentException(
+                                "Layanan resource sedang tidak tersedia, silakan coba lagi nanti"));
+                    })
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {})
+                    .block();
+            
+            if (response == null || response.getData() == null) {
+                throw new IllegalArgumentException("Tidak ada respons yang valid dari layanan resource");
+            }
+            
+            logger.info("Successfully added {} units to resource {}", quantity, resourceId);
+        } catch (WebClientRequestException e) {
+            logger.error("Network error updating resource stock: {}", e.getMessage());
+            throw new IllegalArgumentException("Gagal terhubung ke layanan resource: " + e.getMessage());
         }
     }
 
@@ -494,13 +578,18 @@ public class ProjectServiceImpl implements ProjectService {
 
                     ResourceDetailDTO resourceDetail = fetchResourceDetailById(resourceItem.getResourceId());
                     totalPemasukkan += resourceDetail.getResourcePrice();
-
+                    // Deduct resource stock
+                    if (resourceItem.getResourceStockUsed() > 0) {
+                        deductResourceStock(resourceItem.getResourceId(), resourceItem.getResourceStockUsed());
+                    } else {
+                        throw new IllegalArgumentException("Jumlah resource yang digunakan tidak boleh kurang dari 0");
+                    }
                     ProjectResourceUsage projectResourceUsage = new ProjectResourceUsage();
                     projectResourceUsage.setResourceId(resourceItem.getResourceId());
                     projectResourceUsage.setSellPrice(resourceDetail.getResourcePrice());
                     projectResourceUsage.setQuantityUsed(resourceItem.getResourceStockUsed());
                     projectResourceUsage.setProject(sellProject);
-                    projectResourceUsages.add(projectResourceUsage);
+                    projectResourceUsages.add(projectResourceUsage);                    
                 }
             }
 
