@@ -14,8 +14,10 @@ import gpl.karina.resource.repository.ResourceRepository;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.request.UpdateResourceDTO;
 import gpl.karina.resource.restdto.response.ResourceResponseDTO;
+import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class ResourceRestServiceImpl implements ResourceRestService {
     private final ResourceRepository resourceRepository;
 
@@ -92,7 +94,66 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         }     
         resource.setResourceDescription(updateResourceDTO.getResourceDescription());
         resource.setResourcePrice(updateResourceDTO.getResourcePrice());
+        resource.setResourceStock(resource.getResourceStock() + updateResourceDTO.getResourceStock());
         
+        resourceRepository.save(resource);
+        return resourceToResourceResponseDTO(resource);
+    }
+
+    /**
+     * Adds stock to a resource
+     * @param idResource The resource ID
+     * @param quantity The quantity to add (must be positive)
+     * @return Updated resource response
+     */
+    @Override
+    public ResourceResponseDTO addResourceStock(Long idResource, Integer quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Jumlah penambahan stok harus positif");
+        }
+        
+        Resource resource = resourceRepository.findByIdWithPessimisticLock(idResource)
+            .orElseThrow(() -> new IllegalArgumentException("Resource tidak ditermukan"));
+        
+        // Add the stock
+        resource.setResourceStock(resource.getResourceStock() + quantity);
+        
+        // Save and return
+        resourceRepository.save(resource);
+        return resourceToResourceResponseDTO(resource);
+    }
+
+    /**
+     * Deducts stock from a resource
+     * @param idResource The resource ID
+     * @param quantity The quantity to deduct (must be positive)
+     * @return Updated resource response
+     * @throws IllegalArgumentException if insufficient stock
+     */
+    @Override
+    public ResourceResponseDTO deductResourceStock(Long idResource, Integer quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Jumlah pengurangan stok harus positif");
+        }
+        
+        Resource resource = resourceRepository.findByIdWithPessimisticLock(idResource)
+            .orElseThrow(() -> new IllegalArgumentException("Resource tidak ditermukan"));
+        
+        // Resource resource = resourceRepository.findById(idResource)
+        //     .orElseThrow(() -> new IllegalArgumentException("Resource tidak ditemukan"));
+
+        // Check if we have enough stock
+        int newStock = resource.getResourceStock() - quantity;
+        if (newStock < 0) {
+            throw new IllegalArgumentException(
+                "Stock tidak mencukupi. Tersedia: " + resource.getResourceStock() + 
+                ", permintaan: " + quantity);
+        }
+        
+        // Update the stock
+        resource.setResourceStock(newStock);
+        
+        // Save and return
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
     }

@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -19,6 +21,7 @@ import gpl.karina.profile.restdto.response.ProjectResponseDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
 import jakarta.transaction.Transactional;
+import reactor.core.publisher.Mono;
 
 @Service
 @Transactional
@@ -35,22 +38,47 @@ public class ClientServiceImpl implements ClientService {
     }
 
     private List<ProjectResponseDTO> fetchProjectsByClientId(UUID clientId) {
-        String url = projectUrl + "/api/project/all?clientProject=" + clientId;
-        BaseResponseDTO<List<ProjectResponseDTO>> response = webClientProject
-            .get()
-            .uri(url)
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<ProjectResponseDTO>>>() {})
-            .block();
-
-        if (response == null || response.getData() == null) {
+        String url = projectUrl + "api/project/all?clientProject=" + clientId;
+        
+        try {
+            return webClientProject
+                .get()
+                .uri(url)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> {
+                    if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                        // Log the 404 but don't treat it as an exception
+                        System.out.println("No projects found for client: " + clientId);
+                        return Mono.empty();
+                    }
+                    // For other client errors, we might want to propagate them
+                    return Mono.error(new RuntimeException("Client error: " + response.statusCode()));
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, response -> {
+                    // Log server errors
+                    System.err.println("Server error when fetching projects: " + response.statusCode());
+                    return Mono.error(new RuntimeException("Server error: " + response.statusCode()));
+                })
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<ProjectResponseDTO>>>() {})
+                .map(response -> {
+                    if (response == null || response.getData() == null) {
+                        return new ArrayList<ProjectResponseDTO>();
+                    }
+                    
+                    List<ProjectResponseDTO> projects = response.getData();
+                    projects.forEach(ProjectResponseDTO::calculateProfit);
+                    return projects;
+                })
+                .onErrorResume(e -> {
+                    System.err.println("Error fetching projects for client " + clientId + ": " + e.getMessage());
+                    // Return empty list on error
+                    return Mono.just(new ArrayList<>());
+                })
+                .block();
+        } catch (Exception e) {
+            System.err.println("Exception when fetching projects for client " + clientId + ": " + e.getMessage());
             return new ArrayList<>();
         }
-        List<ProjectResponseDTO> projects = response.getData();
-        for (ProjectResponseDTO dto : projects) {
-            dto.calculateProfit();
-        }
-        return response.getData();
     }
 
     private ClientResponseDTO clientToClientResponseDTO(Client client) {
