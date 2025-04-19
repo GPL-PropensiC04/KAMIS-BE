@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -20,6 +21,8 @@ import gpl.karina.project.model.ProjectResourceUsage;
 import gpl.karina.project.model.Sell;
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 import gpl.karina.project.restdto.AssetUsageDTO;
 import gpl.karina.project.restdto.ResourceUsageDTO;
@@ -39,6 +42,7 @@ import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import reactor.core.publisher.Mono;
 
 @Service
 @Transactional
@@ -115,98 +119,155 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     // private AssetDetailDTO fetchAssetDetailById(String id) {
-    //     var response = webClientAsset
-    //             .get()
-    //             .uri("/api/asset/" + id)
-    //             .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
-    //             .retrieve()
-    //             .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {
-    //             })
-    //             .block();
-    //     if (response == null || response.getData() == null) {
-    //         throw new IllegalArgumentException("Asset not found with id: " + id);
-    //     }
-
-    //     return response.getData();
+    // var response = webClientAsset
+    // .get()
+    // .uri("/api/asset/" + id)
+    // .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+    // .retrieve()
+    // .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>()
+    // {
+    // })
+    // .block();
+    // if (response == null || response.getData() == null) {
+    // throw new IllegalArgumentException("Asset not found with id: " + id);
     // }
 
-    private ResourceDetailDTO fetchResourceDetailById(String id) {
-        var response = webClientResource
-                .get()
-                .uri("/api/resource/find/" + id)
-                .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {
-                })
-                .block();
-        if (response == null || response.getData() == null) {
-            throw new IllegalArgumentException("Resource not found with id: " + id);
-        }
+    // return response.getData();
+    // }
 
-        return response.getData();
+    private Boolean validateAsset(String platNomor) {
+        try {
+            var response = webClientAsset
+                    .get()
+                    .uri("/api/asset/" + platNomor)
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                        if (clientResponse.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                            return Mono.error(new IllegalArgumentException("Aset dengan nomor plat " + platNomor + " tidak ditemukan"));
+                        } else if (clientResponse.statusCode().equals(HttpStatus.FORBIDDEN)) {
+                            return Mono.error(new IllegalArgumentException("Tidak memiliki akses untuk melihat aset"));
+                        } else {
+                            return Mono.error(new IllegalArgumentException("Gagal memvalidasi aset: " + clientResponse.statusCode()));
+                        }
+                    })
+                    .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
+                        return Mono.error(new IllegalArgumentException("Layanan aset sedang tidak tersedia, silakan coba lagi nanti"));
+                    })
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {})
+                    .block();
+                    
+            if (response == null) {
+                throw new IllegalArgumentException("Tidak ada respons dari layanan aset");
+            }
+            
+            if (response.getData() == null) {
+                throw new IllegalArgumentException("Aset dengan nomor plat " + platNomor + " tidak memiliki data yang valid");
+            }
+            
+            AssetDetailDTO assetDetailDTO = response.getData();
+            String assetId = assetDetailDTO.getPlatNomor();
+            
+            if (assetId == null || assetId.isEmpty()) {
+                throw new IllegalArgumentException("Aset dengan nomor plat " + platNomor + " memiliki ID yang kosong");
+            }
+            
+            return true;
+        } catch (WebClientRequestException e) {
+            logger.error("Network error validating asset: {}", e.getMessage());
+            throw new IllegalArgumentException("Gagal terhubung ke layanan aset: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // Rethrow IllegalArgumentException as is
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unexpected error validating asset: {}", e.getMessage());
+            throw new IllegalArgumentException("Gagal memvalidasi aset: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Fetches and validates a resource by ID
+     * 
+     * @param id Resource ID
+     * @return Validated ResourceDetailDTO
+     * @throws IllegalArgumentException if resource is invalid
+     */
+    private ResourceDetailDTO fetchAndValidateResource(String id) {
+        try {
+            var response = webClientResource
+                    .get()
+                    .uri("/api/resource/find/" + id)
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                        if (clientResponse.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                            return Mono.error(
+                                    new IllegalArgumentException("Resource dengan ID " + id + " tidak ditemukan"));
+                        } else if (clientResponse.statusCode().equals(HttpStatus.FORBIDDEN)) {
+                            return Mono
+                                    .error(new IllegalArgumentException("Tidak memiliki akses untuk melihat resource"));
+                        } else {
+                            return Mono.error(new IllegalArgumentException(
+                                    "Gagal memvalidasi resource: " + clientResponse.statusCode()));
+                        }
+                    })
+                    .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
+                        return Mono.error(new IllegalArgumentException(
+                                "Layanan resource sedang tidak tersedia, silakan coba lagi nanti"));
+                    })
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {
+                    })
+                    .block();
+
+            if (response == null) {
+                throw new IllegalArgumentException("Tidak ada respons dari layanan resource");
+            }
+
+            if (response.getData() == null) {
+                throw new IllegalArgumentException("Resource dengan ID " + id + " tidak memiliki data yang valid");
+            }
+
+            ResourceDetailDTO resourceDetailDTO = response.getData();
+
+            if (resourceDetailDTO.getId() == null) {
+                throw new IllegalArgumentException("Resource dengan ID " + id + " memiliki ID yang kosong");
+            }
+
+            if (resourceDetailDTO.getResourceStock() == 0) {
+                throw new IllegalArgumentException("Stock resource dengan ID " + id + " sedang kosong");
+            }
+
+            return resourceDetailDTO;
+        } catch (WebClientRequestException e) {
+            logger.error("Network error validating resource: {}", e.getMessage());
+            throw new IllegalArgumentException("Gagal terhubung ke layanan resource: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // Rethrow IllegalArgumentException as is
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unexpected error validating resource: {}", e.getMessage());
+            throw new IllegalArgumentException("Gagal memvalidasi resource: " + e.getMessage());
+        }
+    }
+
+    private ResourceDetailDTO fetchResourceDetailById(String id) {
+        return fetchAndValidateResource(id);
     }
 
     private Boolean validateResource(String id) {
-        var response = webClientResource
-                .get()
-                .uri("/api/resource/find/" + id)
-                .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {
-                })
-                .block();
-        if (response == null || response.getData() == null) {
-            throw new IllegalArgumentException("Resource not found with id: " + id);
+        try {
+            fetchAndValidateResource(id);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
-        ResourceDetailDTO resourceDetailDTO = response.getData();
-        Boolean isValid = false;
-        if (resourceDetailDTO.getId() != null) {
-            isValid = true;
-        }
-        return isValid;
-    }
-
-    private Boolean validateAsset(String platNomor) {
-        var response = webClientAsset
-                .get()
-                .uri("/api/asset/" + platNomor)
-                .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {
-                })
-                .block();
-        if (response == null || response.getData() == null) {
-            throw new IllegalArgumentException("Asset not found with platNomor: " + platNomor);
-        }
-        AssetDetailDTO assetDetailDTO = response.getData();
-        String assetId = assetDetailDTO.getPlatNomor();
-        Boolean isValid = false;
-        if (assetId != null) {
-            isValid = true;
-        }
-        return isValid;
     }
 
     private Long fetchTodayProjectCount(Date today) {
-        List<Project> projectsTodayList = projectRepository.findAll();
-
-        Calendar todayCal = Calendar.getInstance();
-        todayCal.setTime(today);
-        int todayYear = todayCal.get(Calendar.YEAR);
-        int todayMonth = todayCal.get(Calendar.MONTH);
-        int todayDay = todayCal.get(Calendar.DAY_OF_MONTH);
-
-        Long projectsCountToday = projectsTodayList.stream()
-                .filter(project -> {
-                    if (project.getCreatedDate() == null)
-                        return false;
-                    Calendar projectCal = Calendar.getInstance();
-                    projectCal.setTime(project.getCreatedDate());
-                    return projectCal.get(Calendar.YEAR) == todayYear &&
-                            projectCal.get(Calendar.MONTH) == todayMonth &&
-                            projectCal.get(Calendar.DAY_OF_MONTH) == todayDay;
-                })
-                .count();
+        Long projectsCountToday = projectRepository.countProjectsCreatedOn(today);
+        if (projectsCountToday == null) {
+            projectsCountToday = 0L;
+        }
         return projectsCountToday;
     }
 
@@ -217,7 +278,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         log.setUsername(username);
         log.setAction(action);
-        
+
         Date now = new Date();
         log.setActionDate(now);
 
@@ -429,9 +490,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             if (projectRequestDTO.getProjectUseResource() != null) {
                 for (ResourceUsageDTO resourceItem : projectRequestDTO.getProjectUseResource()) {
-                    if (!validateResource(resourceItem.getResourceId())) {
-                        throw new IllegalArgumentException("Pastikan ID Resource sudah terdaftar dalam sistem");
-                    }
+                    validateResource(resourceItem.getResourceId());
 
                     ResourceDetailDTO resourceDetail = fetchResourceDetailById(resourceItem.getResourceId());
                     totalPemasukkan += resourceDetail.getResourcePrice();
@@ -480,8 +539,7 @@ public class ProjectServiceImpl implements ProjectService {
     public List<listProjectResponseDTO> getAllProject(
             String idSearch, String projectStatus, String projectType,
             String projectName, String projectClientId, Date projectStartDate,
-            Date projectEndDate
-    ) throws Exception {
+            Date projectEndDate) throws Exception {
 
         final Date adjustedEndDate;
         if (projectEndDate != null) {
@@ -500,10 +558,14 @@ public class ProjectServiceImpl implements ProjectService {
 
         List<Project> filteredProjects = projects.stream()
                 .filter(project -> idSearch == null || project.getId().toLowerCase().contains(idSearch.toLowerCase()))
-                .filter(project -> projectStatus == null || String.valueOf(project.getProjectStatus()).equalsIgnoreCase(projectStatus))
-                .filter(project -> projectType == null || project.getProjectType().toString().equalsIgnoreCase(projectType))
-                .filter(project -> projectName == null || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
-                .filter(project -> projectClientId == null || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
+                .filter(project -> projectStatus == null
+                        || String.valueOf(project.getProjectStatus()).equalsIgnoreCase(projectStatus))
+                .filter(project -> projectType == null
+                        || project.getProjectType().toString().equalsIgnoreCase(projectType))
+                .filter(project -> projectName == null
+                        || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
+                .filter(project -> projectClientId == null
+                        || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
                 .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(projectStartDate))
                 .filter(project -> adjustedEndDate == null || !project.getProjectEndDate().after(adjustedEndDate))
                 .collect(Collectors.toList());
@@ -516,7 +578,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectResponseWrapperDTO updateProjectStatus(String id, Integer newStatus) throws Exception {
         Project project = projectRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
         Integer currentStatus = project.getProjectStatus();
 
         // Tidak bisa update jika sudah selesai (2) atau batal (3)
@@ -526,17 +588,20 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Tidak bisa kembali ke 0 (Direncanakan) dari status 1 (Dilaksanakan)
         if (currentStatus == 1 && newStatus == 0) {
-            throw new IllegalArgumentException("Status proyek tidak bisa dikembalikan ke 'Direncanakan' dari 'Dilaksanakan'.");
+            throw new IllegalArgumentException(
+                    "Status proyek tidak bisa dikembalikan ke 'Direncanakan' dari 'Dilaksanakan'.");
         }
 
-        // Status batal (3) hanya bisa dari 0 (Direncanakan) atau 1 (Dilaksanakan), tidak dari 2 (Selesai)
+        // Status batal (3) hanya bisa dari 0 (Direncanakan) atau 1 (Dilaksanakan),
+        // tidak dari 2 (Selesai)
         if (newStatus == 3 && currentStatus == 2) {
             throw new IllegalArgumentException("Status proyek tidak bisa dibatalkan jika sudah selesai.");
         }
 
         // Validasi selesai: tidak bisa kembali ke status sebelumnya
         if (currentStatus == 0 && newStatus == 2) {
-            throw new IllegalArgumentException("Status proyek tidak bisa langsung menjadi 'Selesai' dari 'Direncanakan'.");
+            throw new IllegalArgumentException(
+                    "Status proyek tidak bisa langsung menjadi 'Selesai' dari 'Direncanakan'.");
         }
 
         project.setProjectStatus(newStatus);
@@ -552,7 +617,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponseWrapperDTO updateProjectPayment(String id, boolean projectPaymentStatus) throws Exception {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
-    
+
         if (Boolean.TRUE.equals(project.getProjectPaymentStatus())) {
             throw new IllegalArgumentException("Proyek sudah dibayar, tidak dapat dibuah statusnya.");
         }

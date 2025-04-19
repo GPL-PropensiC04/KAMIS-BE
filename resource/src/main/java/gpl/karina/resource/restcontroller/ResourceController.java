@@ -157,7 +157,7 @@ public class ResourceController {
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     
-        } catch (UserNotFound e) {
+        } catch (IllegalArgumentException | UserNotFound e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());
             baseResponseDTO.setData(null);
