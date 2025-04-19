@@ -2,7 +2,7 @@ package gpl.karina.project.model;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
@@ -10,7 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
-
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -18,8 +19,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.util.Date;
-
-
+import java.util.List;
 
 @Entity
 @Data
@@ -35,9 +35,9 @@ public class Project {
     @Column(nullable = false, name = "tipe_proyek")// Value 0 = Penjualan, Value 1 = Pengiriman
     private Boolean projectType; 
     @Column(name = "status_pembayaran")// Status yang belum lunas, telah lunas
-    private String projectPaymentStatus; 
+    private Boolean projectPaymentStatus; 
     @Column(nullable = false, name = "status_proyek")
-    private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai
+    private Integer projectStatus; // 0 : Direncanakan, 1 : dilaksanakan, 2 : selesai, 3 : batal
     @Column(nullable = false, name = "nama_proyek")
     private String projectName;
     @Column(name = "deskripsi_proyek")
@@ -64,5 +64,7 @@ public class Project {
     @Column(name = "total_pemasukkan")
     private Long projectTotalPemasukkan;
 
-    
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "project_id")
+    List<LogProject> projectLogs;
 }

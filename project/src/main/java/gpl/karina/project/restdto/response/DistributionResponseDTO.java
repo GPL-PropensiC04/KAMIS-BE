@@ -17,8 +17,8 @@ public class DistributionResponseDTO {
 
     private String id;
     private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
-    private String projectPaymentStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
-    private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
+    private Boolean projectPaymentStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
+    private Integer projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
 
     private String projectName;
 
@@ -45,4 +45,6 @@ public class DistributionResponseDTO {
     private Long projectTotalPemasukkan;
 
     private Long projectTotalPengeluaran;
+
+    private List<LogProjectResponseDTO> projectLogs;
 }

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import gpl.karina.project.restservice.ProjectService;
 import jakarta.validation.Valid;
 import gpl.karina.project.restdto.request.ProjectRequestDTO;
+import gpl.karina.project.restdto.request.UpdateProjectPaymentRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
@@ -122,7 +123,45 @@ public class ProjectController {
             response.setTimestamp(new Date());
             response.setData(updatedProject);
             return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            // Untuk error validasi, gunakan BAD_REQUEST
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Gagal memperbarui status proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
+            // Untuk error lain (misal project benar-benar tidak ditemukan)
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            response.setMessage("Gagal memperbarui status proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/update-payment/{id}")
+    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProjectPayment(
+            @PathVariable String id,
+            @RequestBody UpdateProjectPaymentRequestDTO updateProjectPaymentDTO) {
+        BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
+        try {
+            ProjectResponseWrapperDTO updatedProject = projectService.updateProjectPayment(id,
+                    updateProjectPaymentDTO.isProjectPaymentStatus());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Status proyek berhasil diperbarui");
+            response.setTimestamp(new Date());
+            response.setData(updatedProject);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            // Untuk error validasi, gunakan BAD_REQUEST
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Gagal memperbarui status proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            // Untuk error lain (misal project benar-benar tidak ditemukan)
             response.setStatus(HttpStatus.NOT_FOUND.value());
             response.setMessage("Gagal memperbarui status proyek: " + e.getMessage());
             response.setTimestamp(new Date());
