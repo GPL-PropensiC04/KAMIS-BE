@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface MaintenanceRepository extends JpaRepository<Maintenance, Long> {
-    List<Maintenance> findByAssetPlatNomor(String platNomor);
+    List<Maintenance> findByAssetPlatNomorAndStatus(String platNomor, String status);
 }
