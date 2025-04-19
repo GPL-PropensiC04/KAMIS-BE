@@ -30,11 +30,11 @@ import java.util.List;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "jenis_proyek", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "project", indexes = {
-        @Index(name = "idx_project_client_id", columnList = "projectClientId"),
-        @Index(name = "idx_project_status", columnList = "projectStatus"),
-        @Index(name = "idx_project_type", columnList = "projectType"),
-        @Index(name = "idx_project_start_date", columnList = "projectStartDate"),
-        @Index(name = "idx_project_end_date", columnList = "projectEndDate")
+        @Index(name = "idx_project_client_id", columnList = "id_klien"),
+        @Index(name = "idx_project_status", columnList = "status_proyek"),
+        @Index(name = "idx_project_type", columnList = "tipe_proyek"),
+        @Index(name = "idx_project_start_date", columnList = "tanggal_mulai_proyek"),
+        @Index(name = "idx_project_end_date", columnList = "tanggal_selesai_proyek")
     })
 public class Project {
     @Id
