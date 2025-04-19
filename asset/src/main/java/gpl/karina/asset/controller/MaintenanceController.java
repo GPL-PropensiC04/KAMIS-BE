@@ -76,29 +76,29 @@ public class MaintenanceController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BaseResponseDTO<MaintenanceResponseDTO>> getMaintenanceById(@PathVariable Long id) {
-        BaseResponseDTO<MaintenanceResponseDTO> response = new BaseResponseDTO<>();
+    // @GetMapping("/{id}")
+    // public ResponseEntity<BaseResponseDTO<MaintenanceResponseDTO>> getMaintenanceById(@PathVariable Long id) {
+    //     BaseResponseDTO<MaintenanceResponseDTO> response = new BaseResponseDTO<>();
         
-        try {
-            MaintenanceResponseDTO maintenance = maintenanceService.getMaintenanceById(id);
+    //     try {
+    //         MaintenanceResponseDTO maintenance = maintenanceService.getMaintenanceById(id);
             
-            response.setStatus(HttpStatus.OK.value());
-            response.setMessage("Detail maintenance berhasil ditemukan");
-            response.setData(maintenance);
-            response.setTimestamp(new Date());
+    //         response.setStatus(HttpStatus.OK.value());
+    //         response.setMessage("Detail maintenance berhasil ditemukan");
+    //         response.setData(maintenance);
+    //         response.setTimestamp(new Date());
             
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            response.setStatus(HttpStatus.NOT_FOUND.value());
-            response.setMessage(e.getMessage());
-            response.setTimestamp(new Date());
+    //         return new ResponseEntity<>(response, HttpStatus.OK);
+    //     } catch (Exception e) {
+    //         response.setStatus(HttpStatus.NOT_FOUND.value());
+    //         response.setMessage(e.getMessage());
+    //         response.setTimestamp(new Date());
             
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
-    }
+    //         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    //     }
+    // }
 
-    @GetMapping("/asset/{platNomor}")
+    @GetMapping("{platNomor}")
     public ResponseEntity<BaseResponseDTO<List<MaintenanceResponseDTO>>> getMaintenanceByAsset(@PathVariable String platNomor) {
         BaseResponseDTO<List<MaintenanceResponseDTO>> response = new BaseResponseDTO<>();
         

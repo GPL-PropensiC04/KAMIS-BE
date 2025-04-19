@@ -38,6 +38,15 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         }
         
         Asset asset = assetOptional.get();
+        
+        // Check if asset is already in maintenance or in project
+        if ("Sedang Maintenance".equals(asset.getStatus())) {
+            throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang dalam maintenance");
+        }
+
+        if ("Dalam Proyek".equals(asset.getStatus())) {
+            throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang digunakan dalam proyek");
+        }
                 
         // Ubah status asset menjadi sedang maintenance
         asset.setStatus("Sedang Maintenance");
@@ -65,7 +74,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
     }
 
     @Override
-    public List<MaintenanceResponseDTO> getMaintenanceByAssetId(String platNomor) throws Exception {
+    public List<MaintenanceResponseDTO> getMaintenanceByAssetIdAndStatus(String platNomor, String status) throws Exception {
         // Verifikasi keberadaan asset terlebih dahulu
         Optional<Asset> assetOptional = assetRepository.findById(platNomor);
         
@@ -73,8 +82,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             throw new Exception("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
         }
         
-        // Gunakan repository yang sudah dibuat sebelumnya
-        List<Maintenance> maintenances = maintenanceRepository.findByAssetPlatNomor(platNomor);
+        // Implementasi filter maintenance berdasarkan aset dan status
+        List<Maintenance> maintenances = maintenanceRepository.findByAssetPlatNomorAndStatus(platNomor, status);
         return maintenances.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -111,6 +120,18 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         return convertToDTO(updatedMaintenance);
     }
     
+    @Override
+    public List<MaintenanceResponseDTO> getMaintenanceByAssetId(String platNomor) throws Exception {
+        Optional<Asset> assetOptional = assetRepository.findById(platNomor);
+        if (assetOptional.isEmpty()) {
+            throw new Exception("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
+        }
+        List<Maintenance> maintenances = maintenanceRepository.findAll().stream()
+                .filter(m -> m.getAsset().getPlatNomor().equals(platNomor))
+                .collect(Collectors.toList());
+        return maintenances.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
     private MaintenanceResponseDTO convertToDTO(Maintenance maintenance) {
         MaintenanceResponseDTO dto = new MaintenanceResponseDTO();
         dto.setId(maintenance.getId());
