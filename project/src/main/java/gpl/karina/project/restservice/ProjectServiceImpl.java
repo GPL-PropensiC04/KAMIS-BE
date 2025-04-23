@@ -24,6 +24,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
+import gpl.karina.project.restdto.AssetUpdateStatusDTO;
 import gpl.karina.project.restdto.AssetUsageDTO;
 import gpl.karina.project.restdto.ResourceStockUpdateDTO;
 import gpl.karina.project.restdto.ResourceUsageDTO;
@@ -135,6 +136,48 @@ public class ProjectServiceImpl implements ProjectService {
 
     // return response.getData();
     // }
+
+    private void updateAssetStatus(String platNomor, String status) {
+        try {
+            var response = webClientAsset
+                    .put()
+                    .uri("/api/asset/" + platNomor)
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                    .bodyValue(new AssetUpdateStatusDTO(status))
+                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                        if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
+                            return clientResponse.bodyToMono(String.class)
+                                    .flatMap(body -> Mono.error(new IllegalArgumentException(
+                                            "Gagal memperbarui status aset: " + body)));
+                        }
+                        return Mono.error(new IllegalArgumentException(
+                                "Gagal memperbarui status aset: " + clientResponse.statusCode()));
+                    })
+                    .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
+                        return Mono.error(new IllegalArgumentException(
+                                "Layanan aset sedang tidak tersedia, silakan coba lagi nanti"));
+                    })
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {})
+                    .block();
+            
+            if (response == null || response.getData() == null) {
+                throw new IllegalArgumentException("Tidak ada respons yang valid dari layanan aset");
+            }
+            
+            logger.info("Successfully updated asset status to {}", status);
+        } catch (WebClientRequestException e) {
+            logger.error("Network error updating asset status: {}", e.getMessage());
+            throw new IllegalArgumentException("Gagal terhubung ke layanan aset: " + e.getMessage());
+        }
+    }
+    /**
+     * Validates an asset by its plate number
+     * 
+     * @param platNomor Plate number of the asset
+     * @return true if valid, false otherwise
+     * @throws IllegalArgumentException if asset is invalid
+     */
 
     private Boolean validateAsset(String platNomor) {
         try {
@@ -544,7 +587,7 @@ public class ProjectServiceImpl implements ProjectService {
                         throw new IllegalArgumentException("Pastikan ID Aset sudah terdaftar dalam sistem");
                     }
                     totalPengeluaran += assetItem.getAssetFuelCost() + assetItem.getAssetUseCost();
-
+                    updateAssetStatus(assetItem.getPlatNomor(), "Dalam Proyek");
                     ProjectAssetUsage projectAssetUsage = new ProjectAssetUsage();
                     projectAssetUsage.setPlatNomor(assetItem.getPlatNomor());
                     projectAssetUsage.setProject(distributionProject);
