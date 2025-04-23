@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,9 +24,12 @@ import gpl.karina.project.model.Sell;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 import gpl.karina.project.restdto.AssetUpdateStatusDTO;
 import gpl.karina.project.restdto.AssetUsageDTO;
+import gpl.karina.project.restdto.ResourceStockUpdateDTO;
 import gpl.karina.project.restdto.ResourceStockUpdateDTO;
 import gpl.karina.project.restdto.ResourceUsageDTO;
 import gpl.karina.project.restdto.fetch.AssetDetailDTO;
@@ -44,6 +48,7 @@ import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -395,6 +400,10 @@ public class ProjectServiceImpl implements ProjectService {
         if (projectsCountToday == null) {
             projectsCountToday = 0L;
         }
+        Long projectsCountToday = projectRepository.countProjectsCreatedOn(today);
+        if (projectsCountToday == null) {
+            projectsCountToday = 0L;
+        }
         return projectsCountToday;
     }
 
@@ -405,6 +414,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         log.setUsername(username);
         log.setAction(action);
+
 
         Date now = new Date();
         log.setActionDate(now);
@@ -618,9 +628,16 @@ public class ProjectServiceImpl implements ProjectService {
             if (projectRequestDTO.getProjectUseResource() != null) {
                 for (ResourceUsageDTO resourceItem : projectRequestDTO.getProjectUseResource()) {
                     validateResource(resourceItem.getResourceId());
+                    validateResource(resourceItem.getResourceId());
 
                     ResourceDetailDTO resourceDetail = fetchResourceDetailById(resourceItem.getResourceId());
                     totalPemasukkan += resourceDetail.getResourcePrice();
+                    // Deduct resource stock
+                    if (resourceItem.getResourceStockUsed() > 0) {
+                        deductResourceStock(resourceItem.getResourceId(), resourceItem.getResourceStockUsed());
+                    } else {
+                        throw new IllegalArgumentException("Jumlah resource yang digunakan tidak boleh kurang dari 0");
+                    }
                     // Deduct resource stock
                     if (resourceItem.getResourceStockUsed() > 0) {
                         deductResourceStock(resourceItem.getResourceId(), resourceItem.getResourceStockUsed());
@@ -632,6 +649,7 @@ public class ProjectServiceImpl implements ProjectService {
                     projectResourceUsage.setSellPrice(resourceDetail.getResourcePrice());
                     projectResourceUsage.setQuantityUsed(resourceItem.getResourceStockUsed());
                     projectResourceUsage.setProject(sellProject);
+                    projectResourceUsages.add(projectResourceUsage);                    
                     projectResourceUsages.add(projectResourceUsage);                    
                 }
             }
@@ -672,6 +690,7 @@ public class ProjectServiceImpl implements ProjectService {
             String idSearch, String projectStatus, String projectType,
             String projectName, String projectClientId, Date projectStartDate,
             Date projectEndDate) throws Exception {
+            Date projectEndDate) throws Exception {
 
         final Date adjustedEndDate;
         if (projectEndDate != null) {
@@ -698,6 +717,14 @@ public class ProjectServiceImpl implements ProjectService {
                         || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
                 .filter(project -> projectClientId == null
                         || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
+                .filter(project -> projectStatus == null
+                        || String.valueOf(project.getProjectStatus()).equalsIgnoreCase(projectStatus))
+                .filter(project -> projectType == null
+                        || project.getProjectType().toString().equalsIgnoreCase(projectType))
+                .filter(project -> projectName == null
+                        || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
+                .filter(project -> projectClientId == null
+                        || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
                 .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(projectStartDate))
                 .filter(project -> adjustedEndDate == null || !project.getProjectEndDate().after(adjustedEndDate))
                 .collect(Collectors.toList());
@@ -711,6 +738,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponseWrapperDTO updateProjectStatus(String id, Integer newStatus) throws Exception {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
         Integer currentStatus = project.getProjectStatus();
 
         // Tidak bisa update jika sudah selesai (2) atau batal (3)
@@ -722,8 +750,12 @@ public class ProjectServiceImpl implements ProjectService {
         if (currentStatus == 1 && newStatus == 0) {
             throw new IllegalArgumentException(
                     "Status proyek tidak bisa dikembalikan ke 'Direncanakan' dari 'Dilaksanakan'.");
+            throw new IllegalArgumentException(
+                    "Status proyek tidak bisa dikembalikan ke 'Direncanakan' dari 'Dilaksanakan'.");
         }
 
+        // Status batal (3) hanya bisa dari 0 (Direncanakan) atau 1 (Dilaksanakan),
+        // tidak dari 2 (Selesai)
         // Status batal (3) hanya bisa dari 0 (Direncanakan) atau 1 (Dilaksanakan),
         // tidak dari 2 (Selesai)
         if (newStatus == 3 && currentStatus == 2) {
@@ -732,6 +764,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Validasi selesai: tidak bisa kembali ke status sebelumnya
         if (currentStatus == 0 && newStatus == 2) {
+            throw new IllegalArgumentException(
+                    "Status proyek tidak bisa langsung menjadi 'Selesai' dari 'Direncanakan'.");
             throw new IllegalArgumentException(
                     "Status proyek tidak bisa langsung menjadi 'Selesai' dari 'Direncanakan'.");
         }
@@ -749,6 +783,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponseWrapperDTO updateProjectPayment(String id, boolean projectPaymentStatus) throws Exception {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+
 
         if (Boolean.TRUE.equals(project.getProjectPaymentStatus())) {
             throw new IllegalArgumentException("Proyek sudah dibayar, tidak dapat dibuah statusnya.");
