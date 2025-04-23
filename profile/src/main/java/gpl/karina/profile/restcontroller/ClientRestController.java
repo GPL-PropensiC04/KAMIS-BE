@@ -66,8 +66,9 @@ public class ClientRestController {
 
     @GetMapping("/all")
     public ResponseEntity<BaseResponseDTO<List<ClientListResponseDTO>>> listClient(
-            @RequestParam(required = false) String nameClient, @RequestParam(required = false) Boolean typeClient) {
-            var baseResponseDTO = new BaseResponseDTO<List<ClientListResponseDTO>>();
+            @RequestParam(name = "nameClient", required = false) String nameClient,
+            @RequestParam(name = "typeClient", required = false) Boolean typeClient) {
+        var baseResponseDTO = new BaseResponseDTO<List<ClientListResponseDTO>>();
         List<ClientListResponseDTO> listClient;
         String message;
 
@@ -91,7 +92,7 @@ public class ClientRestController {
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> getClientDetail(@PathVariable("id") UUID id) {
         var baseResponseDTO = new BaseResponseDTO<ClientResponseDTO>();
-        
+
         try {
             ClientResponseDTO client = clientService.getClientById(id);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -100,6 +101,7 @@ public class ClientRestController {
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setData(null);
             baseResponseDTO.setMessage("Client dengan ID " + id + " tidak ditemukan");
@@ -109,7 +111,7 @@ public class ClientRestController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> updateClient(@PathVariable UUID id, 
+    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> updateClient(@PathVariable UUID id,
             @RequestBody UpdateClientRequestDTO updateClientRequestDTO) {
         var baseResponseDTO = new BaseResponseDTO<ClientResponseDTO>();
         try {
