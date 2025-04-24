@@ -142,12 +142,9 @@ public class ProjectController {
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        
-            
-        // return new String();
+
     }
     
-
     @GetMapping("/all")
     public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getListProject(
             @RequestParam(name = "idProject", required = false) String idSearch,
