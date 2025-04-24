@@ -24,6 +24,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "Penjualan")
 public class Sell extends Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Column(name = "id_resource_yang_digunakan")
-    List<ProjectResourceUsage> projectUseResource;
+    @Column(name = "id_resource_yang_digunakan", nullable = false)
+    private List<ProjectResourceUsage> projectUseResource;
 }

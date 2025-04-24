@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import gpl.karina.project.restservice.ProjectService;
 import jakarta.validation.Valid;
-import gpl.karina.project.restdto.request.ProjectRequestDTO;
+import gpl.karina.project.restdto.request.AddProjectRequestDTO;
 import gpl.karina.project.restdto.request.UpdateProjectPaymentRequestDTO;
+import gpl.karina.project.restdto.request.UpdateProjectRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
@@ -37,7 +38,7 @@ public class ProjectController {
 
     @PostMapping("/add")
     public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> addProject(
-            @Valid @RequestBody ProjectRequestDTO projectRequestDTO,
+            @Valid @RequestBody AddProjectRequestDTO projectRequestDTO,
             BindingResult bindingResult) throws Exception {
         // @Valid annotation will validate the request body and if there are any errors,
         // it will be stored in bindingResult
@@ -70,6 +71,46 @@ public class ProjectController {
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Gagal menambahkan proyek baru: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PutMapping("update/{id}")
+    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProject(
+        @PathVariable(name="id", required = true) String id, 
+        @Valid @RequestBody UpdateProjectRequestDTO updateProjectRequestDTO, 
+        BindingResult bindingResult) throws Exception {
+        BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
+        
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMessage = new StringBuilder();
+            List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+            for (FieldError fieldError : fieldErrors) {
+                errorMessage.append(fieldError.getDefaultMessage()).append("; ");
+            }
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(errorMessage.toString());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        try {
+            ProjectResponseWrapperDTO projectResponseDTO = projectService.updateProject(updateProjectRequestDTO);
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil memperbarui proyek");
+            response.setTimestamp(new Date());
+            response.setData(projectResponseDTO);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Gagal memperbarui proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Gagal memperbarui proyek: " + e.getMessage());
             response.setTimestamp(new Date());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -112,7 +153,7 @@ public class ProjectController {
 
     @PutMapping("/update-status/{id}")
     public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProjectStatus(
-            @PathVariable String id,
+            @PathVariable(name="id") String id,
             @RequestBody UpdateProjectStatusRequestDTO updateProjectStatusDTO) {
         BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
         try {
