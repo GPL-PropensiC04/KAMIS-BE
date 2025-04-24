@@ -983,6 +983,13 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public ProjectResponseWrapperDTO getProjectById(String id) throws Exception {
+        return projectRepository.findById(id)
+                .map(this::projectToProjectResponseDetailDTO)
+                .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+    }
+
+    @Override
     public ProjectResponseWrapperDTO updateProjectStatus(String id, Integer newStatus) throws Exception {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
