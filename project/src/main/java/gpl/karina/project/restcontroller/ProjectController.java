@@ -3,6 +3,8 @@ package gpl.karina.project.restcontroller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
+
 import gpl.karina.project.restservice.ProjectService;
 import jakarta.validation.Valid;
 import gpl.karina.project.restdto.request.AddProjectRequestDTO;
@@ -116,6 +118,35 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> getDetailProject(@PathVariable(name = "id") String id) {
+        var response = new BaseResponseDTO<ProjectResponseWrapperDTO>();
+        try {
+            ProjectResponseWrapperDTO project = projectService.getProjectById(id);
+            if (project == null) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Proyek tidak ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan detail proyek");
+            response.setTimestamp(new Date());
+            response.setData(project);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Gagal mendapatkan detail proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        
+            
+        // return new String();
+    }
+    
 
     @GetMapping("/all")
     public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getListProject(

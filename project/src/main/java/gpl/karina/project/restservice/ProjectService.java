@@ -15,6 +15,7 @@ public interface ProjectService {
         String projectName, String projectClientId, Date projectStartDate,
         Date projectEndDate
     ) throws Exception;
+    public ProjectResponseWrapperDTO getProjectById(String id) throws Exception;
     public ProjectResponseWrapperDTO updateProjectStatus(String id, Integer projectStatus) throws Exception;
     public ProjectResponseWrapperDTO updateProjectPayment(String id, boolean projectPaymentStatus) throws Exception;
     // public ProjectResponseDTO getProjectById(String id) throws Exception;
