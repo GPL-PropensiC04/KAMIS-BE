@@ -17,7 +17,7 @@ import jakarta.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ProjectRequestDTO {
+public class AddProjectRequestDTO {
     @NotNull(message = "Tipe Proyek tidak boleh kosong")
     private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
     

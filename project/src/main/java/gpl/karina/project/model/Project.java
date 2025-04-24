@@ -72,7 +72,7 @@ public class Project {
     @Column(name = "total_pemasukkan")
     private Long projectTotalPemasukkan;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "project_id")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "project_id", nullable = false)
     List<LogProject> projectLogs;
 }
