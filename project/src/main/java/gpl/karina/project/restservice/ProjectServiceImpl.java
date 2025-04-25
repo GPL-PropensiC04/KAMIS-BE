@@ -438,7 +438,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
         projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
         projectResponseDTO.setProjectType(project.getProjectType());
-        projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
+        projectResponseDTO.setProjectPaymentStatus(0);
         projectResponseDTO.setProjectStatus(project.getProjectStatus());
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
         projectResponseDTO.setProjectDescription(project.getProjectDescription());
@@ -654,7 +654,7 @@ public class ProjectServiceImpl implements ProjectService {
         // Set common properties for all project types
         project.setProjectName(projectRequestDTO.getProjectName());
         project.setProjectStatus(0);
-        project.setProjectPaymentStatus(false);
+        project.setProjectPaymentStatus(0);
         project.setProjectDescription(projectRequestDTO.getProjectDescription());
         project.setProjectClientId(projectRequestDTO.getProjectClientId());
         project.setProjectType(projectRequestDTO.getProjectType());
@@ -1008,8 +1008,21 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Status batal (3) hanya bisa dari 0 (Direncanakan) atau 1 (Dilaksanakan),
         // tidak dari 2 (Selesai)
-        if (newStatus == 3 && currentStatus == 2) {
-            throw new IllegalArgumentException("Status proyek tidak bisa dibatalkan jika sudah selesai.");
+        if (newStatus == 3) {
+            if (currentStatus == 2) {
+                throw new IllegalArgumentException("Status proyek tidak bisa dibatalkan jika sudah selesai.");
+            } else {
+                // Cek status pembayaran
+                Integer paymentStatus = project.getProjectPaymentStatus();
+                if (paymentStatus != null && paymentStatus == 1) { // Sudah dibayar
+                    throw new IllegalArgumentException(
+                        "Proyek sudah dibayar, hanya bisa update status pembayaran ke 'pengembalian'."
+                    );
+                } else if (paymentStatus == null || paymentStatus == 0) { // Belum dibayar
+                    // Boleh batal, tapi tidak bisa ubah status bayar
+                    // (opsional: tambahkan logika lain jika perlu)
+                }
+            }   
         }
 
         // Validasi selesai: tidak bisa kembali ke status sebelumnya
@@ -1028,12 +1041,30 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseWrapperDTO updateProjectPayment(String id, boolean projectPaymentStatus) throws Exception {
+    public ProjectResponseWrapperDTO updateProjectPayment(String id, Integer projectPaymentStatus) throws Exception {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
 
-        if (Boolean.TRUE.equals(project.getProjectPaymentStatus())) {
-            throw new IllegalArgumentException("Proyek sudah dibayar, tidak dapat dibuah statusnya.");
+        Integer currentPaymentStatus = project.getProjectPaymentStatus();
+        Integer currentProjectStatus = project.getProjectStatus();
+
+        // Jika ingin update ke pengembalian (2)
+        if (projectPaymentStatus == 2) {
+            // Hanya boleh jika status proyek sudah batal (3) dan sebelumnya sudah dibayar (1)
+            if (currentProjectStatus != null && currentProjectStatus == 3) {
+                if (currentPaymentStatus != null && currentPaymentStatus == 1) {
+                    // Boleh update ke pengembalian
+                } else {
+                    throw new IllegalArgumentException("Pengembalian hanya bisa dilakukan jika proyek sudah dibayar.");
+                }
+            } else {
+                throw new IllegalArgumentException("Pengembalian hanya bisa dilakukan jika proyek sudah dibatalkan.");
+            }
+        } else {
+            // Jika sudah dibayar, tidak bisa diubah lagi ke status lain selain pengembalian
+            if (currentPaymentStatus != null && currentPaymentStatus == 1) {
+                throw new IllegalArgumentException("Proyek sudah dibayar, tidak dapat diubah status pembayarannya kecuali ke pengembalian.");
+            }
         }
 
         project.setProjectPaymentStatus(projectPaymentStatus);
