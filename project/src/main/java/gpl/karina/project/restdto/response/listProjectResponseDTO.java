@@ -15,8 +15,8 @@ import lombok.NoArgsConstructor;
 public class listProjectResponseDTO {
     private String id;
     private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
-    private String projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
-    private String projectPaymentStatus;
+    private Integer projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
+    private Boolean projectPaymentStatus;
     private String projectName;
 
     private String projectDescription;

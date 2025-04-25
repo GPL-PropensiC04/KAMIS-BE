@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class UpdateProjectStatusRequestDTO {
-    private String projectStatus;
+    private Integer projectStatus;
 }

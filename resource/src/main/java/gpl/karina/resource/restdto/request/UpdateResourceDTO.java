@@ -11,4 +11,7 @@ public class UpdateResourceDTO {
     @NotNull(message = "Harga barang tidak boleh kosong")
     @Min(value = 0, message = "Harga barang tidak boleh kurang dari 0")
     private Integer resourcePrice;
+    @NotNull(message = "Stok barang tidak boleh kosong")
+    @Min(value = 0, message = "Stok barang tidak boleh kurang dari 0")
+    private Integer resourceStock;
 }

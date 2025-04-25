@@ -16,6 +16,7 @@ import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.exception.DataNotFound;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.request.UpdateResourceDTO;
+import gpl.karina.resource.restdto.request.UpdateResourceStockDTO;
 import gpl.karina.resource.restdto.response.ResourceResponseDTO;
 import gpl.karina.resource.restdto.response.BaseResponseDTO;
 import gpl.karina.resource.restservice.ResourceRestService;
@@ -144,6 +145,64 @@ public class ResourceController {
         }
     }
 
+    @PutMapping("/{idResource}/add-stock")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceStock(
+            @PathVariable("idResource") Long idResource,
+            @Valid @RequestBody UpdateResourceStockDTO stockOp) {
+        
+        BaseResponseDTO<ResourceResponseDTO> response = new BaseResponseDTO<>();
+        
+        try {
+            ResourceResponseDTO resource = resourceRestService.addResourceStock(idResource, stockOp.getQuantity());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Stock berhasil ditambahkan");
+            response.setData(resource);
+            response.setTimestamp(new Date());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setData(null);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan: " + e.getMessage());
+            response.setData(null);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{idResource}/deduct-stock")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> deductResourceStock(
+            @PathVariable("idResource") Long idResource,
+            @Valid @RequestBody UpdateResourceStockDTO stockOp) {
+        
+        BaseResponseDTO<ResourceResponseDTO> response = new BaseResponseDTO<>();
+        
+        try {
+            ResourceResponseDTO resource = resourceRestService.deductResourceStock(idResource, stockOp.getQuantity());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Stock berhasil dikurangi");
+            response.setData(resource);
+            response.setTimestamp(new Date());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setData(null);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan: " + e.getMessage());
+            response.setData(null);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/find/{idResource}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable(name = "idResource") Long idResource) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
@@ -157,7 +216,7 @@ public class ResourceController {
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     
-        } catch (UserNotFound e) {
+        } catch (IllegalArgumentException | UserNotFound e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());
             baseResponseDTO.setData(null);
