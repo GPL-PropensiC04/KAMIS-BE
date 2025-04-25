@@ -20,6 +20,8 @@ import gpl.karina.asset.dto.request.AssetAddDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
 import gpl.karina.asset.dto.response.BaseResponseDTO;
 import gpl.karina.asset.service.AssetService;
+import gpl.karina.asset.service.MaintenanceService;
+import gpl.karina.asset.dto.response.MaintenanceResponseDTO;
 import jakarta.validation.Valid;
 
 @RestController
@@ -27,10 +29,13 @@ import jakarta.validation.Valid;
 public class AssetController {
     private final AssetService assetService;
     private final AssetDb assetDb;
+    // Tambahkan dependency MaintenanceService
+    private final MaintenanceService maintenanceService;
 
-    public AssetController(AssetService assetService, AssetDb assetDb) {
+    public AssetController(AssetService assetService, AssetDb assetDb, MaintenanceService maintenanceService) {
         this.assetService = assetService;
         this.assetDb = assetDb;
+        this.maintenanceService = maintenanceService;
     }
 
     @GetMapping("/all")
@@ -146,6 +151,27 @@ public class AssetController {
                     .body(asset.getFoto());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{platNomor}/maintenance")
+    public ResponseEntity<?> getAssetMaintenanceHistory(@PathVariable("platNomor") String platNomor) {
+        var baseResponseDTO = new BaseResponseDTO<List<MaintenanceResponseDTO>>();
+        
+        try {
+            // Menggunakan service maintenance yang sudah ada
+            List<MaintenanceResponseDTO> maintenanceList = maintenanceService.getMaintenanceByAssetId(platNomor);
+            
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setData(maintenanceList);
+            baseResponseDTO.setMessage("Riwayat maintenance aset berhasil ditemukan");
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
         }
     }
 }

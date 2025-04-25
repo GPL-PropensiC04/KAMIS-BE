@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.Date;
-import java.util.List;
 
 @Getter
 @Setter
@@ -19,8 +18,11 @@ public class Maintenance {
     private Long id;
 
     @NotNull
-    @Column(name = "tanggalMaintenance", nullable = false)
-    private Date tanggalMaintenance;
+    @Column(name = "tanggalMulaiMaintenance", nullable = false)
+    private Date tanggalMulaiMaintenance;
+
+    @Column(name = "tanggalSelesaiMaintenance")
+    private Date tanggalSelesaiMaintenance;
 
     @NotNull
     @Column(name = "deskripsiPekerjaan", nullable = false)
@@ -34,7 +36,7 @@ public class Maintenance {
     @Column(name = "status", nullable = false)
     private String status;
     
-    // Remove or comment out the problematic mapping
-    // @ManyToMany(mappedBy = "historiMaintenance")
-    // private List<Asset> assets;
+    @ManyToOne
+    @JoinColumn(name = "asset_id", nullable = false)
+    private Asset asset;
 }

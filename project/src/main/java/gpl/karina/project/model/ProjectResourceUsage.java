@@ -1,5 +1,7 @@
 package gpl.karina.project.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +14,11 @@ import lombok.NoArgsConstructor;
 @Table(name = "project_resource_usage")
 public class ProjectResourceUsage {
     @Id
-    @Column(nullable = false, unique = true, name = "resource_id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", nullable = false, unique = true)
+    private UUID id;
+    
+    @Column(nullable = false, name = "resource_id")
     private String resourceId;
     
     @ManyToOne(fetch = FetchType.LAZY)
