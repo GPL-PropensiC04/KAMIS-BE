@@ -1011,18 +1011,9 @@ public class ProjectServiceImpl implements ProjectService {
         if (newStatus == 3) {
             if (currentStatus == 2) {
                 throw new IllegalArgumentException("Status proyek tidak bisa dibatalkan jika sudah selesai.");
-            } else {
-                // Cek status pembayaran
-                Integer paymentStatus = project.getProjectPaymentStatus();
-                if (paymentStatus != null && paymentStatus == 1) { // Sudah dibayar
-                    throw new IllegalArgumentException(
-                        "Proyek sudah dibayar, hanya bisa update status pembayaran ke 'pengembalian'."
-                    );
-                } else if (paymentStatus == null || paymentStatus == 0) { // Belum dibayar
-                    // Boleh batal, tapi tidak bisa ubah status bayar
-                    // (opsional: tambahkan logika lain jika perlu)
-                }
-            }   
+            } else if (currentStatus == 3) {
+                throw new IllegalArgumentException("Status proyek sudah dibatalkan, tidak bisa diubah lagi.");
+            }
         }
 
         // Validasi selesai: tidak bisa kembali ke status sebelumnya
