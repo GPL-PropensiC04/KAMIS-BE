@@ -17,7 +17,7 @@ public class SellResponseDTO {
 
     private String id;
     private Boolean projectType; // Value 0 = Penjualan, Value 1 = Pengiriman
-    private Boolean projectPaymentStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
+    private Integer projectPaymentStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
     private Integer projectStatus; // Status yang mungkin direncanakan, dilaksanakan, selesai, telah dibayar
 
     private String projectName;
