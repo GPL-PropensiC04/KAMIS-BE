@@ -2,6 +2,7 @@ package gpl.karina.profile.restcontroller;
 
 import gpl.karina.profile.restdto.request.AddSupplierRequestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
+import gpl.karina.profile.restdto.response.SupplierListResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierResponseDTO;
 import gpl.karina.profile.restservice.SupplierService;
 import jakarta.validation.Valid;
@@ -57,4 +58,36 @@ public class SupplierRestController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<BaseResponseDTO<List<SupplierListResponseDTO>>> listSuppliers(
+            @RequestParam(name = "nameSupplier", required = false) String nameSupplier,
+            @RequestParam(name = "companySupplier", required = false) String companySupplier) {
+
+        BaseResponseDTO<List<SupplierListResponseDTO>> response = new BaseResponseDTO<>();
+        List<SupplierListResponseDTO> suppliers = supplierService.filterSuppliers(nameSupplier, companySupplier);
+        String message = (nameSupplier == null && companySupplier == null)
+                ? "List supplier berhasil ditemukan"
+                : "List supplier berhasil difilter";
+
+        response.setStatus(HttpStatus.OK.value());
+        response.setData(suppliers);
+        response.setMessage(message);
+        response.setTimestamp(new Date());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/getall")
+    public ResponseEntity<BaseResponseDTO<List<SupplierResponseDTO>>> getAllSuppliers() {
+        BaseResponseDTO<List<SupplierResponseDTO>> response = new BaseResponseDTO<>();
+        List<SupplierResponseDTO> data = supplierService.getAllSuppliers();
+
+        response.setStatus(HttpStatus.OK.value());
+        response.setMessage("Seluruh supplier berhasil ditemukan");
+        response.setData(data);
+        response.setTimestamp(new Date());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    
 }

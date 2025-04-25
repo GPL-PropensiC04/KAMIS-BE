@@ -19,6 +19,7 @@ import gpl.karina.profile.repository.SupplierRepository;
 import gpl.karina.profile.restdto.request.AddSupplierRequestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ResourceResponseDTO;
+import gpl.karina.profile.restdto.response.SupplierListResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Mono;
@@ -154,6 +155,37 @@ public class SupplierServiceImpl implements SupplierService {
         return supplierToSupplierResponseDTO(savedSupplier);
     }
     
-    
+    @Override
+    public List<SupplierListResponseDTO> filterSuppliers(String nameSupplier, String companySupplier) {
+        return supplierRepository.findAll().stream()
+                .filter(supplier -> {
+                    boolean matches = true;
+                    if (nameSupplier != null) {
+                        matches &= supplier.getNameSupplier().toLowerCase().contains(nameSupplier.toLowerCase());
+                    }
+                    if (companySupplier != null) {
+                        matches &= supplier.getCompanySupplier().toLowerCase().contains(companySupplier.toLowerCase());
+                    }
+                    return matches;
+                })
+                .map(this::supplierToSupplierListResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SupplierResponseDTO> getAllSuppliers() {
+        return supplierRepository.findAll().stream()
+                .map(this::supplierToSupplierResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private SupplierListResponseDTO supplierToSupplierListResponseDTO(Supplier supplier) {
+        SupplierListResponseDTO dto = new SupplierListResponseDTO();
+        dto.setId(supplier.getId());
+        dto.setNameSupplier(supplier.getNameSupplier());
+        dto.setCompanySupplier(supplier.getCompanySupplier());
+        dto.setTotalPurchases(0); // placeholder
+        return dto;
+    }
 
 }
