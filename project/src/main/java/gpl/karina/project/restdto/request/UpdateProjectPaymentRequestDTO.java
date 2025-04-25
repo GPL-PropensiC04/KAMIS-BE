@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class UpdateProjectPaymentRequestDTO {
-    private boolean projectPaymentStatus;
+    private Integer projectPaymentStatus;
 }
