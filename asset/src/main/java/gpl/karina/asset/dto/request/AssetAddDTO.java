@@ -1,6 +1,7 @@
 package gpl.karina.asset.dto.request;
 
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,4 +26,5 @@ public class AssetAddDTO {
     private String fotoContentType;
     private String status = "Tersedia";
     private String tanggalPerolehan;
+    private UUID supplierId;
 }

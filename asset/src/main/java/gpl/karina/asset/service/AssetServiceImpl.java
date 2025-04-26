@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Date;
 import java.text.ParseException;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,6 +129,7 @@ public class AssetServiceImpl implements AssetService {
         // assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
         assetResponseDTO.setFotoContentType(asset.getFotoContentType());
         assetResponseDTO.setFotoUrl("/api/asset/" + asset.getPlatNomor() + "/foto");
+        assetResponseDTO.setSupplierId(asset.getIdSupplier());
         
         return assetResponseDTO;
     }
@@ -181,6 +183,10 @@ public class AssetServiceImpl implements AssetService {
             }
         }
 
+        if (assetTempDTO.getSupplierId() != null) {
+            assetTemp.setIdSupplier(assetTempDTO.getSupplierId());
+        }
+
         Asset newAssetTemp = assetDb.save(assetTemp);
         assetDb.save(assetTemp);
         return assetToAssetResponseDTO(newAssetTemp);
@@ -191,4 +197,11 @@ public class AssetServiceImpl implements AssetService {
         return assetDb.findById(id).orElseThrow(() -> new RuntimeException("Asset not found"));
     }
     
+    @Override
+    public List<AssetResponseDTO> getAssetsBySupplier(UUID supplierId) {
+        List<Asset> assets = assetDb.findByIdSupplierAndIsDeletedFalse(supplierId);
+        return assets.stream()
+                .map(this::assetToAssetResponseDTO)
+                .collect(Collectors.toList());
+    }
 }

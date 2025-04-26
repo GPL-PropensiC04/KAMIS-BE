@@ -44,6 +44,9 @@ public class WebSecurityConfig {
                         // Restrict POST operations to only Admin and Operasional roles
                         .requestMatchers(HttpMethod.POST, "/api/asset/**")
                         .hasAnyAuthority("Operasional", "Admin")
+                        // Restrict PATCH operations to only Admin and Operasional roles
+                        .requestMatchers(HttpMethod.PATCH, "/api/asset/**")
+                        .hasAnyAuthority("Operasional", "Admin")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

@@ -3,6 +3,7 @@ package gpl.karina.asset.controller;
 import java.util.Date;
 import java.util.List;
 import java.util.Base64;
+import java.util.UUID;
 
 import org.springframework.http.MediaType;
 
@@ -170,6 +171,25 @@ public class AssetController {
         } catch (Exception e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/by-supplier/{supplierId}")
+    public ResponseEntity<?> getAssetsBySupplier(@PathVariable("supplierId") UUID supplierId) {
+        var baseResponseDTO = new BaseResponseDTO<List<AssetResponseDTO>>();
+        
+        try {
+            List<AssetResponseDTO> assets = assetService.getAssetsBySupplier(supplierId);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setData(assets);
+            baseResponseDTO.setMessage("Daftar aset dari supplier berhasil ditemukan");
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage("Gagal mendapatkan daftar aset: " + e.getMessage());
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
         }
