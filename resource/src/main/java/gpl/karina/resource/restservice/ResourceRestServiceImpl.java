@@ -49,7 +49,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         if (addResourceDTO.getResourceDescription() == null) {
             throw new IllegalArgumentException("Deskripsi barang tidak boleh kosong");
         }
-        if (addResourceDTO.getSupplierId() == null) {
+        if (addResourceDTO.getResourceSupplierId() == null) {
             throw new IllegalArgumentException("Supplier ID tidak boleh kosong");
         }
         Resource resource = new Resource();
@@ -60,7 +60,9 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         resource.setResourceDescription(addResourceDTO.getResourceDescription());
         resource.setResourceStock(addResourceDTO.getResourceStock());
         resource.setResourcePrice(addResourceDTO.getResourcePrice());
-        resource.setSupplierId(UUID.fromString(addResourceDTO.getSupplierId()));
+        List<UUID> supplierIds = new ArrayList<>();
+        supplierIds.add(UUID.fromString(addResourceDTO.getResourceSupplierId()));
+        resource.setSupplierId(supplierIds);
         
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);

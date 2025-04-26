@@ -1,6 +1,7 @@
 package gpl.karina.resource.restdto.response;
 
 import java.util.UUID;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -10,5 +11,5 @@ public class ResourceResponseDTO {
     private String resourceDescription;
     private Integer resourceStock;
     private Integer resourcePrice;
-    private UUID resourceSupplierId;
+    private List<UUID> resourceSupplierId;
 }

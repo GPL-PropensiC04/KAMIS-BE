@@ -16,5 +16,5 @@ public class AddResourceDTO {
     @Min(value = 0, message = "Harga barang tidak boleh kurang dari 0")
     private Integer resourcePrice;
     @NotNull(message = "Supplier ID tidak boleh kosong")
-    private String supplierId;
+    private String resourceSupplierId;
 }
