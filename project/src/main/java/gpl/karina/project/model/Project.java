@@ -42,8 +42,8 @@ public class Project {
     private String id;
     @Column(nullable = false, name = "tipe_proyek") // Value 0 = Penjualan, Value 1 = Pengiriman
     private Boolean projectType;
-    @Column(name = "status_pembayaran") // Status yang belum lunas, telah lunas
-    private Boolean projectPaymentStatus;
+    @Column(name = "status_pembayaran") // 0: belum lunas, 1 : telah lunas, 2 : dikembalikan 
+    private Integer projectPaymentStatus;
     @Column(nullable = false, name = "status_proyek")
     private Integer projectStatus; // 0 : Direncanakan, 1 : dilaksanakan, 2 : selesai, 3 : batal
     @Column(nullable = false, name = "nama_proyek")
@@ -72,7 +72,7 @@ public class Project {
     @Column(name = "total_pemasukkan")
     private Long projectTotalPemasukkan;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "project_id")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "project_id", nullable = false)
     List<LogProject> projectLogs;
 }

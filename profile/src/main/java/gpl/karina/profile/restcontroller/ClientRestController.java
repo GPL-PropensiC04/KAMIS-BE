@@ -35,7 +35,7 @@ public class ClientRestController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> addPurchase(
+    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> addClient(
             @Valid @RequestBody AddClientRequestDTO addClientRequestDTO, BindingResult bindingResult) {
         BaseResponseDTO<ClientResponseDTO> response = new BaseResponseDTO<>();
         if (bindingResult.hasErrors()) {
