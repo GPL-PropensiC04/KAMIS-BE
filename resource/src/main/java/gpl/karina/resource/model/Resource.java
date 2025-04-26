@@ -1,6 +1,7 @@
 package gpl.karina.resource.model;
 
 import java.util.UUID;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -34,5 +35,5 @@ public class Resource {
     @Column(nullable = false, name = "Harga Barang")
     private Integer resourcePrice;
     @Column(nullable = false, name = "Supplier_ID")
-    private UUID supplierId;
+    private List<UUID> supplierId;
 }

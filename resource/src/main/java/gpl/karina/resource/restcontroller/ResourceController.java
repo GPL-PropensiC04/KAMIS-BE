@@ -265,7 +265,7 @@ public class ResourceController {
     }
 
     @PutMapping("/addToDb/{idResource}/{stockUpdate}")
-    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable Long idResource, @PathVariable Integer stockUpdate) {
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable(name = "idResource") Long idResource, @PathVariable(name = "stockUpdate") Integer stockUpdate) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
     
         try {
