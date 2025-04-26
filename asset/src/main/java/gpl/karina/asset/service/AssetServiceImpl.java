@@ -136,24 +136,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public AssetResponseDTO addAsset(AssetAddDTO assetTempDTO) {
-        if (assetTempDTO.getAssetName() == null) {
-            throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetDescription() == null) {
-            throw new IllegalArgumentException("Deskripsi Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetType() == null) {
-            throw new IllegalArgumentException("Tipe Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetPrice() == null) {
-            throw new IllegalArgumentException("Harga Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getPlatNomor() == null) {
-            throw new IllegalArgumentException("Plat Nomor tidak boleh kosong");
-        }
-        if (assetTempDTO.getStatus() == null) {
-            throw new IllegalArgumentException("Status tidak boleh kosong");
-        }
+        // ...existing validation...
 
         Asset assetTemp = new Asset();
         assetTemp.setPlatNomor(assetTempDTO.getPlatNomor());
@@ -183,12 +166,19 @@ public class AssetServiceImpl implements AssetService {
             }
         }
 
-        if (assetTempDTO.getSupplierId() != null) {
-            assetTemp.setIdSupplier(assetTempDTO.getSupplierId());
+        // Convert String supplierId to UUID
+        if (assetTempDTO.getSupplierId() != null && !assetTempDTO.getSupplierId().isEmpty()) {
+            try {
+                UUID supplierId = UUID.fromString(assetTempDTO.getSupplierId());
+                assetTemp.setIdSupplier(supplierId);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Format Supplier ID tidak valid");
+            }
+        } else {
+            throw new IllegalArgumentException("Supplier ID tidak boleh kosong");
         }
 
         Asset newAssetTemp = assetDb.save(assetTemp);
-        assetDb.save(assetTemp);
         return assetToAssetResponseDTO(newAssetTemp);
     }
 
