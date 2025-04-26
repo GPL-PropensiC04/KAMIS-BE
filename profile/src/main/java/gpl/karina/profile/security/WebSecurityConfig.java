@@ -35,6 +35,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/profile/**").hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
                         .requestMatchers("/api/client/add").hasAnyAuthority("Operasional")
                         .requestMatchers("/api/supplier/add").hasAnyAuthority("Operasional")
+                        .requestMatchers("/api/supplier/update").hasAnyAuthority("Operasional")
                         .requestMatchers("/api/supplier/**").hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
