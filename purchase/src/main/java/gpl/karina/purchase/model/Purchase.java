@@ -2,6 +2,7 @@ package gpl.karina.purchase.model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -33,7 +34,7 @@ public class Purchase {
     @Column(name = "id", nullable = false)
     private String id;
     @Column(nullable = false, name = "Supplier Pembelian")
-    private String purchaseSupplier;
+    private UUID purchaseSupplier;
     @Column(nullable = false, name = "Tipe Barang")
     private boolean purchaseType; // Value 0 = Aset, Value 1 = Resource
     @Column(nullable = false, name = "Status Pembelian")

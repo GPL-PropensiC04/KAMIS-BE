@@ -151,6 +151,7 @@ public class SupplierServiceImpl implements SupplierService {
         supplier.setResourceIds(resourceIds);
         supplier.setCreatedDate(new Date());
         supplier.setUpdatedDate(new Date());
+        supplier.setPurchaseIds(new ArrayList<>());
     
         Supplier savedSupplier = supplierRepository.save(supplier);
         return supplierToSupplierResponseDTO(savedSupplier);
@@ -187,6 +188,17 @@ public class SupplierServiceImpl implements SupplierService {
         dto.setCompanySupplier(supplier.getCompanySupplier());
         dto.setTotalPurchases(0); // placeholder
         return dto;
+    }
+
+    @Override
+    public String getSupplierName(UUID supplierId) {
+        Supplier supplier = supplierRepository.findById(supplierId).orElse(null);
+        if (supplier == null) {
+            throw new IllegalArgumentException("Supplier tidak ditemukan");
+        }
+
+        String name = supplier.getNameSupplier();
+        return name;
     }
 
     @Override
@@ -243,5 +255,11 @@ public class SupplierServiceImpl implements SupplierService {
         return supplierToSupplierResponseDTO(saved);
     }
 
-
+    public void addPurchaseId(UUID supplierId, String purchaseId) {
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new IllegalArgumentException("Supplier tidak ditemukan."));
+        
+        supplier.getPurchaseIds().add(purchaseId);
+        supplierRepository.save(supplier);
+    }
 }

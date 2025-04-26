@@ -32,6 +32,7 @@ import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseStatusDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
+import gpl.karina.purchase.restdto.response.PurchaseListResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restservice.PurchaseRestService;
 import jakarta.validation.Valid;
@@ -78,7 +79,7 @@ public class PurchaseController {
     }
 
     @GetMapping("/viewall")
-    public ResponseEntity<BaseResponseDTO<List<PurchaseResponseDTO>>> getAllPurchase(
+    public ResponseEntity<BaseResponseDTO<List<PurchaseListResponseDTO>>> getAllPurchase(
             @RequestParam(name = "startNominal", required = false) Integer startNominal,
             @RequestParam(name = "endNominal", required = false) Integer endNominal,
             @RequestParam(name = "highNominal", required = false) Boolean highNominal,
@@ -88,10 +89,10 @@ public class PurchaseController {
             @RequestParam(name = "type", required = false, defaultValue = "all") String type,
             @RequestParam(name = "idSearch", required = false) String idSearch) {
         
-        var baseResponseDTO = new BaseResponseDTO<List<PurchaseResponseDTO>>();
+        var baseResponseDTO = new BaseResponseDTO<List<PurchaseListResponseDTO>>();
         
         try {
-            List<PurchaseResponseDTO> purchases = purchaseRestService.getAllPurchase(
+            List<PurchaseListResponseDTO> purchases = purchaseRestService.getAllPurchase(
                     startNominal, endNominal, highNominal, startDate, endDate, newDate, type, idSearch);
             
             baseResponseDTO.setStatus(HttpStatus.OK.value());
