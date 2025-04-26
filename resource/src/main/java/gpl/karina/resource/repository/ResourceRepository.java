@@ -14,7 +14,8 @@ import java.util.UUID;
 public interface ResourceRepository extends JpaRepository<Resource, Long>{
     Resource findByResourceName(String resourceName);
 
-    List<Resource> findBySupplierId(UUID supplierId);
+    @Query("SELECT r FROM Resource r JOIN r.supplierId s WHERE s = :supplierId")
+    List<Resource> findBySupplierId(@Param("supplierId") UUID supplierId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM Resource r WHERE r.id = :id")

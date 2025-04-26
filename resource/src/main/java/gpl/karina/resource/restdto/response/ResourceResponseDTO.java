@@ -11,5 +11,5 @@ public class ResourceResponseDTO {
     private String resourceDescription;
     private Integer resourceStock;
     private Integer resourcePrice;
-    private List<UUID> resourceSupplierId;
+    // private UUID resourceSupplierId;
 }
