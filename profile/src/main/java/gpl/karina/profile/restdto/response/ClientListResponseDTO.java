@@ -11,6 +11,5 @@ public class ClientListResponseDTO {
     private String typeClient;
     private String companyClient;
     private Integer projectCount;
-
-    //TODO: attribute untuk hubungin client sama Distribusi & Penjualan (financial history ambil dari sini juga)
+    private Long totalProfit;
 }

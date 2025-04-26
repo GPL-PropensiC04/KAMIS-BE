@@ -484,9 +484,9 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         // Jika tipe resource, cek perubahan resource
         boolean purchaseType = purchase.isPurchaseType();
         if (purchaseType) {
-            logBuilder.append("  - Memperbarui daftar resource (total: ")
+            logBuilder.append("  - Total jenis resource yang dibeli setelah perubahan: ")
                     .append(updatePurchaseDTO.getPurchaseResource().size())
-                    .append(" item)\n");
+                    .append(" item\n");
             hasChange = true;
         }
 
