@@ -17,6 +17,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import gpl.karina.profile.model.Supplier;
 import gpl.karina.profile.repository.SupplierRepository;
 import gpl.karina.profile.restdto.request.AddSupplierRequestDTO;
+import gpl.karina.profile.restdto.request.UpdateSupplierRequestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ResourceResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierListResponseDTO;
@@ -186,6 +187,60 @@ public class SupplierServiceImpl implements SupplierService {
         dto.setCompanySupplier(supplier.getCompanySupplier());
         dto.setTotalPurchases(0); // placeholder
         return dto;
+    }
+
+    @Override
+    public SupplierResponseDTO updateSupplier(UpdateSupplierRequestDTO dto) {
+        Supplier supplier = supplierRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Supplier tidak ditemukan."));
+
+        // Validasi nomor telepon
+        if (dto.getNoTelpSupplier() != null && !dto.getNoTelpSupplier().matches("\\d+")) {
+            throw new IllegalArgumentException("Nomor telepon hanya boleh terdiri dari angka.");
+        }
+
+        // Validasi unik (jika ingin dihindari data duplikat selain supplier ini sendiri)
+        if (dto.getNoTelpSupplier() != null &&
+            supplierRepository.existsByNoTelpSupplierAndIdNot(dto.getNoTelpSupplier(), dto.getId())) {
+            throw new IllegalArgumentException("Nomor telepon sudah digunakan.");
+        }
+        if (dto.getEmailSupplier() != null &&
+            supplierRepository.existsByEmailSupplierAndIdNot(dto.getEmailSupplier(), dto.getId())) {
+            throw new IllegalArgumentException("Email sudah digunakan.");
+        }
+
+        if (supplierRepository.existsByNameSupplierAndIdNot(dto.getNameSupplier(), dto.getId())) {
+            throw new IllegalArgumentException("Nama supplier sudah digunakan.");
+        }
+
+        if (dto.getNameSupplier() != null && supplierRepository.existsByNameSupplier(dto.getNameSupplier())) {
+            throw new IllegalArgumentException("Nama supplier sudah digunakan.");
+        }
+
+        // Validasi resourceIds
+        List<Long> resourceIds = dto.getResourceIds() != null ? dto.getResourceIds() : new ArrayList<>();
+        if (!resourceIds.isEmpty()) {
+            List<Long> validResourceIds = fetchAllResources().stream()
+                    .map(ResourceResponseDTO::getId)
+                    .toList();
+
+            for (Long id : resourceIds) {
+                if (!validResourceIds.contains(id)) {
+                    throw new IllegalArgumentException("Resource ID tidak valid: " + id);
+                }
+            }
+        }
+
+        // Update field (selain company name)
+        if (dto.getAddressSupplier() != null) supplier.setAddressSupplier(dto.getAddressSupplier());
+        if (dto.getNoTelpSupplier() != null) supplier.setNoTelpSupplier(dto.getNoTelpSupplier());
+        if (dto.getEmailSupplier() != null) supplier.setEmailSupplier(dto.getEmailSupplier());
+        if (dto.getNameSupplier() != null) supplier.setNameSupplier(dto.getNameSupplier());
+        supplier.setResourceIds(resourceIds);
+        supplier.setUpdatedDate(new Date());
+
+        Supplier saved = supplierRepository.save(supplier);
+        return supplierToSupplierResponseDTO(saved);
     }
 
 }
