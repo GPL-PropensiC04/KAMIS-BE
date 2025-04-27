@@ -1,5 +1,6 @@
 package gpl.karina.profile.restservice;
 
+import gpl.karina.profile.restdto.request.AddSupplierRequestDTO;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,4 +16,5 @@ public interface SupplierService {
     SupplierResponseDTO updateSupplier(UpdateSupplierRequestDTO dto);
     String getSupplierName(UUID supplierId);
     void addPurchaseId(UUID supplierId, String purchaseId);
+
 }

@@ -175,4 +175,67 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
         return responseDTOs;
     }
+
+    @Override
+    public Void addSupplierId(UUID supplierId, List<Long> resourceIdList) {
+        for (Long resourceId : resourceIdList) {
+            Resource resource = resourceRepository.findById(resourceId)
+                    .orElseThrow(() -> new IllegalArgumentException("Resource dengan ID " + resourceId + " tidak ditemukan."));
+    
+            List<UUID> supplierIds = resource.getSupplierId();
+            if (supplierIds == null) {
+                supplierIds = new ArrayList<>();
+                resource.setSupplierId(supplierIds);
+            }
+            
+            if (!supplierIds.contains(supplierId)) {
+                supplierIds.add(supplierId);
+                resourceRepository.save(resource);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void updateSupplierId(UUID supplierId, List<Long> resourceIdList) {
+        // Step 1: Resource yang sudah mengandung supplierId
+        List<Resource> existingResources = resourceRepository.findBySupplierId(supplierId);
+
+        // Step 2: Hapus supplierId dari resource yang tidak ada di resourceIdList
+        for (Resource resource : existingResources) {
+            if (!resourceIdList.contains(resource.getId())) {
+                List<UUID> supplierIds = resource.getSupplierId();
+                if (supplierIds != null && supplierIds.contains(supplierId)) {
+                    supplierIds.remove(supplierId);
+                    resourceRepository.save(resource);
+                }
+            }
+        }
+
+        // Step 3: Tambahkan supplierId ke resource yang baru
+        for (Long resourceId : resourceIdList) {
+            boolean alreadyAssociated = existingResources.stream()
+                    .anyMatch(resource -> resource.getId().equals(resourceId));
+
+            if (!alreadyAssociated) {
+                Resource resource = resourceRepository.findById(resourceId)
+                        .orElseThrow(() -> new IllegalArgumentException("Resource dengan ID " + resourceId + " tidak ditemukan."));
+
+                List<UUID> supplierIds = resource.getSupplierId();
+                if (supplierIds == null) {
+                    supplierIds = new ArrayList<>();
+                    resource.setSupplierId(supplierIds);
+                }
+
+                if (!supplierIds.contains(supplierId)) {
+                    supplierIds.add(supplierId);
+                    resourceRepository.save(resource);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    
 }
