@@ -7,7 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,8 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Date;
 import java.util.List;
-
-import gpl.karina.resource.exception.UserUnauthorized;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/resource")
@@ -75,10 +74,38 @@ public class ResourceController {
 
     }
 
-    @GetMapping("/test")
-    public String test() {
-        return "Hello World";
+    @GetMapping("/find-by-supplier/{idSupplier}")
+    public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllSuplierResosource(@PathVariable(name = "idSupplier") String idSupplier) {
+        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();    
+        try {
+            // Mengirim token ke service
+            List<ResourceResponseDTO> resources = resourceRestService.getAllSuplierResosource(UUID.fromString(idSupplier));
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(resources);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (UserNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
     }
+
 
     @GetMapping("/viewall")
     public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllResources() {
@@ -238,7 +265,7 @@ public class ResourceController {
     }
 
     @PutMapping("/addToDb/{idResource}/{stockUpdate}")
-    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable Long idResource, @PathVariable Integer stockUpdate) {
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable(name = "idResource") Long idResource, @PathVariable(name = "stockUpdate") Integer stockUpdate) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
     
         try {

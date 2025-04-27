@@ -20,6 +20,13 @@ import gpl.karina.profile.restdto.request.AddSupplierRequestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ResourceResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierResponseDTO;
+import gpl.karina.profile.restdto.request.UpdateSupplierRequestDTO;
+import gpl.karina.profile.restdto.response.BaseResponseDTO;
+import gpl.karina.profile.restdto.response.ResourceResponseDTO;
+import gpl.karina.profile.restdto.response.SupplierListResponseDTO;
+import gpl.karina.profile.restdto.response.SupplierResponseDTO;
+import gpl.karina.profile.restdto.request.AddPurchaseIdDTO;
+import gpl.karina.profile.restdto.response.PurchaseResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Mono;
 
@@ -32,6 +39,9 @@ public class SupplierServiceImpl implements SupplierService {
 
     @Value("${profile.app.resourceUrl}")
     private String resourceUrl;
+
+    @Value("${profile.app.purchaseUrl}")
+    private String purchaseUrl;
 
     private final WebClient webClientResource = WebClient.create();
 
@@ -86,6 +96,45 @@ public class SupplierServiceImpl implements SupplierService {
         } catch (Exception e) {
             System.err.println("Exception saat ambil resource: " + e.getMessage());
             return new ArrayList<>();
+        }
+    }
+
+    private Integer fetchTotalPurchasesBySupplier(UUID supplierId) {
+        String token = getTokenFromRequest();
+        if (token == null) {
+            throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
+        }
+    
+        String url = purchaseUrl + "api/purchase/supplier/" + supplierId; // contoh path baru yang lebih general
+    
+        try {
+            BaseResponseDTO<List<PurchaseResponseDTO>> response = webClientResource
+                .get()
+                .uri(url)
+                .headers(headers -> headers.setBearerAuth(token))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, res -> {
+                    if (res.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                        System.out.println("Purchases tidak ditemukan untuk supplier ID: " + supplierId);
+                        return Mono.empty();
+                    }
+                    return Mono.error(new RuntimeException("Client error: " + res.statusCode()));
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, res -> {
+                    System.err.println("Server error saat ambil purchases: " + res.statusCode());
+                    return Mono.error(new RuntimeException("Server error: " + res.statusCode()));
+                })
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<PurchaseResponseDTO>>>() {})
+                .block();
+    
+            if (response == null || response.getData() == null) {
+                return 0;
+            }
+            return response.getData().size(); // total aktivitas = jumlah purchase
+    
+        } catch (Exception e) {
+            System.err.println("Exception saat ambil purchases: " + e.getMessage());
+            return 0;
         }
     }
     
@@ -149,11 +198,119 @@ public class SupplierServiceImpl implements SupplierService {
         supplier.setResourceIds(resourceIds);
         supplier.setCreatedDate(new Date());
         supplier.setUpdatedDate(new Date());
+        supplier.setPurchaseIds(new ArrayList<>());
     
         Supplier savedSupplier = supplierRepository.save(supplier);
         return supplierToSupplierResponseDTO(savedSupplier);
     }
     
+    @Override
+    public List<SupplierListResponseDTO> filterSuppliers(String nameSupplier, String companySupplier) {
+        return supplierRepository.findAll().stream()
+                .filter(supplier -> {
+                    boolean matches = true;
+                    if (nameSupplier != null) {
+                        matches &= supplier.getNameSupplier().toLowerCase().contains(nameSupplier.toLowerCase());
+                    }
+                    if (companySupplier != null) {
+                        matches &= supplier.getCompanySupplier().toLowerCase().contains(companySupplier.toLowerCase());
+                    }
+                    return matches;
+                })
+                .map(this::supplierToSupplierListResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SupplierResponseDTO> getAllSuppliers() {
+        return supplierRepository.findAll().stream()
+                .map(this::supplierToSupplierResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private SupplierListResponseDTO supplierToSupplierListResponseDTO(Supplier supplier) {
+        SupplierListResponseDTO dto = new SupplierListResponseDTO();
+        dto.setId(supplier.getId());
+        dto.setNameSupplier(supplier.getNameSupplier());
+        dto.setCompanySupplier(supplier.getCompanySupplier());
+    
+        Integer totalPurchases = fetchTotalPurchasesBySupplier(supplier.getId());
+        dto.setTotalPurchases(totalPurchases != null ? totalPurchases : 0);
+    
+        return dto;
+    }
     
 
+    @Override
+    public String getSupplierName(UUID supplierId) {
+        Supplier supplier = supplierRepository.findById(supplierId).orElse(null);
+        if (supplier == null) {
+            throw new IllegalArgumentException("Supplier tidak ditemukan");
+        }
+
+        String name = supplier.getNameSupplier();
+        return name;
+    }
+
+    @Override
+    public SupplierResponseDTO updateSupplier(UpdateSupplierRequestDTO dto) {
+        Supplier supplier = supplierRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Supplier tidak ditemukan."));
+
+        // Validasi nomor telepon
+        if (dto.getNoTelpSupplier() != null && !dto.getNoTelpSupplier().matches("\\d+")) {
+            throw new IllegalArgumentException("Nomor telepon hanya boleh terdiri dari angka.");
+        }
+
+        // Validasi unik (jika ingin dihindari data duplikat selain supplier ini sendiri)
+        if (dto.getNoTelpSupplier() != null &&
+            supplierRepository.existsByNoTelpSupplierAndIdNot(dto.getNoTelpSupplier(), dto.getId())) {
+            throw new IllegalArgumentException("Nomor telepon sudah digunakan.");
+        }
+        if (dto.getEmailSupplier() != null &&
+            supplierRepository.existsByEmailSupplierAndIdNot(dto.getEmailSupplier(), dto.getId())) {
+            throw new IllegalArgumentException("Email sudah digunakan.");
+        }
+
+        if (supplierRepository.existsByNameSupplierAndIdNot(dto.getNameSupplier(), dto.getId())) {
+            throw new IllegalArgumentException("Nama supplier sudah digunakan.");
+        }
+
+        if (dto.getNameSupplier() != null && supplierRepository.existsByNameSupplier(dto.getNameSupplier())) {
+            throw new IllegalArgumentException("Nama supplier sudah digunakan.");
+        }
+
+        // Validasi resourceIds
+        List<Long> resourceIds = dto.getResourceIds() != null ? dto.getResourceIds() : new ArrayList<>();
+        if (!resourceIds.isEmpty()) {
+            List<Long> validResourceIds = fetchAllResources().stream()
+                    .map(ResourceResponseDTO::getId)
+                    .toList();
+
+            for (Long id : resourceIds) {
+                if (!validResourceIds.contains(id)) {
+                    throw new IllegalArgumentException("Resource ID tidak valid: " + id);
+                }
+            }
+        }
+
+        // Update field (selain company name)
+        if (dto.getAddressSupplier() != null) supplier.setAddressSupplier(dto.getAddressSupplier());
+        if (dto.getNoTelpSupplier() != null) supplier.setNoTelpSupplier(dto.getNoTelpSupplier());
+        if (dto.getEmailSupplier() != null) supplier.setEmailSupplier(dto.getEmailSupplier());
+        if (dto.getNameSupplier() != null) supplier.setNameSupplier(dto.getNameSupplier());
+        supplier.setResourceIds(resourceIds);
+        supplier.setUpdatedDate(new Date());
+
+        Supplier saved = supplierRepository.save(supplier);
+        return supplierToSupplierResponseDTO(saved);
+    }
+
+    public void addPurchaseId(UUID supplierId, String purchaseId) {
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new IllegalArgumentException("Supplier tidak ditemukan."));
+        
+        supplier.getPurchaseIds().add(purchaseId);
+        supplierRepository.save(supplier);
+    }
 }

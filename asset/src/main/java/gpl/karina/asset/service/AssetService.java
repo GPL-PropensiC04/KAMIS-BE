@@ -1,6 +1,7 @@
 package gpl.karina.asset.service;
 
 import java.util.List;
+import java.util.UUID;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
 import gpl.karina.asset.model.Asset;
 import gpl.karina.asset.dto.request.AssetAddDTO;
@@ -14,4 +15,5 @@ public interface AssetService {
     AssetResponseDTO updateAssetDetails(String platNomor, AssetUpdateRequestDTO updateRequest) throws Exception;
     AssetResponseDTO addAsset(AssetAddDTO assetAddDTO);
     Asset getAssetFoto(String id);
+    List<AssetResponseDTO> getAssetsBySupplier(UUID supplierId);
 }

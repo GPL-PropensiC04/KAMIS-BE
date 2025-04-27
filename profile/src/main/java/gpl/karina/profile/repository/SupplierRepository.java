@@ -15,4 +15,8 @@ public interface SupplierRepository extends JpaRepository<Supplier, UUID> {
     boolean existsByNoTelpSupplier(String noTelpSupplier);
     boolean existsByEmailSupplier(String emailSupplier);
     boolean existsByCompanySupplier(String companySupplier);
+    boolean existsByNoTelpSupplierAndIdNot(String noTelpSupplier, UUID id);
+    boolean existsByEmailSupplierAndIdNot(String emailSupplier, UUID id);
+    boolean existsByNameSupplierAndIdNot(String nameSupplier, UUID id);
+
 }
