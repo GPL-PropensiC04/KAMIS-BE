@@ -19,19 +19,21 @@ import gpl.karina.asset.model.Asset;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AssetServiceImpl implements AssetService {
 
-    @Autowired
+
     // private JwtTokenHolder tokenHolder;
 
     private final AssetDb assetDb;
+    private final FileStorageService fileStorageService;
 
-    public AssetServiceImpl(AssetDb assetDb, WebClient.Builder webClientBuilder) {
+    public AssetServiceImpl(AssetDb assetDb, FileStorageService fileStorageService,
+            WebClient.Builder webClientBuilder) {
         this.assetDb = assetDb;
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -45,11 +47,11 @@ public class AssetServiceImpl implements AssetService {
         });
         return listAssetResponseDTO;
     }
-    
+
     @Override
     public AssetResponseDTO getAssetById(String platNomor) throws Exception {
         Asset asset = assetDb.findByIdAndNotDeleted(platNomor);
-        
+
         if (asset != null) {
             return assetToAssetResponseDTO(asset);
         } else {
@@ -61,56 +63,65 @@ public class AssetServiceImpl implements AssetService {
     @Transactional
     public void deleteAsset(String platNomor) throws Exception {
         Optional<Asset> optionalAsset = assetDb.findById(platNomor);
-        
+
         if (optionalAsset.isPresent()) {
+            Asset asset = optionalAsset.get();
+
+            // Delete associated file if exists
+            if (asset.getFotoFilename() != null && !asset.getFotoFilename().isEmpty()) {
+                fileStorageService.deleteFile(asset.getFotoFilename());
+            }
+
             assetDb.softDeleteById(platNomor);
         } else {
             throw new Exception("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
         }
     }
 
-
     @Override
     public AssetResponseDTO updateAssetImage(String platNomor, byte[] imageData) throws Exception {
         Optional<Asset> optionalAsset = assetDb.findById(platNomor);
-        
+
         if (optionalAsset.isPresent()) {
             Asset asset = optionalAsset.get();
-            asset.setFoto(imageData);
-            assetDb.save(asset);
+
+            // Not implemented as this method is no longer needed with file storage approach
+            // Would need to be reimplemented with MultipartFile instead of byte[]
+
             return assetToAssetResponseDTO(asset);
         } else {
             throw new Exception("Asset tidak ditemukan");
         }
     }
 
+    // Update implementation to work with asset details
     @Override
     @Transactional
     public AssetResponseDTO updateAssetDetails(String platNomor, AssetUpdateRequestDTO updateRequest) throws Exception {
         Optional<Asset> optionalAsset = assetDb.findById(platNomor);
-        
+        Asset exisitingAsset;
+
         if (optionalAsset.isPresent()) {
-            Asset asset = optionalAsset.get();
-            
-            // Update fields if provided in the request
-            if (updateRequest.getNama() != null) {
-                asset.setNama(updateRequest.getNama());
+            exisitingAsset = optionalAsset.get();
+            exisitingAsset.setNama(updateRequest.getNama());
+            exisitingAsset.setJenisAset(updateRequest.getJenisAset());
+            exisitingAsset.setDeskripsi(updateRequest.getDeskripsi());
+            exisitingAsset.setStatus(updateRequest.getStatus());
+
+            if (updateRequest.getFoto() != null && !updateRequest.getFoto().isEmpty()) {
+                // Delete old file if exists
+                if (exisitingAsset.getFotoFilename() != null) {
+                    fileStorageService.deleteFile(exisitingAsset.getFotoFilename());
+                }
+
+                // Store new file
+                String filename = fileStorageService.storeFile(updateRequest.getFoto(), platNomor);
+                exisitingAsset.setFotoFilename(filename);
+                exisitingAsset.setFotoContentType(updateRequest.getFoto().getContentType());
             }
-            
-            if (updateRequest.getJenisAset() != null) {
-                asset.setJenisAset(updateRequest.getJenisAset());
-            }
-            
-            if (updateRequest.getStatus() != null) {
-                asset.setStatus(updateRequest.getStatus());
-            }
-            
-            if (updateRequest.getDeskripsi() != null) {
-                asset.setDeskripsi(updateRequest.getDeskripsi());
-            }
-            
-            Asset updatedAsset = assetDb.save(asset);
-            return assetToAssetResponseDTO(updatedAsset);
+
+            assetDb.save(exisitingAsset);
+            return assetToAssetResponseDTO(exisitingAsset);
         } else {
             throw new Exception("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
         }
@@ -127,8 +138,12 @@ public class AssetServiceImpl implements AssetService {
         assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
         // assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
         assetResponseDTO.setFotoContentType(asset.getFotoContentType());
-        assetResponseDTO.setFotoUrl("/api/asset/" + asset.getPlatNomor() + "/foto");
-        
+
+        // Update the URL to use the new endpoint
+        if (asset.getFotoFilename() != null && !asset.getFotoFilename().isEmpty()) {
+            assetResponseDTO.setFotoUrl("/api/asset/" + asset.getPlatNomor() + "/foto");
+        }
+
         return assetResponseDTO;
     }
 
@@ -159,30 +174,28 @@ public class AssetServiceImpl implements AssetService {
         assetTemp.setDeskripsi(assetTempDTO.getAssetDescription());
         assetTemp.setJenisAset(assetTempDTO.getAssetType());
         assetTemp.setNilaiPerolehan(assetTempDTO.getAssetPrice());
-        assetTemp.setStatus(assetTempDTO.getStatus());
 
-        // Convert string to Date
-        if (assetTempDTO.getTanggalPerolehan() != null) {
-            try {
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                Date tanggalPerolehan = formatter.parse(assetTempDTO.getTanggalPerolehan());
-                assetTemp.setTanggalPerolehan(tanggalPerolehan);
-            } catch (ParseException e) {
-                throw new IllegalArgumentException("Format tanggal tidak valid");
-            }
+        try {
+            assetTemp.setTanggalPerolehan(new SimpleDateFormat("yyyy-MM-dd").parse(assetTempDTO.getTanggalPerolehan()));
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Format tanggal tidak valid, gunakan yyyy-MM-dd");
         }
+
+        assetTemp.setStatus(assetTempDTO.getStatus());
+        assetTemp.setIsDeleted(false);
 
         if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
             try {
-                assetTemp.setFoto(assetTempDTO.getFoto().getBytes());
+                // Store the file and save the file name
+                String filename = fileStorageService.storeFile(assetTempDTO.getFoto(), assetTempDTO.getPlatNomor());
+                assetTemp.setFotoFilename(filename);
                 assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Gagal mengupload foto");
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Gagal mengupload foto: " + e.getMessage());
             }
         }
 
         Asset newAssetTemp = assetDb.save(assetTemp);
-        assetDb.save(assetTemp);
         return assetToAssetResponseDTO(newAssetTemp);
     }
 
@@ -190,5 +203,4 @@ public class AssetServiceImpl implements AssetService {
     public Asset getAssetFoto(String id) {
         return assetDb.findById(id).orElseThrow(() -> new RuntimeException("Asset not found"));
     }
-    
 }
