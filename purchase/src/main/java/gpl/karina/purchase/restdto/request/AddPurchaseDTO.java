@@ -1,6 +1,7 @@
 package gpl.karina.purchase.restdto.request;
 
 import java.util.List;
+import java.util.UUID;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -8,7 +9,7 @@ import lombok.Data;
 @Data
 public class AddPurchaseDTO {
     @NotNull(message = "Supplier tidak boleh kosong")
-    private String purchaseSupplier;
+    private UUID purchaseSupplier;
     @NotNull(message = "Tipe barang tidak boleh kosong")
     private boolean purchaseType; // Value 0 = Aset, Value 1 = Resource
 

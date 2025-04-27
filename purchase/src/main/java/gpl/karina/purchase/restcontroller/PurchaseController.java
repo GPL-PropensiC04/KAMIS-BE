@@ -2,6 +2,7 @@ package gpl.karina.purchase.restcontroller;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseStatusDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
+import gpl.karina.purchase.restdto.response.PurchaseListResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restservice.PurchaseRestService;
 import jakarta.validation.Valid;
@@ -78,7 +80,7 @@ public class PurchaseController {
     }
 
     @GetMapping("/viewall")
-    public ResponseEntity<BaseResponseDTO<List<PurchaseResponseDTO>>> getAllPurchase(
+    public ResponseEntity<BaseResponseDTO<List<PurchaseListResponseDTO>>> getAllPurchase(
             @RequestParam(name = "startNominal", required = false) Integer startNominal,
             @RequestParam(name = "endNominal", required = false) Integer endNominal,
             @RequestParam(name = "highNominal", required = false) Boolean highNominal,
@@ -88,10 +90,10 @@ public class PurchaseController {
             @RequestParam(name = "type", required = false, defaultValue = "all") String type,
             @RequestParam(name = "idSearch", required = false) String idSearch) {
         
-        var baseResponseDTO = new BaseResponseDTO<List<PurchaseResponseDTO>>();
+        var baseResponseDTO = new BaseResponseDTO<List<PurchaseListResponseDTO>>();
         
         try {
-            List<PurchaseResponseDTO> purchases = purchaseRestService.getAllPurchase(
+            List<PurchaseListResponseDTO> purchases = purchaseRestService.getAllPurchase(
                     startNominal, endNominal, highNominal, startDate, endDate, newDate, type, idSearch);
             
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -354,4 +356,30 @@ public class PurchaseController {
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/supplier/{supplierId}")
+    public ResponseEntity<BaseResponseDTO<List<PurchaseResponseDTO>>> getPurchasesBySupplier(@PathVariable("supplierId") UUID supplierId) {
+        BaseResponseDTO<List<PurchaseResponseDTO>> baseResponseDTO = new BaseResponseDTO<>();
+        try {
+            List<PurchaseResponseDTO> purchases = purchaseRestService.getPurchasesBySupplier(supplierId);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(purchases);
+            baseResponseDTO.setTimestamp(new Date());
+            return ResponseEntity.ok(baseResponseDTO);
+        } catch (DataNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(baseResponseDTO);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage("Failed to retrieve purchases: " + e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return ResponseEntity.badRequest().body(baseResponseDTO);
+        }
+    }
+    
 }
