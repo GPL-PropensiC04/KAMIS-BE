@@ -1,12 +1,11 @@
 package gpl.karina.resource.restservice;
 
 
-import gpl.karina.resource.exception.UserNotFound;
-import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.model.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -32,8 +31,10 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         addResourceResponseDTO.setResourceDescription(resource.getResourceDescription());   
         addResourceResponseDTO.setResourceStock(resource.getResourceStock());
         addResourceResponseDTO.setResourcePrice(resource.getResourcePrice());
+        // addResourceResponseDTO.setResourceSupplierId(resource.getSupplierId());
         return addResourceResponseDTO;
     }
+
     @Override
     public ResourceResponseDTO addResource(AddResourceDTO addResourceDTO) {
         if (addResourceDTO.getResourcePrice() < 0) {
@@ -48,6 +49,9 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         if (addResourceDTO.getResourceDescription() == null) {
             throw new IllegalArgumentException("Deskripsi barang tidak boleh kosong");
         }
+        if (addResourceDTO.getResourceSupplierId() == null) {
+            throw new IllegalArgumentException("Supplier ID tidak boleh kosong");
+        }
         Resource resource = new Resource();
         if (resourceRepository.findByResourceName(addResourceDTO.getResourceName()) != null) {
             throw new IllegalArgumentException("Nama barang sudah ada di database");
@@ -56,6 +60,9 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         resource.setResourceDescription(addResourceDTO.getResourceDescription());
         resource.setResourceStock(addResourceDTO.getResourceStock());
         resource.setResourcePrice(addResourceDTO.getResourcePrice());
+        List<UUID> supplierIds = new ArrayList<>();
+        supplierIds.add(UUID.fromString(addResourceDTO.getResourceSupplierId()));
+        resource.setSupplierId(supplierIds);
         
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
@@ -63,19 +70,6 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     @Override
     public List<ResourceResponseDTO> getAllResources() {
-        // // Verifikasi token dan dapatkan informasi pengguna
-        // EndUserResponseDTO currentUser = profileService.getCurrentUser(token);
-        // if (currentUser == null) {
-        //     throw new UserNotFound("You Must Login First");
-        // }
-    
-        // // Periksa apakah pengguna memiliki peran ADMIN atau NURSE
-        // String role = currentUser.getRole();
-        // if (!"ADMIN".equalsIgnoreCase(role) && !"NURSE".equalsIgnoreCase(role)) {
-        //     throw new UserUnauthorized("You are not authorized to view assets");
-        // }
-    
-        // Mengambil semua janji dari database
         List<Resource> resources = resourceRepository.findAll();
         List<ResourceResponseDTO> responseDTOs = new ArrayList<>();
         resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
@@ -172,5 +166,13 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
+    }
+
+    @Override
+    public List<ResourceResponseDTO> getAllSuplierResosource(UUID idSupplier) {
+        List<Resource> resources = resourceRepository.findBySupplierId(idSupplier);
+        List<ResourceResponseDTO> responseDTOs = new ArrayList<>();
+        resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
+        return responseDTOs;
     }
 }

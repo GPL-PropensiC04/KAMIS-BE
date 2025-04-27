@@ -98,8 +98,6 @@ public class ClientServiceImpl implements ClientService {
             clientResponseDTO.setTypeClient("Perorangan");
         }
 
-        //TODO: attribute untuk hubungin client sama Distribusi & Penjualan (financial history ambil dari sini juga)
-
         return clientResponseDTO;
     }
 
@@ -178,6 +176,14 @@ public class ClientServiceImpl implements ClientService {
 
     private ClientListResponseDTO listClientToClientResponseDTO(Client client) {
         List<ProjectResponseDTO> projects = fetchProjectsByClientId(client.getId());
+        long totalProfit = 0L;
+        if (projects != null) {
+            for (ProjectResponseDTO p : projects) {
+                if (p.getProfit() != null) {
+                    totalProfit += p.getProfit();
+                }
+            }
+        }
 
         ClientListResponseDTO clientListResponseDTO = new ClientListResponseDTO();
         clientListResponseDTO.setId(client.getId());
@@ -185,6 +191,7 @@ public class ClientServiceImpl implements ClientService {
         clientListResponseDTO.setCompanyClient(client.getCompanyClient());
         clientListResponseDTO.setTypeClient(client.isTypeClient() ? "Perusahaan" : "Perorangan");
         clientListResponseDTO.setProjectCount(projects != null ? projects.size() : 0);
+        clientListResponseDTO.setTotalProfit(totalProfit);
 
         return clientListResponseDTO;
     }

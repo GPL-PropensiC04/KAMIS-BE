@@ -216,7 +216,7 @@ public class ProjectController {
         BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
         try {
             ProjectResponseWrapperDTO updatedProject = projectService.updateProjectPayment(id,
-                    updateProjectPaymentDTO.isProjectPaymentStatus());
+                updateProjectPaymentDTO.getProjectPaymentStatus());
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Status proyek berhasil diperbarui");
             response.setTimestamp(new Date());
