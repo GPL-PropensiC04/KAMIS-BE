@@ -18,12 +18,6 @@ public class AddSupplierRequestDTO {
     @NotNull(message = "Nomor Telepon tidak boleh kosong")
     private String noTelpSupplier;
 
-    @NotNull(message = "Email tidak boleh kosong")
-    private String emailSupplier;
-
-    @NotNull(message = "Perusahaan tidak boleh kosong")
-    private String companySupplier;
-
     @NotNull(message = "Alamat tidak boleh kosong")
     @Email(message = "Format email tidak valid")
     @NotBlank(message = "Email tidak boleh kosong")
