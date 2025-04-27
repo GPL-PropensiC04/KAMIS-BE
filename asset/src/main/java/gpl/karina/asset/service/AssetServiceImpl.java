@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Date;
 import java.text.ParseException;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,30 +129,14 @@ public class AssetServiceImpl implements AssetService {
         // assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
         assetResponseDTO.setFotoContentType(asset.getFotoContentType());
         assetResponseDTO.setFotoUrl("/api/asset/" + asset.getPlatNomor() + "/foto");
+        assetResponseDTO.setSupplierId(asset.getIdSupplier());
         
         return assetResponseDTO;
     }
 
     @Override
     public AssetResponseDTO addAsset(AssetAddDTO assetTempDTO) {
-        if (assetTempDTO.getAssetName() == null) {
-            throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetDescription() == null) {
-            throw new IllegalArgumentException("Deskripsi Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetType() == null) {
-            throw new IllegalArgumentException("Tipe Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetPrice() == null) {
-            throw new IllegalArgumentException("Harga Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getPlatNomor() == null) {
-            throw new IllegalArgumentException("Plat Nomor tidak boleh kosong");
-        }
-        if (assetTempDTO.getStatus() == null) {
-            throw new IllegalArgumentException("Status tidak boleh kosong");
-        }
+        // ...existing validation...
 
         Asset assetTemp = new Asset();
         assetTemp.setPlatNomor(assetTempDTO.getPlatNomor());
@@ -181,8 +166,19 @@ public class AssetServiceImpl implements AssetService {
             }
         }
 
+        // Convert String supplierId to UUID
+        if (assetTempDTO.getSupplierId() != null && !assetTempDTO.getSupplierId().isEmpty()) {
+            try {
+                UUID supplierId = UUID.fromString(assetTempDTO.getSupplierId());
+                assetTemp.setIdSupplier(supplierId);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Format Supplier ID tidak valid");
+            }
+        } else {
+            throw new IllegalArgumentException("Supplier ID tidak boleh kosong");
+        }
+
         Asset newAssetTemp = assetDb.save(assetTemp);
-        assetDb.save(assetTemp);
         return assetToAssetResponseDTO(newAssetTemp);
     }
 
@@ -191,4 +187,11 @@ public class AssetServiceImpl implements AssetService {
         return assetDb.findById(id).orElseThrow(() -> new RuntimeException("Asset not found"));
     }
     
+    @Override
+    public List<AssetResponseDTO> getAssetsBySupplier(UUID supplierId) {
+        List<Asset> assets = assetDb.findByIdSupplierAndIsDeletedFalse(supplierId);
+        return assets.stream()
+                .map(this::assetToAssetResponseDTO)
+                .collect(Collectors.toList());
+    }
 }

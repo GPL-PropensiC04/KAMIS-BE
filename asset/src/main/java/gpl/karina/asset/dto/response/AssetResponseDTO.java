@@ -3,6 +3,7 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Data
@@ -17,4 +18,5 @@ public class AssetResponseDTO {
     private String assetMaintenance;
     private String fotoContentType;
     private String fotoUrl;
+    private UUID supplierId;
 }
