@@ -191,6 +191,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
             formData.add("assetType", assetRequest.get("assetType"));
             formData.add("assetPrice", assetRequest.get("assetPrice"));
             formData.add("tanggalPerolehan", assetRequest.get("tanggalPerolehan"));
+            formData.add("supplierId", assetRequest.get("supplierId"));
+            formData.add("status", assetRequest.get("status"));
 
             // Untuk foto (byte[]), bungkus ke ByteArrayResource agar dianggap file di
             // form-data
@@ -763,6 +765,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                 assetRequest.put("tanggalPerolehan", sdf.format(new Date()));
                 assetRequest.put("foto", assetTemp.getFoto());
                 assetRequest.put("fotoContentType", assetTemp.getFotoContentType());
+                assetRequest.put("supplierId", purchase.getPurchaseSupplier().toString());
+                assetRequest.put("status", "Tersedia");
                 AssetTempResponseDTO assetUpdate = addAssetToAssetDatabase(assetRequest);
             }
 

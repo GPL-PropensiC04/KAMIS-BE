@@ -16,4 +16,6 @@ public interface ResourceRestService {
     ResourceResponseDTO addResourceStock(Long idResource, Integer quantity);
     ResourceResponseDTO deductResourceStock(Long idResource, Integer quantity);
     List<ResourceResponseDTO> getAllSuplierResosource(UUID idSupplier);
+    Void addSupplierId(UUID supplierId, List<Long> resourceIdList);
+    Void updateSupplierId(UUID supplierId, List<Long> resourceIdList);
 }
