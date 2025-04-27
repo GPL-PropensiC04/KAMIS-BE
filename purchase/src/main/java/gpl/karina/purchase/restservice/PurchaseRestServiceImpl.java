@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -26,6 +27,8 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import org.springframework.beans.factory.annotation.Value;
+
+import gpl.karina.purchase.exception.DataNotFound;
 import gpl.karina.purchase.model.AssetTemp;
 import gpl.karina.purchase.model.LogPurchase;
 import gpl.karina.purchase.model.Purchase;
@@ -897,6 +900,27 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
     public AssetTempResponseDTO getDetailAsset(Long id) {
         AssetTemp asset = assetTempRepository.findById(id).orElse(null);
         return assetTempToAssetTempResponseDTO(asset);
+    }
+
+    @Override
+    public List<PurchaseResponseDTO> getPurchasesBySupplier(UUID supplierId) {
+        // Contoh dummy fetch dari repository
+        List<Purchase> purchases = purchaseRepository.findAllByPurchaseSupplier(supplierId);
+        ;
+        
+        if (purchases.isEmpty()) {
+            throw new DataNotFound("No purchases found for supplier with ID: " + supplierId);
+        }
+        
+        // Mapping entity ke DTO
+        List<PurchaseResponseDTO> purchaseResponseDTOs = purchases.stream()
+            .map(this::purchaseToPurchaseResponseDTO)
+            .collect(Collectors.toList());
+
+        System.out.println("Purchases found: " + purchaseResponseDTOs.size());
+        System.out.println("Purchases: " + purchaseResponseDTOs);
+        
+        return purchaseResponseDTOs;
     }
 
 }

@@ -2,6 +2,7 @@ package gpl.karina.purchase.restcontroller;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -355,4 +356,30 @@ public class PurchaseController {
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/supplier/{supplierId}")
+    public ResponseEntity<BaseResponseDTO<List<PurchaseResponseDTO>>> getPurchasesBySupplier(@PathVariable("supplierId") UUID supplierId) {
+        BaseResponseDTO<List<PurchaseResponseDTO>> baseResponseDTO = new BaseResponseDTO<>();
+        try {
+            List<PurchaseResponseDTO> purchases = purchaseRestService.getPurchasesBySupplier(supplierId);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(purchases);
+            baseResponseDTO.setTimestamp(new Date());
+            return ResponseEntity.ok(baseResponseDTO);
+        } catch (DataNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(baseResponseDTO);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage("Failed to retrieve purchases: " + e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return ResponseEntity.badRequest().body(baseResponseDTO);
+        }
+    }
+    
 }

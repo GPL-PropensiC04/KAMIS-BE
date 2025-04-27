@@ -22,6 +22,8 @@ import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ResourceResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierListResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierResponseDTO;
+import gpl.karina.profile.restdto.request.AddPurchaseIdDTO;
+import gpl.karina.profile.restdto.response.PurchaseResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Mono;
 
@@ -34,6 +36,9 @@ public class SupplierServiceImpl implements SupplierService {
 
     @Value("${profile.app.resourceUrl}")
     private String resourceUrl;
+
+    @Value("${profile.app.purchaseUrl}")
+    private String purchaseUrl;
 
     private final WebClient webClientResource = WebClient.create();
 
@@ -90,6 +95,46 @@ public class SupplierServiceImpl implements SupplierService {
             return new ArrayList<>();
         }
     }
+
+    private Integer fetchTotalPurchasesBySupplier(UUID supplierId) {
+        String token = getTokenFromRequest();
+        if (token == null) {
+            throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
+        }
+    
+        String url = purchaseUrl + "api/purchase/supplier/" + supplierId; // contoh path baru yang lebih general
+    
+        try {
+            BaseResponseDTO<List<PurchaseResponseDTO>> response = webClientResource
+                .get()
+                .uri(url)
+                .headers(headers -> headers.setBearerAuth(token))
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, res -> {
+                    if (res.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                        System.out.println("Purchases tidak ditemukan untuk supplier ID: " + supplierId);
+                        return Mono.empty();
+                    }
+                    return Mono.error(new RuntimeException("Client error: " + res.statusCode()));
+                })
+                .onStatus(HttpStatusCode::is5xxServerError, res -> {
+                    System.err.println("Server error saat ambil purchases: " + res.statusCode());
+                    return Mono.error(new RuntimeException("Server error: " + res.statusCode()));
+                })
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<PurchaseResponseDTO>>>() {})
+                .block();
+    
+            if (response == null || response.getData() == null) {
+                return 0;
+            }
+            return response.getData().size(); // total aktivitas = jumlah purchase
+    
+        } catch (Exception e) {
+            System.err.println("Exception saat ambil purchases: " + e.getMessage());
+            return 0;
+        }
+    }
+    
     
     private SupplierResponseDTO supplierToSupplierResponseDTO(Supplier supplier) {
         SupplierResponseDTO response = new SupplierResponseDTO();
@@ -186,9 +231,13 @@ public class SupplierServiceImpl implements SupplierService {
         dto.setId(supplier.getId());
         dto.setNameSupplier(supplier.getNameSupplier());
         dto.setCompanySupplier(supplier.getCompanySupplier());
-        dto.setTotalPurchases(0); // placeholder
+    
+        Integer totalPurchases = fetchTotalPurchasesBySupplier(supplier.getId());
+        dto.setTotalPurchases(totalPurchases != null ? totalPurchases : 0);
+    
         return dto;
     }
+    
 
     @Override
     public String getSupplierName(UUID supplierId) {
