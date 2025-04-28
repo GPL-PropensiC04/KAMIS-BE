@@ -604,6 +604,7 @@ public class ProjectServiceImpl implements ProjectService {
                     projectAssetUsages.add(projectAssetUsage);
                 }
             }
+            totalPengeluaran += projectRequestDTO.getProjectPHLPay() * projectRequestDTO.getProjectPHLCount();
             distributionProject.setProjectTotalPemasukkan(projectRequestDTO.getProjectTotalPemasukkan());
             distributionProject.setProjectUseAsset(projectAssetUsages);
             distributionProject.setProjectTotalPengeluaran(totalPengeluaran);
