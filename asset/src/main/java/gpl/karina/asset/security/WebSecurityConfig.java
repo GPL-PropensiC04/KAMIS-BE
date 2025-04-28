@@ -32,6 +32,8 @@ public class WebSecurityConfig {
                         // Allow GET requests to all assets (list) for all authorized roles
                         .requestMatchers(HttpMethod.GET, "/api/asset/all")
                         .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
+                        .requestMatchers(HttpMethod.GET, "/api/asset/by-supplier")
+                        .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
                         // Allow GET requests for specific asset detail for all authorized roles
                         .requestMatchers(HttpMethod.GET, "/api/asset/{platNomor}")
                         .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")

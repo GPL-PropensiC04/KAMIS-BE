@@ -19,6 +19,7 @@ import gpl.karina.resource.restdto.request.UpdateResourceDTO;
 import gpl.karina.resource.restdto.request.UpdateResourceStockDTO;
 import gpl.karina.resource.restdto.response.ResourceResponseDTO;
 import gpl.karina.resource.restdto.response.BaseResponseDTO;
+import gpl.karina.resource.restdto.request.AddSupplierIdDTO;
 import gpl.karina.resource.restservice.ResourceRestService;
 import jakarta.validation.Valid;
 
@@ -297,4 +298,68 @@ public class ResourceController {
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PutMapping("/add-supplier")
+    public ResponseEntity<BaseResponseDTO<Void>> addSupplierId(
+            @Valid @RequestBody AddSupplierIdDTO dto,
+            BindingResult bindingResult) {
+
+        BaseResponseDTO<Void> response = new BaseResponseDTO<>();
+
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMessages = new StringBuilder();
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                errorMessages.append(error.getDefaultMessage()).append("; ");
+            }
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(errorMessages.toString());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        try {
+            resourceRestService.addSupplierId(dto.getSupplierId(), dto.getResourceId());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Data supplier berhasil diperbarui");
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/update-supplier")
+    public ResponseEntity<BaseResponseDTO<Void>> updateSupplierId(
+            @Valid @RequestBody AddSupplierIdDTO dto,
+            BindingResult bindingResult) {
+
+        BaseResponseDTO<Void> response = new BaseResponseDTO<>();
+
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMessages = new StringBuilder();
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                errorMessages.append(error.getDefaultMessage()).append("; ");
+            }
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(errorMessages.toString());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            resourceRestService.updateSupplierId(dto.getSupplierId(), dto.getResourceId());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Data supplier berhasil diupdate");
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

@@ -2,7 +2,6 @@ package gpl.karina.asset.controller;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Base64;
 import java.util.UUID;
 import java.util.Optional;
 
@@ -13,13 +12,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import gpl.karina.asset.model.Asset;
 import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.dto.request.AssetAddDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
+import gpl.karina.asset.dto.response.AssetListResponseDTO;
 import gpl.karina.asset.dto.response.BaseResponseDTO;
 import gpl.karina.asset.service.AssetService;
 import gpl.karina.asset.service.MaintenanceService;
@@ -31,7 +30,6 @@ import jakarta.validation.Valid;
 public class AssetController {
     private final AssetService assetService;
     private final AssetDb assetDb;
-    // Tambahkan dependency MaintenanceService
     private final MaintenanceService maintenanceService;
 
     public AssetController(AssetService assetService, AssetDb assetDb, MaintenanceService maintenanceService) {
@@ -42,8 +40,8 @@ public class AssetController {
 
     @GetMapping("/all")
     public ResponseEntity<?> listAsset() {
-        var baseResponseDTO = new BaseResponseDTO<List<AssetResponseDTO>>();
-        List<AssetResponseDTO> listAsset = assetService.getAllAsset();
+        var baseResponseDTO = new BaseResponseDTO<List<AssetListResponseDTO>>();
+        List<AssetListResponseDTO> listAsset = assetService.getAllAsset();
 
         baseResponseDTO.setStatus(HttpStatus.OK.value());
         baseResponseDTO.setData(listAsset);
@@ -126,7 +124,6 @@ public class AssetController {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             response.setMessage(errorMessages.toString());
             response.setTimestamp(new Date());
-            System.out.println(errorMessages.toString());
             return new ResponseEntity<BaseResponseDTO<AssetResponseDTO>>(response, HttpStatus.BAD_REQUEST);
         }
         try {
