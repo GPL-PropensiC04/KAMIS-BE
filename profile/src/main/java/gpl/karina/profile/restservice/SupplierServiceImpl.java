@@ -416,7 +416,7 @@ public class SupplierServiceImpl implements SupplierService {
         dto.setNameSupplier(supplier.getNameSupplier());
         dto.setCompanySupplier(supplier.getCompanySupplier());
     
-        Integer totalPurchases = fetchTotalPurchasesBySupplier(supplier.getId());
+        Integer totalPurchases = supplier.getPurchaseIds().size();
         dto.setTotalPurchases(totalPurchases != null ? totalPurchases : 0);
     
         return dto;
