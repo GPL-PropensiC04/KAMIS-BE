@@ -67,7 +67,9 @@ public class ClientRestController {
     @GetMapping("/all")
     public ResponseEntity<BaseResponseDTO<List<ClientListResponseDTO>>> listClient(
             @RequestParam(name = "nameClient", required = false) String nameClient,
-            @RequestParam(name = "typeClient", required = false) Boolean typeClient) {
+            @RequestParam(name = "typeClient", required = false) Boolean typeClient,
+            @RequestParam(required = false) Long minProfit,
+            @RequestParam(required = false) Long maxProfit) {
         var baseResponseDTO = new BaseResponseDTO<List<ClientListResponseDTO>>();
         List<ClientListResponseDTO> listClient;
         String message;
@@ -78,7 +80,7 @@ public class ClientRestController {
             message = "List Client berhasil ditemukan";
         } else {
             // If filters present, return filtered clients
-            listClient = clientService.filterClients(nameClient, typeClient);
+            listClient = clientService.filterClients(nameClient, typeClient, minProfit, maxProfit);
             message = "List Client berhasil difilter";
         }
 

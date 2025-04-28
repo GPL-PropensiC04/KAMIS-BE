@@ -156,7 +156,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient) {
+    public List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient, Long minProfit, Long maxProfit) {
         List<Client> clients;
         
         if (nameClient != null && typeClient != null) {
@@ -171,6 +171,8 @@ public class ClientServiceImpl implements ClientService {
         
         return clients.stream()
             .map(this::listClientToClientResponseDTO)
+            .filter(dto -> (minProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() >= minProfit)))
+            .filter(dto -> (maxProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() <= maxProfit)))
             .toList();
     }
 

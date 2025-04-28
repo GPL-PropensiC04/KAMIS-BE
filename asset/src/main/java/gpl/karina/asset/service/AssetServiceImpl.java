@@ -6,21 +6,24 @@ import java.util.stream.Collectors;
 import java.util.Date;
 import java.text.ParseException;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import gpl.karina.asset.dto.response.AssetListResponseDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
 import gpl.karina.asset.dto.request.AssetAddDTO;
 import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.repository.AssetDb;
+import gpl.karina.asset.repository.MaintenanceRepository;
 import gpl.karina.asset.model.Asset;
+import gpl.karina.asset.model.Maintenance;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -30,18 +33,33 @@ public class AssetServiceImpl implements AssetService {
     // private JwtTokenHolder tokenHolder;
 
     private final AssetDb assetDb;
+    private final MaintenanceRepository maintenanceRepository;
 
-    public AssetServiceImpl(AssetDb assetDb, WebClient.Builder webClientBuilder) {
+    public AssetServiceImpl(AssetDb assetDb, WebClient.Builder webClientBuilder, MaintenanceRepository maintenanceRepository) {
         this.assetDb = assetDb;
+        this.maintenanceRepository = maintenanceRepository;
+    }
+
+    private AssetListResponseDTO listAssetToAssetResponseDTO(Asset asset) {
+        AssetListResponseDTO assetResponseDTO = new AssetListResponseDTO();
+        assetResponseDTO.setPlatNomor(asset.getPlatNomor());
+        assetResponseDTO.setNama(asset.getNama());
+        assetResponseDTO.setStatus(asset.getStatus());
+        assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
+        assetResponseDTO.setSupplierId(asset.getIdSupplier());
+        assetResponseDTO.setTanggalPerolehan(asset.getTanggalPerolehan());
+        assetResponseDTO.setLastMaintenance(getLastMaintenanceDate(asset.getPlatNomor()));
+        
+        return assetResponseDTO;
     }
 
     @Override
-    public List<AssetResponseDTO> getAllAsset() {
+    public List<AssetListResponseDTO> getAllAsset() {
 
         var listAsset = assetDb.findAllActive();
-        var listAssetResponseDTO = new ArrayList<AssetResponseDTO>();
+        var listAssetResponseDTO = new ArrayList<AssetListResponseDTO>();
         listAsset.forEach(asset -> {
-            var assetResponseDTO = assetToAssetResponseDTO(asset);
+            var assetResponseDTO = listAssetToAssetResponseDTO(asset);
             listAssetResponseDTO.add(assetResponseDTO);
         });
         return listAssetResponseDTO;
@@ -126,7 +144,6 @@ public class AssetServiceImpl implements AssetService {
         assetResponseDTO.setDeskripsi(asset.getDeskripsi());
         assetResponseDTO.setTanggalPerolehan(asset.getTanggalPerolehan());
         assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
-        // assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
         assetResponseDTO.setFotoContentType(asset.getFotoContentType());
         assetResponseDTO.setFotoUrl("/api/asset/" + asset.getPlatNomor() + "/foto");
         assetResponseDTO.setSupplierId(asset.getIdSupplier());
@@ -136,8 +153,6 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public AssetResponseDTO addAsset(AssetAddDTO assetTempDTO) {
-        // ...existing validation...
-
         Asset assetTemp = new Asset();
         assetTemp.setPlatNomor(assetTempDTO.getPlatNomor());
         assetTemp.setNama(assetTempDTO.getAssetName());
@@ -193,5 +208,20 @@ public class AssetServiceImpl implements AssetService {
         return assets.stream()
                 .map(this::assetToAssetResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    private Date getLastMaintenanceDate(String platNomor) {
+        List<Maintenance> maintenances = maintenanceRepository
+            .findByAssetPlatNomorAndStatus(platNomor, "Selesai");
+            
+        if (maintenances.isEmpty()) {
+            return null;
+        }
+    
+        // Cari maintenance terakhir
+        return maintenances.stream()
+            .map(Maintenance::getTanggalMulaiMaintenance)
+            .max(Date::compareTo)
+            .orElse(null);
     }
 }
