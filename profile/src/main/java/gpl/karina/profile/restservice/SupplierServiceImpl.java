@@ -512,8 +512,7 @@ public class SupplierServiceImpl implements SupplierService {
         purchases.forEach(purchase -> {
             String formattedPrice = formatCurrency(purchase.getPurchasePrice());
             String activityName = "Pembelian " + purchase.getPurchaseType() +
-                    " seharga Rp" + formattedPrice +
-                    " Note: " + purchase.getPurchaseNote();
+                    " seharga Rp" + formattedPrice +;
             purchase.setActivityName(activityName); // Set the formatted activityName
         });
 
