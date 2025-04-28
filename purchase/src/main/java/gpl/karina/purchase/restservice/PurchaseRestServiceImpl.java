@@ -326,6 +326,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         purchaseResponseDTO.setPurchaseSubmissionDate(purchase.getPurchaseSubmissionDate());
         purchaseResponseDTO.setPurchaseUpdateDate(purchase.getPurchaseUpdateDate());
         purchaseResponseDTO.setPurchasePrice(purchase.getPurchasePrice());
+        purchaseResponseDTO.setPurchasePaymentDate(purchase.getPurchasePaymentDate());
 
         String id = String.valueOf(purchase.getPurchaseSupplier());
         purchaseResponseDTO.setPurchaseSupplier(getSupplierName(id));
