@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -26,6 +27,8 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import org.springframework.beans.factory.annotation.Value;
+
+import gpl.karina.purchase.exception.DataNotFound;
 import gpl.karina.purchase.model.AssetTemp;
 import gpl.karina.purchase.model.LogPurchase;
 import gpl.karina.purchase.model.Purchase;
@@ -35,6 +38,7 @@ import gpl.karina.purchase.repository.LogPurchaseRepository;
 import gpl.karina.purchase.repository.PurchaseRepository;
 import gpl.karina.purchase.repository.ResourceTempRepository;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
+import gpl.karina.purchase.restdto.request.AddPurchaseIdDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.ResourceTempDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
@@ -42,6 +46,7 @@ import gpl.karina.purchase.restdto.request.UpdatePurchaseStatusDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.LogPurchaseResponseDTO;
+import gpl.karina.purchase.restdto.response.PurchaseListResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
@@ -55,12 +60,14 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional
-public class PurchaseRestServiceImplb implements PurchaseRestService {
+public class PurchaseRestServiceImpl implements PurchaseRestService {
 
     @Value("${purchase.app.resourceUrl}")
     private String resourceUrl;
     @Value("${purchase.app.assetUrl}")
     private String assetUrl;
+    @Value("${purchase.app.profileUrl}")
+    private String profileUrl;
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
     private final ResourceTempRepository resourceTempRepository;
@@ -69,12 +76,13 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     private final HttpServletRequest request;
     private final JwtUtils jwtUtils;
 
-    private static final Logger logger = LoggerFactory.getLogger(PurchaseRestServiceImplb.class);
+    private static final Logger logger = LoggerFactory.getLogger(PurchaseRestServiceImpl.class);
 
     private WebClient webClientResource;
     private WebClient webClientAsset;
+    private WebClient webClientProfile;
 
-    public PurchaseRestServiceImplb(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository,
+    public PurchaseRestServiceImpl(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository,
             ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder,
             HttpServletRequest request, JwtUtils jwtUtils, LogPurchaseRepository logPurchaseRepository) {
         this.purchaseRepository = purchaseRepository;
@@ -98,6 +106,46 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         this.webClientAsset = webClientBuilder
                 .baseUrl(assetUrl)
                 .build();
+        
+        this.webClientProfile = webClientBuilder
+                .baseUrl(profileUrl)
+                .build();
+    }
+
+    private String getSupplierName(String id) {
+        try {
+            var response = webClientProfile
+                    .get()
+                    .uri("/supplier/name/" + id)
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<String>>() {
+                    })
+                    .block();
+            return response.getData();
+        } catch (Exception e) {
+            logger.error("Error calling resource service: {}", e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    private void addPurchaseIdToSupplier(AddPurchaseIdDTO addPurchaseIdDTO) {
+        try {
+            webClientProfile
+                    .put()
+                    .uri("/supplier/add-purchase")
+                    .bodyValue(addPurchaseIdDTO)
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<Void>>() {
+                    })
+                    .block();
+        } catch (Exception e) {
+            logger.error("Error calling resource service: {}", e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     private ResourceResponseDTO getResourceFromResourceService(Long resourceId) {
@@ -143,6 +191,8 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             formData.add("assetType", assetRequest.get("assetType"));
             formData.add("assetPrice", assetRequest.get("assetPrice"));
             formData.add("tanggalPerolehan", assetRequest.get("tanggalPerolehan"));
+            formData.add("supplierId", assetRequest.get("supplierId"));
+            formData.add("status", assetRequest.get("status"));
 
             // Untuk foto (byte[]), bungkus ke ByteArrayResource agar dianggap file di
             // form-data
@@ -270,6 +320,29 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         return purchaseResponseDTO;
     }
 
+    private PurchaseListResponseDTO purchaseToPurchaseListResponseDTO(Purchase purchase) {
+        PurchaseListResponseDTO purchaseResponseDTO = new PurchaseListResponseDTO();
+        purchaseResponseDTO.setPurchaseId(purchase.getId());
+        purchaseResponseDTO.setPurchaseSubmissionDate(purchase.getPurchaseSubmissionDate());
+        purchaseResponseDTO.setPurchaseUpdateDate(purchase.getPurchaseUpdateDate());
+        purchaseResponseDTO.setPurchasePrice(purchase.getPurchasePrice());
+        purchaseResponseDTO.setPurchasePaymentDate(purchase.getPurchasePaymentDate());
+
+        String id = String.valueOf(purchase.getPurchaseSupplier());
+        purchaseResponseDTO.setPurchaseSupplier(getSupplierName(id));
+
+        purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
+
+        Boolean purchaseType = purchase.isPurchaseType();
+        if (purchaseType) {
+            purchaseResponseDTO.setPurchaseType("Resource");
+        } else {
+            purchaseResponseDTO.setPurchaseType("Aset");
+        }
+
+        return purchaseResponseDTO;
+    }
+
     private LogPurchase addLog(String action) {
         LogPurchase log = new LogPurchase();
 
@@ -380,6 +453,11 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
         Purchase newPurchase = purchaseRepository.save(purchase);
 
+        AddPurchaseIdDTO addPurchaseIdDTO = new AddPurchaseIdDTO();
+        addPurchaseIdDTO.setPurchaseId(id);
+        addPurchaseIdDTO.setSupplierId(purchase.getPurchaseSupplier());
+        addPurchaseIdToSupplier(addPurchaseIdDTO);
+
         return purchaseToPurchaseResponseDTO(newPurchase);
     }
 
@@ -394,7 +472,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     }
 
     @Override
-    public List<PurchaseResponseDTO> getAllPurchase(Integer startNominal, Integer endNominal,
+    public List<PurchaseListResponseDTO> getAllPurchase(Integer startNominal, Integer endNominal,
             Boolean highNominal, Date startDate, Date endDate,
             Boolean newDate, String type, String idSearch) {
         List<Purchase> purchases = purchaseRepository.findAll();
@@ -413,7 +491,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
             adjustedEndDate = null;
         }
 
-        List<PurchaseResponseDTO> filteredPurchases = purchases.stream()
+        List<PurchaseListResponseDTO> filteredPurchases = purchases.stream()
                 // Filter berdasarkan range harga
                 .filter(p -> (startNominal == null || p.getPurchasePrice() >= startNominal) &&
                         (endNominal == null || p.getPurchasePrice() <= endNominal))
@@ -431,7 +509,7 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 .filter(p -> idSearch == null || p.getId().contains(idSearch))
 
                 // Konversi ke DTO terlebih dahulu
-                .map(this::purchaseToPurchaseResponseDTO)
+                .map(this::purchaseToPurchaseListResponseDTO)
 
                 // Sorting berdasarkan harga atau tanggal
                 .sorted((p1, p2) -> {
@@ -471,7 +549,8 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
 
         // Cek perubahan supplier
         if (!Objects.equals(purchase.getPurchaseSupplier(), updatePurchaseDTO.getPurchaseSupplier())) {
-            logBuilder.append("  - Mengubah supplier menjadi ").append(updatePurchaseDTO.getPurchaseSupplier()).append("\n");
+            String id = String.valueOf(updatePurchaseDTO.getPurchaseSupplier());
+            logBuilder.append("  - Mengubah supplier menjadi ").append(getSupplierName(id)).append("\n");
             hasChange = true;
         }
 
@@ -484,9 +563,9 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
         // Jika tipe resource, cek perubahan resource
         boolean purchaseType = purchase.isPurchaseType();
         if (purchaseType) {
-            logBuilder.append("  - Memperbarui daftar resource (total: ")
+            logBuilder.append("  - Total jenis resource yang dibeli setelah perubahan: ")
                     .append(updatePurchaseDTO.getPurchaseResource().size())
-                    .append(" item)\n");
+                    .append(" item\n");
             hasChange = true;
         }
 
@@ -687,6 +766,8 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
                 assetRequest.put("tanggalPerolehan", sdf.format(new Date()));
                 assetRequest.put("foto", assetTemp.getFoto());
                 assetRequest.put("fotoContentType", assetTemp.getFotoContentType());
+                assetRequest.put("supplierId", purchase.getPurchaseSupplier().toString());
+                assetRequest.put("status", "Tersedia");
                 AssetTempResponseDTO assetUpdate = addAssetToAssetDatabase(assetRequest);
             }
 
@@ -824,6 +905,27 @@ public class PurchaseRestServiceImplb implements PurchaseRestService {
     public AssetTempResponseDTO getDetailAsset(Long id) {
         AssetTemp asset = assetTempRepository.findById(id).orElse(null);
         return assetTempToAssetTempResponseDTO(asset);
+    }
+
+    @Override
+    public List<PurchaseResponseDTO> getPurchasesBySupplier(UUID supplierId) {
+        // Contoh dummy fetch dari repository
+        List<Purchase> purchases = purchaseRepository.findAllByPurchaseSupplier(supplierId);
+        ;
+        
+        if (purchases.isEmpty()) {
+            throw new DataNotFound("No purchases found for supplier with ID: " + supplierId);
+        }
+        
+        // Mapping entity ke DTO
+        List<PurchaseResponseDTO> purchaseResponseDTOs = purchases.stream()
+            .map(this::purchaseToPurchaseResponseDTO)
+            .collect(Collectors.toList());
+
+        System.out.println("Purchases found: " + purchaseResponseDTOs.size());
+        System.out.println("Purchases: " + purchaseResponseDTOs);
+        
+        return purchaseResponseDTOs;
     }
 
 }

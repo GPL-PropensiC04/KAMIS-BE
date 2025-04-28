@@ -686,6 +686,96 @@ public class ProjectServiceImpl implements ProjectService {
             throw new IllegalArgumentException("Proyek yang sudah selesai atau batal tidak dapat diubah.");
         }
 
+        StringBuilder logBuilder = new StringBuilder("Memperbarui Proyek:\n");
+        boolean hasChange = false;
+
+        // Cek perubahan deskripsi
+        if (updateProjectRequestDTO.getProjectDescription() != null &&
+            !Objects.equals(updateProjectRequestDTO.getProjectDescription(), project.getProjectDescription())) {
+            logBuilder.append("  - Mengubah deskripsi menjadi: ").append(updateProjectRequestDTO.getProjectDescription()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan alamat pengiriman
+        if (updateProjectRequestDTO.getProjectDeliveryAddress() != null &&
+            !Objects.equals(updateProjectRequestDTO.getProjectDeliveryAddress(), project.getProjectDeliveryAddress())) {
+            logBuilder.append("  - Mengubah alamat pengiriman menjadi: ").append(updateProjectRequestDTO.getProjectDeliveryAddress()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan tanggal mulai
+        if (updateProjectRequestDTO.getProjectStartDate() != null &&
+            !Objects.equals(updateProjectRequestDTO.getProjectStartDate(), project.getProjectStartDate())) {
+            logBuilder.append("  - Mengubah tanggal mulai menjadi: ").append(updateProjectRequestDTO.getProjectStartDate()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan tanggal akhir
+        if (updateProjectRequestDTO.getProjectEndDate() != null &&
+            !Objects.equals(updateProjectRequestDTO.getProjectEndDate(), project.getProjectEndDate())) {
+            logBuilder.append("  - Mengubah tanggal selesai menjadi: ").append(updateProjectRequestDTO.getProjectEndDate()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan untuk Distribution
+        if (project instanceof Distribution distribution) {
+            if (updateProjectRequestDTO.getProjectPickupAddress() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectPickupAddress(), distribution.getProjectPickupAddress())) {
+                logBuilder.append("  - Mengubah alamat penjemputan menjadi: ").append(updateProjectRequestDTO.getProjectPickupAddress()).append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectPHLCount() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectPHLCount(), distribution.getProjectPHLCount())) {
+                logBuilder.append("  - Mengubah jumlah PHL menjadi: ").append(updateProjectRequestDTO.getProjectPHLCount()).append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectPHLPay() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectPHLPay(), distribution.getProjectPHLPay())) {
+                logBuilder.append("  - Mengubah gaji PHL menjadi: ").append(updateProjectRequestDTO.getProjectPHLPay()).append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectTotalPemasukkan() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectTotalPemasukkan(), distribution.getProjectTotalPemasukkan())) {
+                logBuilder.append("  - Mengubah total pemasukkan menjadi: ").append(updateProjectRequestDTO.getProjectTotalPemasukkan()).append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectUseAsset() != null &&
+                hasAssetListChanged(distribution.getProjectUseAsset(), updateProjectRequestDTO.getProjectUseAsset())) {
+                logBuilder.append("  - Total aset yang digunakan setelah perubahan: ")
+                        .append(updateProjectRequestDTO.getProjectUseAsset().size())
+                        .append(" item\n");
+                hasChange = true;
+            }
+        }
+
+        // Cek perubahan untuk Sell
+        if (project instanceof Sell sell) {
+            if (updateProjectRequestDTO.getProjectTotalPemasukkan() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectTotalPemasukkan(), sell.getProjectTotalPemasukkan())) {
+                logBuilder.append("  - Mengubah total pemasukkan menjadi: ").append(updateProjectRequestDTO.getProjectTotalPemasukkan()).append("\n");
+                hasChange = true;
+            }
+
+
+            if (updateProjectRequestDTO.getProjectUseResource() != null &&
+                hasResourceListChanged(sell.getProjectUseResource(), updateProjectRequestDTO.getProjectUseResource())) {
+                logBuilder.append("  - Total resource yang digunakan setelah perubahan: ")
+                        .append(updateProjectRequestDTO.getProjectUseResource().size())
+                        .append(" item\n");
+                hasChange = true;
+            }
+
+        }
+
+        if (!hasChange) {
+            logBuilder.append("  - Tidak ada perubahan signifikan\n");
+        }
+
+
         if (project instanceof Distribution) {
             Distribution distributionProject = (Distribution) project;
 
@@ -835,6 +925,9 @@ public class ProjectServiceImpl implements ProjectService {
             project.setProjectEndDate(updateProjectRequestDTO.getProjectEndDate());
         }
 
+
+        LogProject newLog = addLog(logBuilder.toString());
+        project.getProjectLogs().add(newLog);
 
         // Save the updated project
         Project updatedProject = projectRepository.save(project);
@@ -1024,7 +1117,17 @@ public class ProjectServiceImpl implements ProjectService {
 
         project.setProjectStatus(newStatus);
 
-        LogProject newLog = addLog("Mengubah Status menjadi " + newStatus);
+        String statusText = "";
+        if (newStatus == 1) {
+            statusText = "Dilaksanakan";
+        } else if (newStatus == 2) {
+            statusText = "Selesai";
+        } else if (newStatus == 3) {
+            statusText = "Batal";
+        }
+
+        LogProject newLog = addLog("Mengubah Status menjadi " + statusText);
+
         project.getProjectLogs().add(newLog);
 
         Project updatedProject = projectRepository.save(project);
@@ -1060,7 +1163,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         project.setProjectPaymentStatus(projectPaymentStatus);
 
-        LogProject newLog = addLog("Mengubah Status Pembayaran menjadi " + projectPaymentStatus);
+        LogProject newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
         project.getProjectLogs().add(newLog);
 
         Project updatedProject = projectRepository.save(project);
