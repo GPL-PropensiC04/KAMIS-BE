@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import gpl.karina.profile.restdto.request.AddSupplierRequestDTO;
 import gpl.karina.profile.restdto.request.UpdateSupplierRequestDTO;
+import gpl.karina.profile.restdto.response.DetailSupplierDTO;
 import gpl.karina.profile.restdto.response.SupplierListResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierResponseDTO;
 
@@ -16,5 +17,6 @@ public interface SupplierService {
     SupplierResponseDTO updateSupplier(UpdateSupplierRequestDTO dto);
     String getSupplierName(UUID supplierId);
     void addPurchaseId(UUID supplierId, String purchaseId);
+    DetailSupplierDTO getSupplierDetail(UUID supplierId);
 
 }
