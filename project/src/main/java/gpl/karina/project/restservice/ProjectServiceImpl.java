@@ -1122,8 +1122,12 @@ public class ProjectServiceImpl implements ProjectService {
             statusText = "Dilaksanakan";
         } else if (newStatus == 2) {
             statusText = "Selesai";
+            project.setProjectEndDate(new Date());
+
         } else if (newStatus == 3) {
             statusText = "Batal";
+            project.setProjectEndDate(new Date());
+
         }
 
         LogProject newLog = addLog("Mengubah Status menjadi " + statusText);
