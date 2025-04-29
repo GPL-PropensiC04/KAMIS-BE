@@ -29,7 +29,7 @@ public class LogProject {
     @Column(nullable = false, name = "username")
     private String username;
 
-    @Column(nullable = false, name = "Aksi")
+    @Column(nullable = false, name = "Aksi", length = 1000)
     private String action;
 
     @Temporal(TemporalType.TIMESTAMP)
