@@ -99,6 +99,16 @@ public class ProjectController {
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+
+        // Ensure IDs match
+        if (!id.equals(updateProjectRequestDTO.getId())) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("ID dalam path dan body request tidak cocok");
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
         try {
             ProjectResponseWrapperDTO projectResponseDTO = projectService.updateProject(updateProjectRequestDTO);
             response.setStatus(HttpStatus.OK.value());
