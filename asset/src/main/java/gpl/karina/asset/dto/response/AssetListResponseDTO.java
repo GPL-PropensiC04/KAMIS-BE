@@ -7,6 +7,7 @@ import java.util.UUID;
 @Data
 public class AssetListResponseDTO {
     private String platNomor;
+    private String tipeAset;
     private String nama;
     private String status;
     private Integer nilaiPerolehan;
