@@ -124,42 +124,6 @@ public class ProjectServiceImpl implements ProjectService {
         return clientDetailDTO;
     }
 
-    private void updateAssetStatus(String platNomor, String status) {
-        try {
-            var response = webClientAsset
-                    .put()
-                    .uri("/api/asset/" + platNomor)
-                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
-                    .bodyValue(new AssetUpdateStatusDTO(status))
-                    .retrieve()
-                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                        if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
-                            return clientResponse.bodyToMono(String.class)
-                                    .flatMap(body -> Mono.error(new IllegalArgumentException(
-                                            "Gagal memperbarui status aset: " + body)));
-                        }
-                        return Mono.error(new IllegalArgumentException(
-                                "Gagal memperbarui status aset: " + clientResponse.statusCode()));
-                    })
-                    .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
-                        return Mono.error(new IllegalArgumentException(
-                                "Layanan aset sedang tidak tersedia, silakan coba lagi nanti"));
-                    })
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {
-                    })
-                    .block();
-
-            if (response == null || response.getData() == null) {
-                throw new IllegalArgumentException("Tidak ada respons yang valid dari layanan aset");
-            }
-
-            logger.info("Successfully updated asset status to {}", status);
-        } catch (WebClientRequestException e) {
-            logger.error("Network error updating asset status: {}", e.getMessage());
-            throw new IllegalArgumentException("Gagal terhubung ke layanan aset: " + e.getMessage());
-        }
-    }
-
     /**
      * Validates an asset by its plate number
      * 
@@ -584,6 +548,10 @@ public class ProjectServiceImpl implements ProjectService {
         // Validate client
         if (fetchClientById(projectRequestDTO.getProjectClientId()).getId() == null) {
             throw new IllegalArgumentException("Pastikan ID Klien sudah terdaftar dalam sistem");
+        }
+
+        if (projectRequestDTO.getProjectEndDate().before(projectRequestDTO.getProjectStartDate())) {
+            throw new IllegalArgumentException("Tanggal akhir proyek tidak boleh sebelum tanggal mulai proyek");
         }
 
         // Common setup
@@ -1165,10 +1133,23 @@ public class ProjectServiceImpl implements ProjectService {
         } else if (newStatus == 2) {
             statusText = "Selesai";
             project.setProjectEndDate(new Date());
+            if (project instanceof Distribution) {
+                Distribution distribution = (Distribution) project;
+                for (ProjectAssetUsage asset : distribution.getProjectUseAsset()) {
+                    updateAssetStatus(asset.getPlatNomor(), "Aktif");
+                }
+            }
 
         } else if (newStatus == 3) {
             statusText = "Batal";
             project.setProjectEndDate(new Date());
+            if (project instanceof Distribution) {
+                Distribution distribution = (Distribution) project;
+                for (ProjectAssetUsage asset : distribution.getProjectUseAsset()) {
+                    updateAssetStatus(asset.getPlatNomor(), "Aktif");
+                }
+            }
+
 
         }
 
