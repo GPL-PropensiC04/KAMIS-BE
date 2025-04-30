@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AssetUsageDTO {
+    private String tipeAset;
     private String platNomor;
     private Integer assetUseCost;    
     private Integer assetFuelCost;

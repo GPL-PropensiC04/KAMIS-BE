@@ -22,6 +22,9 @@ public class ProjectAssetUsage {
     @Column(nullable = false, name = "plat_nomor")
     private String platNomor;
     
+    @Column(nullable = false, name = "tipe_aset")
+    private String tipeAset;
+
     // Reference to parent Project 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping("/api/project")
@@ -78,13 +79,14 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @PutMapping("update/{id}")
     public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProject(
-        @PathVariable(name="id", required = true) String id, 
-        @Valid @RequestBody UpdateProjectRequestDTO updateProjectRequestDTO, 
-        BindingResult bindingResult) throws Exception {
+            @PathVariable(name = "id", required = true) String id,
+            @Valid @RequestBody UpdateProjectRequestDTO updateProjectRequestDTO,
+            BindingResult bindingResult) throws Exception {
         BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
-        
+
         if (bindingResult.hasErrors()) {
             StringBuilder errorMessage = new StringBuilder();
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -97,6 +99,16 @@ public class ProjectController {
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
+
+        // Ensure IDs match
+        if (!id.equals(updateProjectRequestDTO.getId())) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("ID dalam path dan body request tidak cocok");
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
         try {
             ProjectResponseWrapperDTO projectResponseDTO = projectService.updateProject(updateProjectRequestDTO);
             response.setStatus(HttpStatus.OK.value());
@@ -118,8 +130,10 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @GetMapping("/{id}")
-    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> getDetailProject(@PathVariable(name = "id") String id) {
+    public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> getDetailProject(
+            @PathVariable(name = "id") String id) {
         var response = new BaseResponseDTO<ProjectResponseWrapperDTO>();
         try {
             ProjectResponseWrapperDTO project = projectService.getProjectById(id);
@@ -144,7 +158,7 @@ public class ProjectController {
         }
 
     }
-    
+
     @GetMapping("/all")
     public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getListProject(
             @RequestParam(name = "idProject", required = false) String idSearch,
@@ -152,8 +166,8 @@ public class ProjectController {
             @RequestParam(name = "tipeProject", required = false) String projectType,
             @RequestParam(name = "namaProject", required = false) String projectName,
             @RequestParam(name = "clientProject", required = false) String projectClientId,
-            @RequestParam(name = "tanggalMulai", required = false) Date projectStartDate,
-            @RequestParam(name = "tanggalSelesai", required = false) Date projectEndDate) {
+            @RequestParam(name = "tanggalMulai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectStartDate,
+            @RequestParam(name = "tanggalSelesai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectEndDate) {
         BaseResponseDTO<List<listProjectResponseDTO>> response = new BaseResponseDTO<>();
         try {
             List<listProjectResponseDTO> listProject = projectService.getAllProject(idSearch, projectStatus,
@@ -181,7 +195,7 @@ public class ProjectController {
 
     @PutMapping("/update-status/{id}")
     public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProjectStatus(
-            @PathVariable(name="id") String id,
+            @PathVariable(name = "id") String id,
             @RequestBody UpdateProjectStatusRequestDTO updateProjectStatusDTO) {
         BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
         try {
@@ -216,7 +230,7 @@ public class ProjectController {
         BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
         try {
             ProjectResponseWrapperDTO updatedProject = projectService.updateProjectPayment(id,
-                updateProjectPaymentDTO.getProjectPaymentStatus());
+                    updateProjectPaymentDTO.getProjectPaymentStatus());
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Status proyek berhasil diperbarui");
             response.setTimestamp(new Date());

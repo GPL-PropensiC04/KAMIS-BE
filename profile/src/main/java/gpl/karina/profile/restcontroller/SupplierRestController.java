@@ -4,6 +4,7 @@ import gpl.karina.profile.restdto.request.AddPurchaseIdDTO;
 import gpl.karina.profile.restdto.request.AddSupplierRequestDTO;
 import gpl.karina.profile.restdto.request.UpdateSupplierRequestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
+import gpl.karina.profile.restdto.response.DetailSupplierDTO;
 import gpl.karina.profile.restdto.response.SupplierListResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierResponseDTO;
 import gpl.karina.profile.restservice.SupplierService;
@@ -171,6 +172,25 @@ public class SupplierRestController {
         } catch (IllegalArgumentException e) {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/detail/{supplierId}")
+    public ResponseEntity<BaseResponseDTO<DetailSupplierDTO>> getSupplierDetail(@PathVariable("supplierId") UUID supplierId) {
+        BaseResponseDTO<DetailSupplierDTO> response = new BaseResponseDTO<>();
+        try {
+            DetailSupplierDTO detailSupplierDTO = supplierService.getSupplierDetail(supplierId);
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Supplier detail berhasil ditemukan");
+            response.setData(detailSupplierDTO);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setData(null);
             response.setTimestamp(new Date());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
