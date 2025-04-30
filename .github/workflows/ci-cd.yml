@@ -15,37 +15,36 @@ env:
 jobs:
 
   build:
-    name: Build JARs
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ asset, finance.report, profile, project, purchase, resource ]
-    defaults:
-      run:
-        working-directory: ${{ matrix.service }}
+        service: [asset, finance.report, profile, project, purchase, resource]
+    name: Build JARs (${{ matrix.service }})
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          distribution: temurin
-          java-version: 21
+          java-version: '21'
+          distribution: 'temurin'
 
-      - name: Build ${{ matrix.service }}
+      - name: Make Gradle executable
+        run: chmod +x ${{ matrix.service }}/gradlew
+
+      - name: Build with Gradle
+        working-directory: ${{ matrix.service }}
         run: ./gradlew clean assemble --no-daemon --stacktrace
 
-      - name: Debug output
-        run: |
-          echo "Contents of build/libs:"
-          ls -l build/libs || echo "No JARs found!"
-
+      - name: Debug JAR output
+        run: ls -l ${{ matrix.service }}/build/libs || echo "No JAR found"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.service }}-jar
-          path: build/libs/*.jar
+          path: ${{ matrix.service }}/build/libs/*.jar
+
 
   publish:
     name: Build & Push Docker
