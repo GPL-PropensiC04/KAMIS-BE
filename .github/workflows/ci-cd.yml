@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [asset, finance, profile, project, purchase, resource]
+        service: [asset, finance.report, profile, project, purchase, resource]
     name: Build JARs (${{ matrix.service }})
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ asset, finance, profile, project, purchase, resource ]
+        service: [ asset, finance.report, profile, project, purchase, resource ]
     steps:
       - uses: actions/checkout@v4
 
@@ -63,17 +63,7 @@ jobs:
           path: ./
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: image=moby/buildkit:latest
-        id: buildx
-        continue-on-error: true
-
-      - name: Set up Docker Buildx (retry on failure)
-        uses: docker/setup-buildx-action@v3
-        if: steps.buildx.outcome == 'failure'
-        with:
-          driver-opts: image=moby/buildkit:latest
+        uses: docker/setup-buildx-action@v2
 
       - name: Authenticate to GCR
         run: echo "${{ secrets.GCLOUD_SERVICE_KEY }}" \
@@ -81,14 +71,11 @@ jobs:
                | docker login -u _json_key --password-stdin https://gcr.io || true
 
       - name: Build & Push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ${{ matrix.service }}/Dockerfile
-          push: true
-          tags: ${{ secrets.IMAGE_REPO }}/${{ matrix.service }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: |
+          docker build \
+            -t ${{ secrets.IMAGE_REPO }}/${{ matrix.service }}:latest \
+            -f ${{ matrix.service }}/Dockerfile .
+          docker push ${{ secrets.IMAGE_REPO }}/${{ matrix.service }}:latest
 
   deploy:
     name: Deploy to VM
