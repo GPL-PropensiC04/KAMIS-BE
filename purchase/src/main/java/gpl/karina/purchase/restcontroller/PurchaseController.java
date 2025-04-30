@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 
 import gpl.karina.purchase.model.AssetTemp;
 import gpl.karina.purchase.repository.AssetTempRepository;
@@ -37,16 +39,20 @@ import gpl.karina.purchase.restdto.response.PurchaseListResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restservice.PurchaseRestService;
 import jakarta.validation.Valid;
+import gpl.karina.purchase.restservice.FileStorageService;
 
 @RestController
 @RequestMapping("api/purchase")
 public class PurchaseController {
     private final PurchaseRestService purchaseRestService;
     private final AssetTempRepository assetTempRepository;
+    private final FileStorageService fileStorageService;
 
-    public PurchaseController(PurchaseRestService purchaseRestService, AssetTempRepository assetTempRepository) {
+    public PurchaseController(PurchaseRestService purchaseRestService, AssetTempRepository assetTempRepository,
+            FileStorageService fileStorageService) {
         this.purchaseRestService = purchaseRestService;
         this.assetTempRepository = assetTempRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @PostMapping("/add")
@@ -89,25 +95,25 @@ public class PurchaseController {
             @RequestParam(name = "newDate", required = false) Boolean newDate,
             @RequestParam(name = "type", required = false, defaultValue = "all") String type,
             @RequestParam(name = "idSearch", required = false) String idSearch) {
-        
+
         var baseResponseDTO = new BaseResponseDTO<List<PurchaseListResponseDTO>>();
-        
+
         try {
             List<PurchaseListResponseDTO> purchases = purchaseRestService.getAllPurchase(
                     startNominal, endNominal, highNominal, startDate, endDate, newDate, type, idSearch);
-            
+
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(purchases);
             baseResponseDTO.setTimestamp(new Date());
-            
+
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
         } catch (Exception e) {
             baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
             baseResponseDTO.setMessage(e.getMessage());
             baseResponseDTO.setData(null);
             baseResponseDTO.setTimestamp(new Date());
-            
+
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
     }
@@ -116,8 +122,9 @@ public class PurchaseController {
     public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchase(@PathVariable String purchaseId,
             @RequestBody UpdatePurchaseDTO updatePurchaseDTO) {
         var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-        
+        // String token = authorizationHeader.startsWith("Bearer ") ?
+        // authorizationHeader.substring(7) : authorizationHeader;
+
         try {
             PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchase(updatePurchaseDTO, purchaseId);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -180,15 +187,25 @@ public class PurchaseController {
     public ResponseEntity<?> getAssetFoto(@PathVariable(name = "id") Long id) {
         try {
             AssetTemp asset = assetTempRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Asset tidak ditemukan"));
-                
-            if (asset.getFoto() == null) {
+                    .orElseThrow(() -> new IllegalArgumentException("Asset tidak ditemukan"));
+
+            if (asset.getFotoFilename() == null || asset.getFotoFilename().isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
+            // Load file as Resource
+            Resource resource = fileStorageService.loadFileAsResource(asset.getFotoFilename());
+
+            // Determine content type
+            String contentType = asset.getFotoContentType();
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
             return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(asset.getFotoContentType()))
-                .body(asset.getFoto());
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + asset.getFotoFilename() + "\"")
+                    .body(resource);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
@@ -197,8 +214,9 @@ public class PurchaseController {
     @GetMapping("/asset/{idAsset}")
     public ResponseEntity<BaseResponseDTO<AssetTempResponseDTO>> findAssetById(@PathVariable Long idAsset) {
         var baseResponseDTO = new BaseResponseDTO<AssetTempResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-    
+        // String token = authorizationHeader.startsWith("Bearer ") ?
+        // authorizationHeader.substring(7) : authorizationHeader;
+
         try {
             // Mengirim token ke service
             AssetTempResponseDTO asset = purchaseRestService.getDetailAsset(idAsset);
@@ -207,7 +225,7 @@ public class PurchaseController {
             baseResponseDTO.setData(asset);
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
-    
+
         } catch (UserNotFound e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());
@@ -236,13 +254,18 @@ public class PurchaseController {
     }
 
     @PutMapping("/updatestatus/next/{idPurchase}")
-    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusToNext(@PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusToNext(
+            @PathVariable(name = "idPurchase") String idPurchase,
+            @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
+        // String token = authorizationHeader.startsWith("Bearer ") ?
+        // authorizationHeader.substring(7) : authorizationHeader;
         var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-        
+        // String token = authorizationHeader.startsWith("Bearer ") ?
+        // authorizationHeader.substring(7) : authorizationHeader;
+
         try {
-            PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchaseStatusToNext(updateStatusPurchaseDTO, idPurchase);
+            PurchaseResponseDTO updatedPurchase = purchaseRestService
+                    .updatePurchaseStatusToNext(updateStatusPurchaseDTO, idPurchase);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(updatedPurchase);
@@ -271,13 +294,17 @@ public class PurchaseController {
     }
 
     @PutMapping("/updatestatus/cancel/{idPurchase}")
-    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusToCancel(@PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusToCancel(
+            @PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
+        // String token = authorizationHeader.startsWith("Bearer ") ?
+        // authorizationHeader.substring(7) : authorizationHeader;
         var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-        
+        // String token = authorizationHeader.startsWith("Bearer ") ?
+        // authorizationHeader.substring(7) : authorizationHeader;
+
         try {
-            PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchaseStatusToCancelled(updateStatusPurchaseDTO, idPurchase);
+            PurchaseResponseDTO updatedPurchase = purchaseRestService
+                    .updatePurchaseStatusToCancelled(updateStatusPurchaseDTO, idPurchase);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(updatedPurchase);
@@ -305,13 +332,17 @@ public class PurchaseController {
     }
 
     @PutMapping("/updatestatus/pembayaran/{idPurchase}")
-    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusPembayaran(@PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusPembayaran(
+            @PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
+        // String token = authorizationHeader.startsWith("Bearer ") ?
+        // authorizationHeader.substring(7) : authorizationHeader;
         var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
-        // String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
-        
+        // String token = authorizationHeader.startsWith("Bearer ") ?
+        // authorizationHeader.substring(7) : authorizationHeader;
+
         try {
-            PurchaseResponseDTO updatedPurchase = purchaseRestService.updatePurchaseStatusPembayaran(updateStatusPurchaseDTO, idPurchase);
+            PurchaseResponseDTO updatedPurchase = purchaseRestService
+                    .updatePurchaseStatusPembayaran(updateStatusPurchaseDTO, idPurchase);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(updatedPurchase);
@@ -337,9 +368,10 @@ public class PurchaseController {
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
     }
-    
+
     @GetMapping("/detail/{purchaseId}")
-    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> getDetailPurchase(@PathVariable("purchaseId") String purchaseId) {
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> getDetailPurchase(
+            @PathVariable("purchaseId") String purchaseId) {
         var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
         try {
             PurchaseResponseDTO purchaseResponseDTO = purchaseRestService.getDetailPurchase(purchaseId);

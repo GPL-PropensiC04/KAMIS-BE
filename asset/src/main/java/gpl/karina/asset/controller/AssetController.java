@@ -2,10 +2,11 @@ package gpl.karina.asset.controller;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
-import java.util.Optional;
+import java.io.IOException;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import gpl.karina.asset.dto.response.AssetResponseDTO;
 import gpl.karina.asset.dto.response.AssetListResponseDTO;
 import gpl.karina.asset.dto.response.BaseResponseDTO;
 import gpl.karina.asset.service.AssetService;
+import gpl.karina.asset.service.FileStorageService;
 import gpl.karina.asset.service.MaintenanceService;
 import gpl.karina.asset.dto.response.MaintenanceResponseDTO;
 import jakarta.validation.Valid;
@@ -29,13 +31,16 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/asset")
 public class AssetController {
     private final AssetService assetService;
-    private final AssetDb assetDb;
     private final MaintenanceService maintenanceService;
+    private final FileStorageService fileStorageService;
+    private final AssetDb assetDb;
 
-    public AssetController(AssetService assetService, AssetDb assetDb, MaintenanceService maintenanceService) {
+    public AssetController(AssetService assetService, MaintenanceService maintenanceService,
+            FileStorageService fileStorageService, AssetDb assetDb) {
         this.assetService = assetService;
-        this.assetDb = assetDb;
         this.maintenanceService = maintenanceService;
+        this.fileStorageService = fileStorageService;
+        this.assetDb = assetDb;
     }
 
     @GetMapping("/all")
@@ -49,11 +54,11 @@ public class AssetController {
         baseResponseDTO.setTimestamp(new Date());
         return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     }
-    
+
     @GetMapping("/{platNomor}")
     public ResponseEntity<?> getAssetDetail(@PathVariable("platNomor") String platNomor) {
         var baseResponseDTO = new BaseResponseDTO<AssetResponseDTO>();
-        
+
         try {
             AssetResponseDTO asset = assetService.getAssetById(platNomor);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -73,7 +78,7 @@ public class AssetController {
     @DeleteMapping("/{platNomor}")
     public ResponseEntity<?> deleteAsset(@PathVariable("platNomor") String platNomor) {
         var baseResponseDTO = new BaseResponseDTO<Void>();
-        
+
         try {
             assetService.deleteAsset(platNomor);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -91,10 +96,10 @@ public class AssetController {
     }
 
     @PutMapping("/{platNomor}")
-    public ResponseEntity<?> updateAsset(@PathVariable("platNomor") String platNomor, 
-                                       @RequestBody AssetUpdateRequestDTO updateRequest) {
+    public ResponseEntity<?> updateAsset(@PathVariable("platNomor") String platNomor,
+            @RequestBody AssetUpdateRequestDTO updateRequest) {
         var baseResponseDTO = new BaseResponseDTO<AssetResponseDTO>();
-        
+
         try {
             AssetResponseDTO updatedAsset = assetService.updateAssetDetails(platNomor, updateRequest);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -145,9 +150,24 @@ public class AssetController {
     public ResponseEntity<?> getAssetFoto(@PathVariable String id) {
         try {
             Asset asset = assetService.getAssetFoto(id);
+
+            if (asset.getFotoFilename() == null || asset.getFotoFilename().isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Load file as Resource
+            Resource resource = fileStorageService.loadFileAsResource(asset.getFotoFilename());
+
+            // Determine content type
+            String contentType = asset.getFotoContentType();
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(asset.getFotoContentType()))
-                    .body(asset.getFoto());
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + asset.getFotoFilename() + "\"")
+                    .body(resource);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
@@ -156,11 +176,11 @@ public class AssetController {
     @GetMapping("/{platNomor}/maintenance")
     public ResponseEntity<?> getAssetMaintenanceHistory(@PathVariable("platNomor") String platNomor) {
         var baseResponseDTO = new BaseResponseDTO<List<MaintenanceResponseDTO>>();
-        
+
         try {
             // Menggunakan service maintenance yang sudah ada
             List<MaintenanceResponseDTO> maintenanceList = maintenanceService.getMaintenanceByAssetId(platNomor);
-            
+
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setData(maintenanceList);
             baseResponseDTO.setMessage("Riwayat maintenance aset berhasil ditemukan");

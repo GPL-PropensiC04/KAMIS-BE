@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -75,6 +76,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
     private final WebClient.Builder webClientBuilder;
     private final HttpServletRequest request;
     private final JwtUtils jwtUtils;
+    private final FileStorageService fileStorageService;
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseRestServiceImpl.class);
 
@@ -84,7 +86,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
     public PurchaseRestServiceImpl(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository,
             ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder,
-            HttpServletRequest request, JwtUtils jwtUtils, LogPurchaseRepository logPurchaseRepository) {
+            HttpServletRequest request, JwtUtils jwtUtils, LogPurchaseRepository logPurchaseRepository,
+            FileStorageService fileStorageService) {
         this.purchaseRepository = purchaseRepository;
         this.assetTempRepository = assetTempRepository;
         this.resourceTempRepository = resourceTempRepository;
@@ -92,6 +95,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         this.request = request;
         this.jwtUtils = jwtUtils;
         this.logPurchaseRepository = logPurchaseRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @PostConstruct
@@ -106,7 +110,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         this.webClientAsset = webClientBuilder
                 .baseUrl(assetUrl)
                 .build();
-        
+
         this.webClientProfile = webClientBuilder
                 .baseUrl(profileUrl)
                 .build();
@@ -180,66 +184,41 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         return response.getData();
     }
 
-    public AssetTempResponseDTO addAssetToAssetDatabase(Map<String, Object> assetRequest) {
-
-
-        try {
-            MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
-            formData.add("platNomor", assetRequest.get("platNomor"));
-            formData.add("assetName", assetRequest.get("assetName"));
-            formData.add("assetDescription", assetRequest.get("assetDescription"));
-            formData.add("assetType", assetRequest.get("assetType"));
-            formData.add("assetPrice", assetRequest.get("assetPrice"));
-            formData.add("tanggalPerolehan", assetRequest.get("tanggalPerolehan"));
-            formData.add("supplierId", assetRequest.get("supplierId"));
-            formData.add("status", assetRequest.get("status"));
-
-            // Untuk foto (byte[]), bungkus ke ByteArrayResource agar dianggap file di
-            // form-data
-            byte[] fotoBytes = (byte[]) assetRequest.get("foto");
-            if (fotoBytes != null) {
-                ByteArrayResource fotoResource = new ByteArrayResource(fotoBytes) {
-                    @Override
-                    public String getFilename() {
-                        return "foto.jpg"; // Optional, biar backend baca sebagai file
-                    }
-                };
-                formData.add("foto", fotoResource);
-            }
-
-            // Kalau fotoContentType mau dipisah / dikirim, bisa juga
-            if (assetRequest.get("fotoContentType") != null) {
-                formData.add("fotoContentType", assetRequest.get("fotoContentType"));
-            }
-
-            var response = webClientAsset.post()
-                    .uri("/asset/addAsset")
-                    .headers(headers -> {
-                        headers.setBearerAuth(getTokenFromRequest());
-                    })
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(BodyInserters.fromMultipartData(formData))
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetTempResponseDTO>>() {
-                    })
-                    .doOnError(error -> {
-                        logger.error("Error during asset service call: {}", error.getMessage());
-                        error.printStackTrace();
-                    })
-                    .block();
-
-            if (response == null) {
-                logger.error("Received null response from asset service");
-                return null;
-            }
-
-            logger.info("Successfully received response from asset service");
-            return response.getData();
-        } catch (Exception e) {
-            logger.error("Exception in addAssetToAssetDatabase: {}", e.getMessage());
-            e.printStackTrace();
-            throw e;
+    @Override
+    public AssetTempResponseDTO addAsset(AssetTempDTO assetTempDTO) {
+        if (assetTempDTO.getAssetName() == null) {
+            throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
         }
+        if (assetTempDTO.getAssetDescription() == null) {
+            throw new IllegalArgumentException("Deskripsi Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetType() == null) {
+            throw new IllegalArgumentException("Tipe Aset tidak boleh kosong");
+        }
+        if (assetTempDTO.getAssetPrice() == null) {
+            throw new IllegalArgumentException("Harga Aset tidak boleh kosong");
+        }
+
+        AssetTemp assetTemp = new AssetTemp();
+        assetTemp.setAssetName(assetTempDTO.getAssetName());
+        assetTemp.setAssetDescription(assetTempDTO.getAssetDescription());
+        assetTemp.setAssetType(assetTempDTO.getAssetType());
+        assetTemp.setAssetPrice(assetTempDTO.getAssetPrice());
+
+        if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
+            try {
+                // Store the file and save the file name
+                String filename = fileStorageService.storeFile(assetTempDTO.getFoto(),
+                        "asset_" + UUID.randomUUID().toString());
+                assetTemp.setFotoFilename(filename);
+                assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Gagal mengupload foto: " + e.getMessage());
+            }
+        }
+
+        AssetTemp newAssetTemp = assetTempRepository.save(assetTemp);
+        return assetTempToAssetTempResponseDTO(newAssetTemp);
     }
 
     public String getTokenFromRequest() {
@@ -260,6 +239,10 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
     }
 
     private AssetTempResponseDTO assetTempToAssetTempResponseDTO(AssetTemp assetTemp) {
+        if (assetTemp == null) {
+            return null;
+        }
+
         AssetTempResponseDTO assetTempResponseDTO = new AssetTempResponseDTO();
         assetTempResponseDTO.setId(assetTemp.getId());
         assetTempResponseDTO.setAssetNameString(assetTemp.getAssetName());
@@ -267,7 +250,12 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         assetTempResponseDTO.setAssetType(assetTemp.getAssetType());
         assetTempResponseDTO.setAssetPrice(assetTemp.getAssetPrice());
         assetTempResponseDTO.setFotoContentType(assetTemp.getFotoContentType());
-        assetTempResponseDTO.setFotoUrl("/purchase/asset/" + assetTemp.getId() + "/foto"); // Tambahkan ini
+
+        // Set the URL only if the file exists
+        if (assetTemp.getFotoFilename() != null && !assetTemp.getFotoFilename().isEmpty()) {
+            assetTempResponseDTO.setFotoUrl("/api/purchase/asset/" + assetTemp.getId() + "/foto");
+        }
+
         return assetTempResponseDTO;
     }
 
@@ -309,7 +297,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         }
 
         purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
-        
+
         List<LogPurchase> logs = purchase.getPurchaseLogs();
         List<LogPurchaseResponseDTO> logsDTO = new ArrayList<>();
         for (LogPurchase log : logs) {
@@ -350,7 +338,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
         log.setUsername(username);
         log.setAction(action);
-        
+
         Date now = new Date();
         log.setActionDate(now);
 
@@ -556,7 +544,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
         // Cek perubahan note
         if (!Objects.equals(purchase.getPurchaseNote(), updatePurchaseDTO.getPurchaseNote())) {
-            logBuilder.append("  - Mengubah catatan menjadi '").append(updatePurchaseDTO.getPurchaseNote()).append("'\n");
+            logBuilder.append("  - Mengubah catatan menjadi '").append(updatePurchaseDTO.getPurchaseNote())
+                    .append("'\n");
             hasChange = true;
         }
 
@@ -648,44 +637,9 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
             }
         }
 
-
         Purchase updatedPurchase = purchaseRepository.save(purchase);
 
         return purchaseToPurchaseResponseDTO(updatedPurchase);
-    }
-
-    @Override
-    public AssetTempResponseDTO addAsset(AssetTempDTO assetTempDTO) {
-        if (assetTempDTO.getAssetName() == null) {
-            throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetDescription() == null) {
-            throw new IllegalArgumentException("Deskripsi Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetType() == null) {
-            throw new IllegalArgumentException("Tipe Aset tidak boleh kosong");
-        }
-        if (assetTempDTO.getAssetPrice() == null) {
-            throw new IllegalArgumentException("Harga Aset tidak boleh kosong");
-        }
-
-        AssetTemp assetTemp = new AssetTemp();
-        assetTemp.setAssetName(assetTempDTO.getAssetName());
-        assetTemp.setAssetDescription(assetTempDTO.getAssetDescription());
-        assetTemp.setAssetType(assetTempDTO.getAssetType());
-        assetTemp.setAssetPrice(assetTempDTO.getAssetPrice());
-
-        if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
-            try {
-                assetTemp.setFoto(assetTempDTO.getFoto().getBytes());
-                assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Gagal mengupload foto");
-            }
-        }
-
-        AssetTemp newAssetTemp = assetTempRepository.save(assetTemp);
-        return assetTempToAssetTempResponseDTO(newAssetTemp);
     }
 
     @Override
@@ -764,7 +718,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                 assetRequest.put("assetPrice", assetTemp.getAssetPrice());
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 assetRequest.put("tanggalPerolehan", sdf.format(new Date()));
-                assetRequest.put("foto", assetTemp.getFoto());
+                assetRequest.put("fotoFilename", assetTemp.getFotoFilename());
                 assetRequest.put("fotoContentType", assetTemp.getFotoContentType());
                 assetRequest.put("supplierId", purchase.getPurchaseSupplier().toString());
                 assetRequest.put("status", "Tersedia");
@@ -907,25 +861,57 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         return assetTempToAssetTempResponseDTO(asset);
     }
 
-    @Override
-    public List<PurchaseResponseDTO> getPurchasesBySupplier(UUID supplierId) {
-        // Contoh dummy fetch dari repository
-        List<Purchase> purchases = purchaseRepository.findAllByPurchaseSupplier(supplierId);
-        ;
-        
-        if (purchases.isEmpty()) {
-            throw new DataNotFound("No purchases found for supplier with ID: " + supplierId);
-        }
-        
-        // Mapping entity ke DTO
-        List<PurchaseResponseDTO> purchaseResponseDTOs = purchases.stream()
-            .map(this::purchaseToPurchaseResponseDTO)
-            .collect(Collectors.toList());
+    public AssetTempResponseDTO addAssetToAssetDatabase(Map<String, Object> assetRequest) {
+        try {
+            MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+            formData.add("platNomor", assetRequest.get("platNomor"));
+            formData.add("assetName", assetRequest.get("assetName"));
+            formData.add("assetDescription", assetRequest.get("assetDescription"));
+            formData.add("assetType", assetRequest.get("assetType"));
+            formData.add("assetPrice", assetRequest.get("assetPrice"));
+            formData.add("tanggalPerolehan", assetRequest.get("tanggalPerolehan"));
 
-        System.out.println("Purchases found: " + purchaseResponseDTOs.size());
-        System.out.println("Purchases: " + purchaseResponseDTOs);
-        
-        return purchaseResponseDTOs;
+            // Get the byte array and convert it to a file first if needed
+            String fotoFilename = (String) assetRequest.get("fotoFilename");
+            if (fotoFilename != null && !fotoFilename.isEmpty()) {
+                // Load the file from our file system
+                Resource resource = fileStorageService.loadFileAsResource(fotoFilename);
+                formData.add("foto", resource);
+            }
+
+            // Kalau fotoContentType mau dipisah / dikirim, bisa juga
+            if (assetRequest.get("fotoContentType") != null) {
+                formData.add("fotoContentType", assetRequest.get("fotoContentType"));
+            }
+
+            var response = webClientAsset.post()
+                    .uri("/asset/addAsset")
+                    .headers(headers -> {
+                        headers.setBearerAuth(getTokenFromRequest());
+                    })
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(formData))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetTempResponseDTO>>() {
+                    })
+                    .doOnError(error -> {
+                        logger.error("Error during asset service call: {}", error.getMessage());
+                        error.printStackTrace();
+                    })
+                    .block();
+
+            if (response == null) {
+                logger.error("Received null response from asset service");
+                return null;
+            }
+
+            logger.info("Successfully received response from asset service");
+            return response.getData();
+        } catch (Exception e) {
+            logger.error("Exception in addAssetToAssetDatabase: {}", e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
 }
