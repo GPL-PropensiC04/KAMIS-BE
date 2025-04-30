@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [asset, finance, profile, project, purchase, resource]
+        service: [asset, finance.report, profile, project, purchase, resource]
     name: Build JARs (${{ matrix.service }})
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ asset, finance, profile, project, purchase, resource ]
+        service: [ asset, finance.report, profile, project, purchase, resource ]
     steps:
       - uses: actions/checkout@v4
 
