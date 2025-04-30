@@ -1,0 +1,122 @@
+name: CI/CD
+
+# fire on pushes to main or your deploy‐branch
+on:
+  push:
+    branches:
+      - main
+      - gcp-deploy
+
+# global env → replace with your GitHub Variables (non-sensitive)
+env:
+  GCP_PROJECT_ID: propensi-451504
+  IMAGE_REPO: ${{ vars.REGISTRY_SERVER}}/${{ env.GCP_PROJECT_ID }}
+
+jobs:
+
+  build:
+    name: Build JARs
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [ asset, finance.report, profile, project, purchase, resource ]
+    defaults:
+      run:
+        working-directory: ${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build ${{ matrix.service }}
+        run: ./gradlew clean assemble
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.service }}-jar
+          path: build/libs/*.jar
+
+  publish:
+    name: Build & Push Docker
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [ asset, finance, profile, project, purchase, resource ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download JAR
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.service }}-jar
+          path: ./
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Authenticate to GCR
+        run: echo "${{ secrets.GCLOUD_SERVICE_KEY }}" \
+               | base64 --decode \
+               | docker login -u _json_key --password-stdin https://gcr.io
+
+      - name: Build & Push
+        run: |
+          docker build \
+            -t ${{ env.IMAGE_REPO }}/${{ matrix.service }}:latest \
+            -f ${{ matrix.service }}/Dockerfile .
+          docker push ${{ env.IMAGE_REPO }}/${{ matrix.service }}:latest
+
+  deploy:
+    name: Deploy to VM
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4    # for your compose file
+
+      - name: Install SSH tools
+        run: sudo apt-get update && sudo apt-get install -y openssh-client rsync
+
+      - name: Configure SSH key
+        run: |
+          echo "${{ secrets.DEPLOY_PRIVATE_KEY }}" \
+            | tr -d '\r' \
+            | ssh-add -
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf "Host *\n  StrictHostKeyChecking no\n" > ~/.ssh/config
+
+      - name: Rsync docker-compose
+        run: |
+          rsync -av docker-compose-deploy.yml \
+                ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}:~/microservices-deploy/
+
+      - name: Generate remote .env & launch
+        run: |
+          ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" bash -s << 'EOF'
+            cat > ~/microservices-deploy/.env << ENV
+            DATABASE_URL_ASSET=${{ secrets.DATABASE_URL_ASSET }}
+            DATABASE_URL_FINANCE=${{ secrets.DATABASE_URL_FINANCE }}
+            DATABASE_URL_PROFILE=${{ secrets.DATABASE_URL_PROFILE }}
+            DATABASE_URL_PROJECT=${{ secrets.DATABASE_URL_PROJECT }}
+            DATABASE_URL_PURCHASE=${{ secrets.DATABASE_URL_PURCHASE }}
+            DATABASE_URL_RESOURCE=${{ secrets.DATABASE_URL_RESOURCE }}
+            DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
+            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+            JWT_PUBLIC_KEY=${{ secrets.JWT_PUBLIC_KEY }}
+            JWT_EXPIRATION_MS=${{ vars.JWT_EXPIRATION_MS }}
+            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            ENV
+          cd ~/microservices-deploy
+          docker compose -f docker-compose-deploy.yml pull
+          docker compose -f docker-compose-deploy.yml up -d
+          EOF 
+
+      - name: Remote cleanup
+        run: |
+          ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" \
+            "docker system prune -af"
