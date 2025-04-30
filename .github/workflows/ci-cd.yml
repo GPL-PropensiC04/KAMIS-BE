@@ -10,7 +10,7 @@ on:
 # global env → replace with your GitHub Variables (non-sensitive)
 env:
   GCP_PROJECT_ID: propensi-451504
-  IMAGE_REPO: ${{ vars.REGISTRY_SERVER}}/${{ env.GCP_PROJECT_ID }}
+  IMAGE_REPO: ${{ vars.REGISTRY_SERVER}}/${{ secrets.GCP_PROJECT_ID }}
 
 jobs:
 
@@ -68,9 +68,9 @@ jobs:
       - name: Build & Push
         run: |
           docker build \
-            -t ${{ env.IMAGE_REPO }}/${{ matrix.service }}:latest \
+            -t ${{ secrets.IMAGE_REPO }}/${{ matrix.service }}:latest \
             -f ${{ matrix.service }}/Dockerfile .
-          docker push ${{ env.IMAGE_REPO }}/${{ matrix.service }}:latest
+          docker push ${{ secrets.IMAGE_REPO }}/${{ matrix.service }}:latest
 
   deploy:
     name: Deploy to VM
