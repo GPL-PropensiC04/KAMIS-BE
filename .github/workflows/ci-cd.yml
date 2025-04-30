@@ -121,7 +121,7 @@ jobs:
 
       - name: Rsync docker-compose
         run: |
-          rsync -av docker-compose-deploy.yml \
+          rsync -rahv docker-compose-deploy.yml \
                 ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}:~/microservices-deploy/
 
       - name: Generate remote .env & launch
