@@ -3,7 +3,6 @@ package gpl.karina.profile.restservice;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -99,8 +98,6 @@ public class ClientServiceImpl implements ClientService {
             clientResponseDTO.setTypeClient("Perorangan");
         }
 
-        //TODO: attribute untuk hubungin client sama Distribusi & Penjualan (financial history ambil dari sini juga)
-
         return clientResponseDTO;
     }
 
@@ -159,7 +156,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient) {
+    public List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient, Long minProfit, Long maxProfit) {
         List<Client> clients;
         
         if (nameClient != null && typeClient != null) {
@@ -174,21 +171,29 @@ public class ClientServiceImpl implements ClientService {
         
         return clients.stream()
             .map(this::listClientToClientResponseDTO)
+            .filter(dto -> (minProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() >= minProfit)))
+            .filter(dto -> (maxProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() <= maxProfit)))
             .toList();
     }
 
     private ClientListResponseDTO listClientToClientResponseDTO(Client client) {
-        ClientListResponseDTO clientListResponseDTO = new ClientListResponseDTO();
-        clientListResponseDTO.setNameClient(client.getNameClient());
-        clientListResponseDTO.setCompanyClient(client.getCompanyClient());
-
-        if (client.isTypeClient()) {
-            clientListResponseDTO.setTypeClient("Perusahaan");
-        } else {
-            clientListResponseDTO.setTypeClient("Perorangan");
+        List<ProjectResponseDTO> projects = fetchProjectsByClientId(client.getId());
+        long totalProfit = 0L;
+        if (projects != null) {
+            for (ProjectResponseDTO p : projects) {
+                if (p.getProfit() != null) {
+                    totalProfit += p.getProfit();
+                }
+            }
         }
 
-        //TODO: attribute untuk hubungin client sama Distribusi & Penjualan (financial history ambil dari sini juga)
+        ClientListResponseDTO clientListResponseDTO = new ClientListResponseDTO();
+        clientListResponseDTO.setId(client.getId());
+        clientListResponseDTO.setNameClient(client.getNameClient());
+        clientListResponseDTO.setCompanyClient(client.getCompanyClient());
+        clientListResponseDTO.setTypeClient(client.isTypeClient() ? "Perusahaan" : "Perorangan");
+        clientListResponseDTO.setProjectCount(projects != null ? projects.size() : 0);
+        clientListResponseDTO.setTotalProfit(totalProfit);
 
         return clientListResponseDTO;
     }

@@ -10,7 +10,10 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import gpl.karina.project.model.Distribution;
@@ -31,7 +34,8 @@ import gpl.karina.project.restdto.ResourceUsageDTO;
 import gpl.karina.project.restdto.fetch.AssetDetailDTO;
 import gpl.karina.project.restdto.fetch.ClientDetailDTO;
 import gpl.karina.project.restdto.fetch.ResourceDetailDTO;
-import gpl.karina.project.restdto.request.ProjectRequestDTO;
+import gpl.karina.project.restdto.request.AddProjectRequestDTO;
+import gpl.karina.project.restdto.request.UpdateProjectRequestDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
 import gpl.karina.project.restdto.response.LogProjectResponseDTO;
@@ -120,22 +124,49 @@ public class ProjectServiceImpl implements ProjectService {
         return clientDetailDTO;
     }
 
-    // private AssetDetailDTO fetchAssetDetailById(String id) {
-    // var response = webClientAsset
-    // .get()
-    // .uri("/api/asset/" + id)
-    // .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
-    // .retrieve()
-    // .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>()
-    // {
-    // })
-    // .block();
-    // if (response == null || response.getData() == null) {
-    // throw new IllegalArgumentException("Asset not found with id: " + id);
-    // }
+    private void updateAssetStatus(String platNomor, String status) {
+        try {
+            var response = webClientAsset
+                    .put()
+                    .uri("/api/asset/" + platNomor)
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
+                    .bodyValue(new AssetUpdateStatusDTO(status))
+                    .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                        if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
+                            return clientResponse.bodyToMono(String.class)
+                                    .flatMap(body -> Mono.error(new IllegalArgumentException(
+                                            "Gagal memperbarui status aset: " + body)));
+                        }
+                        return Mono.error(new IllegalArgumentException(
+                                "Gagal memperbarui status aset: " + clientResponse.statusCode()));
+                    })
+                    .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
+                        return Mono.error(new IllegalArgumentException(
+                                "Layanan aset sedang tidak tersedia, silakan coba lagi nanti"));
+                    })
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {
+                    })
+                    .block();
 
-    // return response.getData();
-    // }
+            if (response == null || response.getData() == null) {
+                throw new IllegalArgumentException("Tidak ada respons yang valid dari layanan aset");
+            }
+
+            logger.info("Successfully updated asset status to {}", status);
+        } catch (WebClientRequestException e) {
+            logger.error("Network error updating asset status: {}", e.getMessage());
+            throw new IllegalArgumentException("Gagal terhubung ke layanan aset: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Validates an asset by its plate number
+     * 
+     * @param platNomor Plate number of the asset
+     * @return true if valid, false otherwise
+     * @throws IllegalArgumentException if asset is invalid
+     */
 
     private void updateAssetStatus(String platNomor, String status) {
         try {
@@ -188,34 +219,39 @@ public class ProjectServiceImpl implements ProjectService {
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
                         if (clientResponse.statusCode().equals(HttpStatus.NOT_FOUND)) {
-                            return Mono.error(new IllegalArgumentException("Aset dengan nomor plat " + platNomor + " tidak ditemukan"));
+                            return Mono.error(new IllegalArgumentException(
+                                    "Aset dengan nomor plat " + platNomor + " tidak ditemukan"));
                         } else if (clientResponse.statusCode().equals(HttpStatus.FORBIDDEN)) {
                             return Mono.error(new IllegalArgumentException("Tidak memiliki akses untuk melihat aset"));
                         } else {
-                            return Mono.error(new IllegalArgumentException("Gagal memvalidasi aset: " + clientResponse.statusCode()));
+                            return Mono.error(new IllegalArgumentException(
+                                    "Gagal memvalidasi aset: " + clientResponse.statusCode()));
                         }
                     })
                     .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
-                        return Mono.error(new IllegalArgumentException("Layanan aset sedang tidak tersedia, silakan coba lagi nanti"));
+                        return Mono.error(new IllegalArgumentException(
+                                "Layanan aset sedang tidak tersedia, silakan coba lagi nanti"));
                     })
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {
+                    })
                     .block();
-                    
+
             if (response == null) {
                 throw new IllegalArgumentException("Tidak ada respons dari layanan aset");
             }
-            
+
             if (response.getData() == null) {
-                throw new IllegalArgumentException("Aset dengan nomor plat " + platNomor + " tidak memiliki data yang valid");
+                throw new IllegalArgumentException(
+                        "Aset dengan nomor plat " + platNomor + " tidak memiliki data yang valid");
             }
-            
+
             AssetDetailDTO assetDetailDTO = response.getData();
             String assetId = assetDetailDTO.getPlatNomor();
-            
+
             if (assetId == null || assetId.isEmpty()) {
                 throw new IllegalArgumentException("Aset dengan nomor plat " + platNomor + " memiliki ID yang kosong");
             }
-            
+
             return true;
         } catch (WebClientRequestException e) {
             logger.error("Network error validating asset: {}", e.getMessage());
@@ -294,11 +330,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-
     /**
      * Deducts stock from a resource
+     * 
      * @param resourceId The resource ID
-     * @param quantity The quantity to deduct (must be positive)
+     * @param quantity   The quantity to deduct (must be positive)
      * @throws IllegalArgumentException if the operation fails
      */
     private void deductResourceStock(String resourceId, Integer quantity) {
@@ -307,7 +343,7 @@ public class ProjectServiceImpl implements ProjectService {
                     .put()
                     .uri("/api/resource/" + resourceId + "/deduct-stock")
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
-                    .bodyValue(new ResourceStockUpdateDTO(quantity))                    .retrieve()
+                    .bodyValue(new ResourceStockUpdateDTO(quantity)).retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
                         if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
                             return clientResponse.bodyToMono(String.class)
@@ -321,14 +357,15 @@ public class ProjectServiceImpl implements ProjectService {
                         return Mono.error(new IllegalArgumentException(
                                 "Layanan resource sedang tidak tersedia, silakan coba lagi nanti"));
                     })
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {
+                    })
                     .block();
-            
+
             if (response == null || response.getData() == null) {
                 System.out.println(response);
                 throw new IllegalArgumentException("ERR BEGO");
             }
-            
+
             logger.info("Successfully deducted {} units from resource {}", quantity, resourceId);
         } catch (WebClientRequestException e) {
             logger.error("Network error updating resource stock: {}", e.getMessage());
@@ -338,8 +375,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     /**
      * Adds stock to a resource
+     * 
      * @param resourceId The resource ID
-     * @param quantity The quantity to add (must be positive)
+     * @param quantity   The quantity to add (must be positive)
      * @throws IllegalArgumentException if the operation fails
      */
     private void addResourceStock(String resourceId, Integer quantity) {
@@ -363,13 +401,14 @@ public class ProjectServiceImpl implements ProjectService {
                         return Mono.error(new IllegalArgumentException(
                                 "Layanan resource sedang tidak tersedia, silakan coba lagi nanti"));
                     })
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ResourceDetailDTO>>() {
+                    })
                     .block();
-            
+
             if (response == null || response.getData() == null) {
                 throw new IllegalArgumentException("Tidak ada respons yang valid dari layanan resource");
             }
-            
+
             logger.info("Successfully added {} units to resource {}", quantity, resourceId);
         } catch (WebClientRequestException e) {
             logger.error("Network error updating resource stock: {}", e.getMessage());
@@ -400,18 +439,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     private LogProject addLog(String action) {
         LogProject log = new LogProject();
-
         String username = jwtUtils.getUserNameFromJwtToken(getTokenFromRequest());
-
         log.setUsername(username);
         log.setAction(action);
-
         Date now = new Date();
         log.setActionDate(now);
-
-        LogProject newLog = logProjectRepository.save(log);
-
-        return newLog;
+        return log; // Just create it, don't save it
     }
 
     private LogProjectResponseDTO logProjectToLogProjectResponseDTO(LogProject logProject) {
@@ -430,7 +463,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
         projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
         projectResponseDTO.setProjectType(project.getProjectType());
-        projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
+        projectResponseDTO.setProjectPaymentStatus(0);
         projectResponseDTO.setProjectStatus(project.getProjectStatus());
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
         projectResponseDTO.setProjectDescription(project.getProjectDescription());
@@ -475,6 +508,7 @@ public class ProjectServiceImpl implements ProjectService {
                     List<AssetUsageDTO> assetUsageDTOs = distributionProject.getProjectUseAsset().stream()
                             .map(assetUsage -> {
                                 AssetUsageDTO assetDto = new AssetUsageDTO();
+                                assetDto.setTipeAset(assetUsage.getTipeAset());
                                 assetDto.setPlatNomor(assetUsage.getPlatNomor());
                                 assetDto.setAssetFuelCost(assetUsage.getAssetFuelCost());
                                 assetDto.setAssetUseCost(assetUsage.getAssetUseCost());
@@ -546,7 +580,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseWrapperDTO addProject(ProjectRequestDTO projectRequestDTO) throws Exception {
+    public ProjectResponseWrapperDTO addProject(AddProjectRequestDTO projectRequestDTO) throws Exception {
         // Validate client
         if (fetchClientById(projectRequestDTO.getProjectClientId()).getId() == null) {
             throw new IllegalArgumentException("Pastikan ID Klien sudah terdaftar dalam sistem");
@@ -593,9 +627,12 @@ public class ProjectServiceImpl implements ProjectService {
                     projectAssetUsage.setProject(distributionProject);
                     projectAssetUsage.setAssetFuelCost(assetItem.getAssetFuelCost());
                     projectAssetUsage.setAssetUseCost(assetItem.getAssetUseCost());
+                    System.out.println(assetItem.getTipeAset() + "TEST");
+                    projectAssetUsage.setTipeAset(assetItem.getTipeAset());
                     projectAssetUsages.add(projectAssetUsage);
                 }
             }
+            totalPengeluaran += projectRequestDTO.getProjectPHLPay() * projectRequestDTO.getProjectPHLCount();
             distributionProject.setProjectTotalPemasukkan(projectRequestDTO.getProjectTotalPemasukkan());
             distributionProject.setProjectUseAsset(projectAssetUsages);
             distributionProject.setProjectTotalPengeluaran(totalPengeluaran);
@@ -620,7 +657,7 @@ public class ProjectServiceImpl implements ProjectService {
                     validateResource(resourceItem.getResourceId());
 
                     ResourceDetailDTO resourceDetail = fetchResourceDetailById(resourceItem.getResourceId());
-                    totalPemasukkan += resourceDetail.getResourcePrice();
+                    totalPemasukkan += resourceDetail.getResourcePrice() * resourceItem.getResourceStockUsed();
                     // Deduct resource stock
                     if (resourceItem.getResourceStockUsed() > 0) {
                         deductResourceStock(resourceItem.getResourceId(), resourceItem.getResourceStockUsed());
@@ -632,7 +669,7 @@ public class ProjectServiceImpl implements ProjectService {
                     projectResourceUsage.setSellPrice(resourceDetail.getResourcePrice());
                     projectResourceUsage.setQuantityUsed(resourceItem.getResourceStockUsed());
                     projectResourceUsage.setProject(sellProject);
-                    projectResourceUsages.add(projectResourceUsage);                    
+                    projectResourceUsages.add(projectResourceUsage);
                 }
             }
 
@@ -646,7 +683,7 @@ public class ProjectServiceImpl implements ProjectService {
         // Set common properties for all project types
         project.setProjectName(projectRequestDTO.getProjectName());
         project.setProjectStatus(0);
-        project.setProjectPaymentStatus(false);
+        project.setProjectPaymentStatus(0);
         project.setProjectDescription(projectRequestDTO.getProjectDescription());
         project.setProjectClientId(projectRequestDTO.getProjectClientId());
         project.setProjectType(projectRequestDTO.getProjectType());
@@ -654,7 +691,6 @@ public class ProjectServiceImpl implements ProjectService {
         project.setProjectStartDate(projectRequestDTO.getProjectStartDate());
         project.setProjectEndDate(projectRequestDTO.getProjectEndDate());
         project.setCreatedDate(today);
-
         project.setProjectLogs(new ArrayList<>());
 
         LogProject newLog = addLog("Menambahkan " + project.getId());
@@ -665,6 +701,380 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Return appropriate response
         return projectToProjectResponseDetailDTO(savedProject);
+    }
+
+    @Override
+    public ProjectResponseWrapperDTO updateProject(UpdateProjectRequestDTO updateProjectRequestDTO) throws Exception {
+        // Find the existing project by ID
+        Project project = projectRepository.findById(updateProjectRequestDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Project tidak ditemukan dengan id: " + updateProjectRequestDTO.getId()));
+
+        // Check if project can be updated (not completed or cancelled)
+        if (project.getProjectStatus() == 2 || project.getProjectStatus() == 3) {
+            throw new IllegalArgumentException("Proyek yang sudah selesai atau batal tidak dapat diubah.");
+        }
+
+        StringBuilder logBuilder = new StringBuilder("Memperbarui Proyek:\n");
+        boolean hasChange = false;
+
+        // Cek perubahan deskripsi
+        if (updateProjectRequestDTO.getProjectDescription() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectDescription(), project.getProjectDescription())) {
+            logBuilder.append("  - Mengubah deskripsi menjadi: ")
+                    .append(updateProjectRequestDTO.getProjectDescription()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan alamat pengiriman
+        if (updateProjectRequestDTO.getProjectDeliveryAddress() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectDeliveryAddress(),
+                        project.getProjectDeliveryAddress())) {
+            logBuilder.append("  - Mengubah alamat pengiriman menjadi: ")
+                    .append(updateProjectRequestDTO.getProjectDeliveryAddress()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan tanggal mulai
+        if (updateProjectRequestDTO.getProjectStartDate() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectStartDate(), project.getProjectStartDate())) {
+            logBuilder.append("  - Mengubah tanggal mulai menjadi: ")
+                    .append(updateProjectRequestDTO.getProjectStartDate()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan tanggal akhir
+        if (updateProjectRequestDTO.getProjectEndDate() != null &&
+                !Objects.equals(updateProjectRequestDTO.getProjectEndDate(), project.getProjectEndDate())) {
+            logBuilder.append("  - Mengubah tanggal selesai menjadi: ")
+                    .append(updateProjectRequestDTO.getProjectEndDate()).append("\n");
+            hasChange = true;
+        }
+
+        // Cek perubahan untuk Distribution
+        if (project instanceof Distribution distribution) {
+            if (updateProjectRequestDTO.getProjectPickupAddress() != null &&
+                    !Objects.equals(updateProjectRequestDTO.getProjectPickupAddress(),
+                            distribution.getProjectPickupAddress())) {
+                logBuilder.append("  - Mengubah alamat penjemputan menjadi: ")
+                        .append(updateProjectRequestDTO.getProjectPickupAddress()).append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectPHLCount() != null &&
+                    !Objects.equals(updateProjectRequestDTO.getProjectPHLCount(), distribution.getProjectPHLCount())) {
+                logBuilder.append("  - Mengubah jumlah PHL menjadi: ")
+                        .append(updateProjectRequestDTO.getProjectPHLCount()).append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectPHLPay() != null &&
+                    !Objects.equals(updateProjectRequestDTO.getProjectPHLPay(), distribution.getProjectPHLPay())) {
+                logBuilder.append("  - Mengubah gaji PHL menjadi: ").append(updateProjectRequestDTO.getProjectPHLPay())
+                        .append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectTotalPemasukkan() != null &&
+                    !Objects.equals(updateProjectRequestDTO.getProjectTotalPemasukkan(),
+                            distribution.getProjectTotalPemasukkan())) {
+                logBuilder.append("  - Mengubah total pemasukkan menjadi: ")
+                        .append(updateProjectRequestDTO.getProjectTotalPemasukkan()).append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectUseAsset() != null &&
+                    hasAssetListChanged(distribution.getProjectUseAsset(),
+                            updateProjectRequestDTO.getProjectUseAsset())) {
+                logBuilder.append("  - Total aset yang digunakan setelah perubahan: ")
+                        .append(updateProjectRequestDTO.getProjectUseAsset().size())
+                        .append(" item\n");
+                hasChange = true;
+            }
+        }
+
+        // Cek perubahan untuk Sell
+        if (project instanceof Sell sell) {
+            if (updateProjectRequestDTO.getProjectTotalPemasukkan() != null &&
+                    !Objects.equals(updateProjectRequestDTO.getProjectTotalPemasukkan(),
+                            sell.getProjectTotalPemasukkan())) {
+                logBuilder.append("  - Mengubah total pemasukkan menjadi: ")
+                        .append(updateProjectRequestDTO.getProjectTotalPemasukkan()).append("\n");
+                hasChange = true;
+            }
+
+            if (updateProjectRequestDTO.getProjectUseResource() != null &&
+                    hasResourceListChanged(sell.getProjectUseResource(),
+                            updateProjectRequestDTO.getProjectUseResource())) {
+                logBuilder.append("  - Total resource yang digunakan setelah perubahan: ")
+                        .append(updateProjectRequestDTO.getProjectUseResource().size())
+                        .append(" item\n");
+                hasChange = true;
+            }
+
+        }
+
+        if (!hasChange) {
+            logBuilder.append("  - Tidak ada perubahan signifikan\n");
+        }
+
+        if (project instanceof Distribution) {
+            Distribution distributionProject = (Distribution) project;
+
+            // Update distribution-specific properties
+            if (updateProjectRequestDTO.getProjectPickupAddress() != null) {
+                distributionProject.setProjectPickupAddress(updateProjectRequestDTO.getProjectPickupAddress());
+            }
+
+            if (updateProjectRequestDTO.getProjectPHLCount() != null) {
+                distributionProject.setProjectPHLCount(updateProjectRequestDTO.getProjectPHLCount());
+            }
+
+            if (updateProjectRequestDTO.getProjectPHLPay() != null) {
+                distributionProject.setProjectPHLPay(updateProjectRequestDTO.getProjectPHLPay());
+            }
+
+            if (updateProjectRequestDTO.getProjectTotalPemasukkan() != null) {
+                distributionProject.setProjectTotalPemasukkan(updateProjectRequestDTO.getProjectTotalPemasukkan());
+            }
+
+            // Handle asset updates if provided
+            if (updateProjectRequestDTO.getProjectUseAsset() != null) {
+                // Check if assets have actually changed
+                if (hasAssetListChanged(distributionProject.getProjectUseAsset(),
+                        updateProjectRequestDTO.getProjectUseAsset())) {
+                    // Calculate new expenses
+                    Long totalPengeluaran = 0L;
+
+                    // Remove existing asset usages
+                    if (distributionProject.getProjectUseAsset() != null
+                            && !distributionProject.getProjectUseAsset().isEmpty()) {
+                        // Release assets that were in use
+                        for (ProjectAssetUsage assetUsage : distributionProject.getProjectUseAsset()) {
+                            updateAssetStatus(assetUsage.getPlatNomor(), "Aktif");
+                        }
+                        distributionProject.getProjectUseAsset().clear();
+                    } else {
+                        distributionProject.setProjectUseAsset(new ArrayList<>());
+                    }
+
+                    // Add new asset usages
+                    for (AssetUsageDTO assetItem : updateProjectRequestDTO.getProjectUseAsset()) {
+                        if (!validateAsset(assetItem.getPlatNomor())) {
+                            throw new IllegalArgumentException("Pastikan ID Aset sudah terdaftar dalam sistem");
+                        }
+
+                        totalPengeluaran += assetItem.getAssetFuelCost() + assetItem.getAssetUseCost();
+                        updateAssetStatus(assetItem.getPlatNomor(), "Dalam Proyek");
+
+                        ProjectAssetUsage projectAssetUsage = new ProjectAssetUsage();
+                        projectAssetUsage.setPlatNomor(assetItem.getPlatNomor());
+                        projectAssetUsage.setProject(distributionProject);
+                        projectAssetUsage.setAssetFuelCost(assetItem.getAssetFuelCost());
+                        projectAssetUsage.setAssetUseCost(assetItem.getAssetUseCost());
+                        projectAssetUsage.setTipeAset(assetItem.getTipeAset());
+                        distributionProject.getProjectUseAsset().add(projectAssetUsage);
+                    }
+
+                    // Update total expenses
+                    distributionProject.setProjectTotalPengeluaran(totalPengeluaran);
+
+                    logger.info("Assets updated for project {}", distributionProject.getId());
+                } else {
+                    logger.info("No changes in assets for project {}", distributionProject.getId());
+                }
+            } else if (updateProjectRequestDTO.getProjectTotalPengeluaran() != null) {
+                distributionProject.setProjectTotalPengeluaran(updateProjectRequestDTO.getProjectTotalPengeluaran());
+            }
+
+            // Set the project reference
+            project = distributionProject;
+
+        } else if (project instanceof Sell) {
+            Sell sellProject = (Sell) project;
+
+            if (updateProjectRequestDTO.getProjectTotalPemasukkan() != null) {
+                sellProject.setProjectTotalPemasukkan(updateProjectRequestDTO.getProjectTotalPemasukkan());
+            }
+
+            // Handle resource updates if provided
+            if (updateProjectRequestDTO.getProjectUseResource() != null) {
+                // Check if resources have actually changed
+                if (hasResourceListChanged(sellProject.getProjectUseResource(),
+                        updateProjectRequestDTO.getProjectUseResource())) {
+                    // Calculate new income
+                    Long totalPemasukkan = 0L;
+
+                    // Return stock for existing resources
+                    if (sellProject.getProjectUseResource() != null && !sellProject.getProjectUseResource().isEmpty()) {
+                        for (ProjectResourceUsage resourceUsage : sellProject.getProjectUseResource()) {
+                            addResourceStock(resourceUsage.getResourceId(), resourceUsage.getQuantityUsed());
+                        }
+                        sellProject.getProjectUseResource().clear();
+                    } else {
+                        sellProject.setProjectUseResource(new ArrayList<>());
+                    }
+
+                    // Process new resources
+                    for (ResourceUsageDTO resourceItem : updateProjectRequestDTO.getProjectUseResource()) {
+                        validateResource(resourceItem.getResourceId());
+
+                        ResourceDetailDTO resourceDetail = fetchResourceDetailById(resourceItem.getResourceId());
+                        totalPemasukkan += resourceDetail.getResourcePrice() * resourceItem.getResourceStockUsed();
+
+                        // Deduct resource stock
+                        if (resourceItem.getResourceStockUsed() > 0) {
+                            deductResourceStock(resourceItem.getResourceId(), resourceItem.getResourceStockUsed());
+                        } else {
+                            throw new IllegalArgumentException(
+                                    "Jumlah resource yang digunakan tidak boleh kurang dari 0");
+                        }
+
+                        ProjectResourceUsage projectResourceUsage = new ProjectResourceUsage();
+                        projectResourceUsage.setResourceId(resourceItem.getResourceId());
+                        projectResourceUsage.setSellPrice(resourceDetail.getResourcePrice());
+                        projectResourceUsage.setQuantityUsed(resourceItem.getResourceStockUsed());
+                        projectResourceUsage.setProject(sellProject);
+                        sellProject.getProjectUseResource().add(projectResourceUsage);
+                    }
+
+                    // Update total income based on the new resource usages
+                    sellProject.setProjectTotalPemasukkan(totalPemasukkan);
+
+                    logger.info("Resources updated for project {}", sellProject.getId());
+                } else {
+                    logger.info("No changes in resources for project {}", sellProject.getId());
+                }
+            }
+
+            // Set the project reference
+            project = sellProject;
+        }
+
+        // Update common properties for all project types
+        if (updateProjectRequestDTO.getProjectDescription() != null) {
+            project.setProjectDescription(updateProjectRequestDTO.getProjectDescription());
+        }
+
+        if (updateProjectRequestDTO.getProjectDeliveryAddress() != null) {
+            project.setProjectDeliveryAddress(updateProjectRequestDTO.getProjectDeliveryAddress());
+        }
+
+        if (updateProjectRequestDTO.getProjectStartDate() != null) {
+            project.setProjectStartDate(updateProjectRequestDTO.getProjectStartDate());
+        }
+
+        if (updateProjectRequestDTO.getProjectEndDate() != null) {
+            project.setProjectEndDate(updateProjectRequestDTO.getProjectEndDate());
+        }
+
+        LogProject newLog = addLog(logBuilder.toString());
+        project.getProjectLogs().add(newLog);
+        System.out.println(logBuilder.toString());
+        // Save the updated project
+        Project updatedProject = projectRepository.save(project);
+
+        // Return appropriate response
+        return projectToProjectResponseDetailDTO(updatedProject);
+    }
+
+    /**
+     * Checks if the asset list has changed from what's currently in the database
+     */
+    private boolean hasAssetListChanged(List<ProjectAssetUsage> currentAssets, List<AssetUsageDTO> newAssets) {
+        // If current is null/empty but new is not, there's a change
+        if ((currentAssets == null || currentAssets.isEmpty()) &&
+                (newAssets != null && !newAssets.isEmpty())) {
+            return true;
+        }
+
+        // If new is null/empty but current is not, there's a change
+        if ((newAssets == null || newAssets.isEmpty()) &&
+                (currentAssets != null && !currentAssets.isEmpty())) {
+            return true;
+        }
+
+        // If both are empty or null, no change
+        if ((currentAssets == null || currentAssets.isEmpty()) &&
+                (newAssets == null || newAssets.isEmpty())) {
+            return false;
+        }
+
+        // If counts differ, there's a change
+        if (currentAssets.size() != newAssets.size()) {
+            return true;
+        }
+
+        // Create a map of existing assets for efficient comparison
+        Map<String, ProjectAssetUsage> existingAssetMap = new HashMap<>();
+        for (ProjectAssetUsage asset : currentAssets) {
+            existingAssetMap.put(asset.getPlatNomor(), asset);
+        }
+
+        // Check if all new assets match existing ones
+        for (AssetUsageDTO newAsset : newAssets) {
+            ProjectAssetUsage currentAsset = existingAssetMap.get(newAsset.getPlatNomor());
+
+            // If this asset doesn't exist or has different properties, there's a change
+            if (currentAsset == null ||
+                    !Objects.equals(currentAsset.getAssetFuelCost(), newAsset.getAssetFuelCost())
+                    || !Objects.equals(currentAsset.getAssetUseCost(), newAsset.getAssetUseCost())) {
+                return true;
+            }
+        }
+
+        // No changes detected
+        return false;
+    }
+
+    /**
+     * Checks if the resource list has changed from what's currently in the database
+     */
+    private boolean hasResourceListChanged(List<ProjectResourceUsage> currentResources,
+            List<ResourceUsageDTO> newResources) {
+        // If current is null/empty but new is not, there's a change
+        if ((currentResources == null || currentResources.isEmpty()) &&
+                (newResources != null && !newResources.isEmpty())) {
+            return true;
+        }
+
+        // If new is null/empty but current is not, there's a change
+        if ((newResources == null || newResources.isEmpty()) &&
+                (currentResources != null && !currentResources.isEmpty())) {
+            return true;
+        }
+
+        // If both are empty or null, no change
+        if ((currentResources == null || currentResources.isEmpty()) &&
+                (newResources == null || newResources.isEmpty())) {
+            return false;
+        }
+
+        // If counts differ, there's a change
+        if (currentResources.size() != newResources.size()) {
+            return true;
+        }
+
+        // Create a map of existing resources for efficient comparison
+        Map<String, ProjectResourceUsage> existingResourceMap = new HashMap<>();
+        for (ProjectResourceUsage resource : currentResources) {
+            existingResourceMap.put(resource.getResourceId(), resource);
+        }
+
+        // Check if all new resources match existing ones
+        for (ResourceUsageDTO newResource : newResources) {
+            ProjectResourceUsage currentResource = existingResourceMap.get(newResource.getResourceId());
+
+            // If this resource doesn't exist or has different properties, there's a change
+            if (currentResource == null ||
+                    !Objects.equals(currentResource.getQuantityUsed(), newResource.getResourceStockUsed()) ||
+                    !Objects.equals(currentResource.getSellPrice(), newResource.getSellPrice())) {
+                return true;
+            }
+        }
+
+        // No changes detected
+        return false;
     }
 
     @Override
@@ -708,6 +1118,13 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public ProjectResponseWrapperDTO getProjectById(String id) throws Exception {
+        return projectRepository.findById(id)
+                .map(this::projectToProjectResponseDetailDTO)
+                .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
+    }
+
+    @Override
     public ProjectResponseWrapperDTO updateProjectStatus(String id, Integer newStatus) throws Exception {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
@@ -726,8 +1143,12 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Status batal (3) hanya bisa dari 0 (Direncanakan) atau 1 (Dilaksanakan),
         // tidak dari 2 (Selesai)
-        if (newStatus == 3 && currentStatus == 2) {
-            throw new IllegalArgumentException("Status proyek tidak bisa dibatalkan jika sudah selesai.");
+        if (newStatus == 3) {
+            if (currentStatus == 2) {
+                throw new IllegalArgumentException("Status proyek tidak bisa dibatalkan jika sudah selesai.");
+            } else if (currentStatus == 3) {
+                throw new IllegalArgumentException("Status proyek sudah dibatalkan, tidak bisa diubah lagi.");
+            }
         }
 
         // Validasi selesai: tidak bisa kembali ke status sebelumnya
@@ -738,7 +1159,21 @@ public class ProjectServiceImpl implements ProjectService {
 
         project.setProjectStatus(newStatus);
 
-        LogProject newLog = addLog("Mengubah Status menjadi " + newStatus);
+        String statusText = "";
+        if (newStatus == 1) {
+            statusText = "Dilaksanakan";
+        } else if (newStatus == 2) {
+            statusText = "Selesai";
+            project.setProjectEndDate(new Date());
+
+        } else if (newStatus == 3) {
+            statusText = "Batal";
+            project.setProjectEndDate(new Date());
+
+        }
+
+        LogProject newLog = addLog("Mengubah Status menjadi " + statusText);
+
         project.getProjectLogs().add(newLog);
 
         Project updatedProject = projectRepository.save(project);
@@ -746,17 +1181,37 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseWrapperDTO updateProjectPayment(String id, boolean projectPaymentStatus) throws Exception {
+    public ProjectResponseWrapperDTO updateProjectPayment(String id, Integer projectPaymentStatus) throws Exception {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Project tidak ditemukan dengan id: " + id));
 
-        if (Boolean.TRUE.equals(project.getProjectPaymentStatus())) {
-            throw new IllegalArgumentException("Proyek sudah dibayar, tidak dapat dibuah statusnya.");
+        Integer currentPaymentStatus = project.getProjectPaymentStatus();
+        Integer currentProjectStatus = project.getProjectStatus();
+
+        // Jika ingin update ke pengembalian (2)
+        if (projectPaymentStatus == 2) {
+            // Hanya boleh jika status proyek sudah batal (3) dan sebelumnya sudah dibayar
+            // (1)
+            if (currentProjectStatus != null && currentProjectStatus == 3) {
+                if (currentPaymentStatus != null && currentPaymentStatus == 1) {
+                    // Boleh update ke pengembalian
+                } else {
+                    throw new IllegalArgumentException("Pengembalian hanya bisa dilakukan jika proyek sudah dibayar.");
+                }
+            } else {
+                throw new IllegalArgumentException("Pengembalian hanya bisa dilakukan jika proyek sudah dibatalkan.");
+            }
+        } else {
+            // Jika sudah dibayar, tidak bisa diubah lagi ke status lain selain pengembalian
+            if (currentPaymentStatus != null && currentPaymentStatus == 1) {
+                throw new IllegalArgumentException(
+                        "Proyek sudah dibayar, tidak dapat diubah status pembayarannya kecuali ke pengembalian.");
+            }
         }
 
         project.setProjectPaymentStatus(projectPaymentStatus);
 
-        LogProject newLog = addLog("Mengubah Status Pembayaran menjadi " + projectPaymentStatus);
+        LogProject newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
         project.getProjectLogs().add(newLog);
 
         Project updatedProject = projectRepository.save(project);

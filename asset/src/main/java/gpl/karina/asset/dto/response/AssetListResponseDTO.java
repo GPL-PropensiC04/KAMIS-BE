@@ -5,16 +5,13 @@ import java.util.Date;
 import java.util.UUID;
 
 @Data
-public class AssetResponseDTO {
+public class AssetListResponseDTO {
     private String platNomor;
+    private String tipeAset;
     private String nama;
-    private String jenisAset;
     private String status;
-    private Date tanggalPerolehan;
     private Integer nilaiPerolehan;
-    private String deskripsi;
-    private String assetMaintenance;
-    private String fotoContentType;
-    private String fotoUrl;
+    private Date tanggalPerolehan;
     private UUID supplierId;
+    private Date lastMaintenance;
 }
