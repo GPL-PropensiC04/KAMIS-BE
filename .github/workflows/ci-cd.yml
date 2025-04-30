@@ -33,7 +33,13 @@ jobs:
           java-version: 21
 
       - name: Build ${{ matrix.service }}
-        run: ./gradlew clean assemble
+        run: ./gradlew clean assemble --no-daemon --stacktrace
+
+      - name: Debug output
+        run: |
+          echo "Contents of build/libs:"
+          ls -l build/libs || echo "No JARs found!"
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
