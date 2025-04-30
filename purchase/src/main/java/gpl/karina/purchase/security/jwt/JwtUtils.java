@@ -41,9 +41,9 @@ public class JwtUtils {
     public String getUserNameFromJwtToken(String token) {
         try {
             JwtParserBuilder parserBuilder = Jwts.parser();
-            parserBuilder.setSigningKey(publicKey);
+            parserBuilder.verifyWith(publicKey);
             JwtParser jwtParser = parserBuilder.build();
-            Claims claims = jwtParser.parseClaimsJws(token).getBody();
+            Claims claims = jwtParser.parseSignedClaims(token).getPayload();
             String username = claims.getSubject();
             logger.debug("Extracted username from token: {}", username);
             return username;
