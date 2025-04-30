@@ -819,7 +819,7 @@ public class ProjectServiceImpl implements ProjectService {
                             && !distributionProject.getProjectUseAsset().isEmpty()) {
                         // Release assets that were in use
                         for (ProjectAssetUsage assetUsage : distributionProject.getProjectUseAsset()) {
-                            updateAssetStatus(assetUsage.getPlatNomor(), "Aktif");
+                            updateAssetStatus(assetUsage.getPlatNomor(), "Tersedia");
                         }
                         distributionProject.getProjectUseAsset().clear();
                     } else {
@@ -1136,7 +1136,7 @@ public class ProjectServiceImpl implements ProjectService {
             if (project instanceof Distribution) {
                 Distribution distribution = (Distribution) project;
                 for (ProjectAssetUsage asset : distribution.getProjectUseAsset()) {
-                    updateAssetStatus(asset.getPlatNomor(), "Aktif");
+                    updateAssetStatus(asset.getPlatNomor(), "Tersedia");
                 }
             }
 
@@ -1146,7 +1146,7 @@ public class ProjectServiceImpl implements ProjectService {
             if (project instanceof Distribution) {
                 Distribution distribution = (Distribution) project;
                 for (ProjectAssetUsage asset : distribution.getProjectUseAsset()) {
-                    updateAssetStatus(asset.getPlatNomor(), "Aktif");
+                    updateAssetStatus(asset.getPlatNomor(), "Tersedia");
                 }
             }
 
