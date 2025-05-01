@@ -18,7 +18,7 @@ services:
       - PROJECT_URL=http://project-service:8083/api
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
-      - FRONTEND_URL=${FRONTEND_URL}
+      - FRONTEND_URL=https://www.sikamis.com
     networks:
       - kamis-network
 
@@ -40,7 +40,7 @@ services:
       - PROJECT_URL=http://project-service:8083/api
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
-      - FRONTEND_URL=${FRONTEND_URL}
+      - FRONTEND_URL=https://www.sikamis.com
     networks:
       - kamis-network
 
@@ -63,7 +63,7 @@ services:
       - PROJECT_URL=http://project-service:8083/api
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
-      - FRONTEND_URL=${FRONTEND_URL}
+      - FRONTEND_URL=https://www.sikamis.com
     networks:
       - kamis-network
 
@@ -85,7 +85,7 @@ services:
       - PROJECT_URL=http://project-service:8083/api
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
-      - FRONTEND_URL=${FRONTEND_URL}
+      - FRONTEND_URL=https://www.sikamis.com
     networks:
       - kamis-network
 
@@ -107,7 +107,7 @@ services:
       - PROJECT_URL=http://project-service:8083/api
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
-      - FRONTEND_URL=${FRONTEND_URL}
+      - FRONTEND_URL=https://www.sikamis.com
     networks:
       - kamis-network
 
@@ -129,7 +129,7 @@ services:
       - PROJECT_URL=http://project-service:8083/api
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
-      - FRONTEND_URL=${FRONTEND_URL}
+      - FRONTEND_URL=https://www.sikamis.com
     networks:
       - kamis-network
 
