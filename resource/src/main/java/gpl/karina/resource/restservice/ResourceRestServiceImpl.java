@@ -88,7 +88,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         }     
         resource.setResourceDescription(updateResourceDTO.getResourceDescription());
         resource.setResourcePrice(updateResourceDTO.getResourcePrice());
-        resource.setResourceStock(resource.getResourceStock() + updateResourceDTO.getResourceStock());
+        resource.setResourceStock(updateResourceDTO.getResourceStock());
         
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
