@@ -19,6 +19,7 @@ import gpl.karina.profile.restdto.response.ClientResponseDTO;
 import gpl.karina.profile.restdto.response.ProjectResponseDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import reactor.core.publisher.Mono;
 
@@ -29,20 +30,37 @@ public class ClientServiceImpl implements ClientService {
     private final ClientRepository clientRepository;
     @Value("${profile.app.projectUrl}")
     private String projectUrl;
+    private final HttpServletRequest request;
 
     private final WebClient webClientProject = WebClient.create();
 
-    public ClientServiceImpl(ClientRepository clientRepository) {
+    public ClientServiceImpl(ClientRepository clientRepository, HttpServletRequest request) {
         this.clientRepository = clientRepository;
+        this.request = request;
     }
 
+
+    public String getTokenFromRequest() {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+    
     private List<ProjectResponseDTO> fetchProjectsByClientId(UUID clientId) {
+        String token = getTokenFromRequest();
+        if (token == null) {
+            System.err.println("No token found in request header.");
+            return new ArrayList<>();
+        }
         String url = projectUrl + "/project/all?clientProject=" + clientId;
         
         try {
             return webClientProject
                 .get()
                 .uri(url)
+                .headers(headers -> headers.setBearerAuth(token))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> {
                     if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
