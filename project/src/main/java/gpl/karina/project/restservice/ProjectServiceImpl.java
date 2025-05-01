@@ -1050,15 +1050,27 @@ public class ProjectServiceImpl implements ProjectService {
             String idSearch, String projectStatus, String projectType,
             String projectName, String projectClientId, Date projectStartDate,
             Date projectEndDate) throws Exception {
+        final Date adjustedStartDate;
+        if (projectStartDate != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(projectStartDate);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            adjustedStartDate = calendar.getTime();
+        } else {
+            adjustedStartDate = null;
+        }
 
         final Date adjustedEndDate;
         if (projectEndDate != null) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(projectEndDate);
-            calendar.set(Calendar.HOUR_OF_DAY, 23);
-            calendar.set(Calendar.MINUTE, 59);
-            calendar.set(Calendar.SECOND, 59);
-            calendar.set(Calendar.MILLISECOND, 999);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
             adjustedEndDate = calendar.getTime();
         } else {
             adjustedEndDate = null;
@@ -1076,7 +1088,7 @@ public class ProjectServiceImpl implements ProjectService {
                         || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
                 .filter(project -> projectClientId == null
                         || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
-                .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(projectStartDate))
+                .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(adjustedStartDate))
                 .filter(project -> adjustedEndDate == null || !project.getProjectEndDate().after(adjustedEndDate))
                 .collect(Collectors.toList());
 
