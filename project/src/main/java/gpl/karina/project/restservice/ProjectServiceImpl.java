@@ -111,7 +111,7 @@ public class ProjectServiceImpl implements ProjectService {
     private ClientDetailDTO fetchClientById(String id) {
         var response = webClientProfile
                 .get()
-                .uri("/api/client/" + id)
+                .uri("/client/" + id)
                 .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ClientDetailDTO>>() {
@@ -136,7 +136,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientAsset
                     .put()
-                    .uri("/api/asset/" + platNomor)
+                    .uri("/asset/" + platNomor)
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .bodyValue(new AssetUpdateStatusDTO(status))
                     .retrieve()
@@ -178,7 +178,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientAsset
                     .get()
-                    .uri("/api/asset/" + platNomor)
+                    .uri("/asset/" + platNomor)
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
@@ -240,7 +240,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientResource
                     .get()
-                    .uri("/api/resource/find/" + id)
+                    .uri("/resource/find/" + id)
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
@@ -305,7 +305,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientResource
                     .put()
-                    .uri("/api/resource/" + resourceId + "/deduct-stock")
+                    .uri("/resource/" + resourceId + "/deduct-stock")
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .bodyValue(new ResourceStockUpdateDTO(quantity)).retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
@@ -348,7 +348,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientResource
                     .put()
-                    .uri("/api/resource/" + resourceId + "/add-stock")
+                    .uri("/resource/" + resourceId + "/add-stock")
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .bodyValue(new ResourceStockUpdateDTO(quantity))
                     .retrieve()
