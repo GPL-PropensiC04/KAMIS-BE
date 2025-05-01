@@ -44,6 +44,7 @@ public class AssetServiceImpl implements AssetService {
         AssetListResponseDTO assetResponseDTO = new AssetListResponseDTO();
         assetResponseDTO.setPlatNomor(asset.getPlatNomor());
         assetResponseDTO.setNama(asset.getNama());
+        assetResponseDTO.setTipeAset(asset.getJenisAset());
         assetResponseDTO.setStatus(asset.getStatus());
         assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
         assetResponseDTO.setSupplierId(asset.getIdSupplier());

@@ -68,8 +68,8 @@ public class ClientRestController {
     public ResponseEntity<BaseResponseDTO<List<ClientListResponseDTO>>> listClient(
             @RequestParam(name = "nameClient", required = false) String nameClient,
             @RequestParam(name = "typeClient", required = false) Boolean typeClient,
-            @RequestParam(required = false) Long minProfit,
-            @RequestParam(required = false) Long maxProfit) {
+            @RequestParam(name = "minProfit", required = false) Long minProfit,
+            @RequestParam(name = "maxProfit", required = false) Long maxProfit) {
         var baseResponseDTO = new BaseResponseDTO<List<ClientListResponseDTO>>();
         List<ClientListResponseDTO> listClient;
         String message;
