@@ -374,24 +374,46 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private Date adjustedStartDate(Date startDate) {
+        if (startDate == null)
+            return null;
+
+        // Extract date components without timezone conversion
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
+
+        // Set time to noon (12:00) to avoid timezone conversion issues
+        // Using noon instead of 00:00 or 23:59 prevents day shifting in most timezone
+        // conversions
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+
+        calendar.clear();
+        calendar.set(year, month, day, 12, 0, 0);
         calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
     private Date adjustedEndDate(Date endDate) {
+        if (endDate == null)
+            return null;
+
+        // Extract date components without timezone conversion
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(endDate);
-        // For consistency with front-end display, keep at 00:00:00 instead of 23:59:59
-        // This prevents timezone conversions from pushing the date to the next day
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
+
+        // Set time to noon (12:00) to avoid timezone conversion issues
+        // Using noon instead of 00:00 or 23:59 prevents day shifting in most timezone
+        // conversions
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+
+        calendar.clear();
+        calendar.set(year, month, day, 12, 0, 0);
         calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
@@ -1227,10 +1249,10 @@ public class ProjectServiceImpl implements ProjectService {
             statusText = "Dilaksanakan";
         } else if (newStatus == 2) {
             statusText = "Selesai";
-            project.setProjectEndDate(new Date());
+            project.setProjectEndDate(adjustedEndDate(new Date()));
         } else if (newStatus == 3) {
             statusText = "Batal";
-            project.setProjectEndDate(new Date());
+            project.setProjectEndDate(adjustedEndDate(new Date()));
         }
 
         LogProject newLog = addLog("Mengubah Status menjadi " + statusText);
