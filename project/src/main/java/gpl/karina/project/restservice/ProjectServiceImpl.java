@@ -49,6 +49,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import reactor.core.publisher.Mono;
+import gpl.karina.project.restservice.AssetReservationClient;
 
 @Service
 @Transactional
@@ -72,14 +73,17 @@ public class ProjectServiceImpl implements ProjectService {
     private final LogProjectRepository logProjectRepository;
     private final WebClient.Builder webClientBuilder;
     private final JwtUtils jwtUtils;
+    private final AssetReservationClient assetReservationClient;
 
     public ProjectServiceImpl(ProjectRepository projectRepository, WebClient.Builder webClientBuilder,
-            HttpServletRequest request, JwtUtils jwtUtils, LogProjectRepository logProjectRepository) {
+            HttpServletRequest request, JwtUtils jwtUtils, LogProjectRepository logProjectRepository,
+            AssetReservationClient assetReservationClient) {
         this.projectRepository = projectRepository;
         this.request = request;
         this.webClientBuilder = webClientBuilder;
         this.jwtUtils = jwtUtils;
         this.logProjectRepository = logProjectRepository;
+        this.assetReservationClient = assetReservationClient;
     }
 
     @PostConstruct
@@ -153,19 +157,21 @@ public class ProjectServiceImpl implements ProjectService {
                         return Mono.error(new IllegalArgumentException(
                                 "Layanan aset sedang tidak tersedia, silakan coba lagi nanti"));
                     })
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {
+                    })
                     .block();
-            
+
             if (response == null || response.getData() == null) {
                 throw new IllegalArgumentException("Tidak ada respons yang valid dari layanan aset");
             }
-            
+
             logger.info("Successfully updated asset status to {}", status);
         } catch (WebClientRequestException e) {
             logger.error("Network error updating asset status: {}", e.getMessage());
             throw new IllegalArgumentException("Gagal terhubung ke layanan aset: " + e.getMessage());
         }
     }
+
     /**
      * Validates an asset by its plate number
      * 
@@ -543,6 +549,40 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
+    /**
+     * Validates an asset by its plate number and checks availability for project
+     * dates
+     */
+    private Boolean validateAssetAndCheckAvailability(String platNomor, Date projectStartDate, Date projectEndDate,
+            String projectId) {
+        // First validate that the asset exists
+        if (validateAsset(platNomor)) {
+            // Then check availability with the asset service
+            List<String> assetToCheck = List.of(platNomor);
+            Map<String, Boolean> availability;
+
+            if (projectId != null) {
+                // For updates, exclude the current project's reservations
+                availability = assetReservationClient.checkAssetsAvailabilityExcludingProject(
+                        assetToCheck, projectStartDate, projectEndDate, projectId);
+            } else {
+                // For new projects, check all reservations
+                availability = assetReservationClient.checkAssetsAvailability(
+                        assetToCheck, projectStartDate, projectEndDate);
+            }
+
+            boolean isAvailable = availability.getOrDefault(platNomor, false);
+            if (!isAvailable) {
+                throw new IllegalArgumentException(
+                        "Aset dengan nomor plat " + platNomor + " tidak tersedia untuk periode waktu yang diminta");
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public ProjectResponseWrapperDTO addProject(AddProjectRequestDTO projectRequestDTO) throws Exception {
         // Validate client
@@ -585,17 +625,18 @@ public class ProjectServiceImpl implements ProjectService {
 
             if (projectRequestDTO.getProjectUseAsset() != null) {
                 for (AssetUsageDTO assetItem : projectRequestDTO.getProjectUseAsset()) {
-                    if (!validateAsset(assetItem.getPlatNomor())) {
-                        throw new IllegalArgumentException("Pastikan ID Aset sudah terdaftar dalam sistem");
-                    }
+                    validateAssetAndCheckAvailability(
+                            assetItem.getPlatNomor(),
+                            projectRequestDTO.getProjectStartDate(),
+                            projectRequestDTO.getProjectEndDate(),
+                            null // No project ID to exclude for new projects
+                    );
                     totalPengeluaran += assetItem.getAssetFuelCost() + assetItem.getAssetUseCost();
-                    updateAssetStatus(assetItem.getPlatNomor(), "Dalam Proyek");
                     ProjectAssetUsage projectAssetUsage = new ProjectAssetUsage();
                     projectAssetUsage.setPlatNomor(assetItem.getPlatNomor());
                     projectAssetUsage.setProject(distributionProject);
                     projectAssetUsage.setAssetFuelCost(assetItem.getAssetFuelCost());
                     projectAssetUsage.setAssetUseCost(assetItem.getAssetUseCost());
-                    System.out.println(assetItem.getTipeAset() + "TEST");
                     projectAssetUsage.setTipeAset(assetItem.getTipeAset());
                     projectAssetUsages.add(projectAssetUsage);
                 }
@@ -666,6 +707,19 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Save the project (polymorphic save)
         Project savedProject = projectRepository.save(project);
+
+        // Reserve assets after project is successfully created
+        if (projectRequestDTO.getProjectUseAsset() != null && !projectRequestDTO.getProjectUseAsset().isEmpty()) {
+            List<String> assetIds = projectRequestDTO.getProjectUseAsset().stream()
+                    .map(AssetUsageDTO::getPlatNomor)
+                    .collect(Collectors.toList());
+
+            assetReservationClient.reserveAssets(
+                    assetIds,
+                    savedProject.getId(),
+                    savedProject.getProjectStartDate(),
+                    savedProject.getProjectEndDate());
+        }
 
         // Return appropriate response
         return projectToProjectResponseDetailDTO(savedProject);
@@ -817,10 +871,8 @@ public class ProjectServiceImpl implements ProjectService {
                     // Remove existing asset usages
                     if (distributionProject.getProjectUseAsset() != null
                             && !distributionProject.getProjectUseAsset().isEmpty()) {
-                        // Release assets that were in use
-                        for (ProjectAssetUsage assetUsage : distributionProject.getProjectUseAsset()) {
-                            updateAssetStatus(assetUsage.getPlatNomor(), "Tersedia");
-                        }
+                        // Release assets that were in use by canceling reservations, not directly
+                        // updating status
                         distributionProject.getProjectUseAsset().clear();
                     } else {
                         distributionProject.setProjectUseAsset(new ArrayList<>());
@@ -828,12 +880,14 @@ public class ProjectServiceImpl implements ProjectService {
 
                     // Add new asset usages
                     for (AssetUsageDTO assetItem : updateProjectRequestDTO.getProjectUseAsset()) {
-                        if (!validateAsset(assetItem.getPlatNomor())) {
-                            throw new IllegalArgumentException("Pastikan ID Aset sudah terdaftar dalam sistem");
-                        }
+                        validateAssetAndCheckAvailability(
+                                assetItem.getPlatNomor(),
+                                updateProjectRequestDTO.getProjectStartDate(),
+                                updateProjectRequestDTO.getProjectEndDate(),
+                                updateProjectRequestDTO.getId() // Exclude this project's current reservations
+                        );
 
                         totalPengeluaran += assetItem.getAssetFuelCost() + assetItem.getAssetUseCost();
-                        updateAssetStatus(assetItem.getPlatNomor(), "Dalam Proyek");
 
                         ProjectAssetUsage projectAssetUsage = new ProjectAssetUsage();
                         projectAssetUsage.setPlatNomor(assetItem.getPlatNomor());
@@ -938,9 +992,25 @@ public class ProjectServiceImpl implements ProjectService {
 
         LogProject newLog = addLog(logBuilder.toString());
         project.getProjectLogs().add(newLog);
-        System.out.println(logBuilder.toString());
         // Save the updated project
         Project updatedProject = projectRepository.save(project);
+
+        // After project is updated, update asset reservations
+        if (updateProjectRequestDTO.getProjectUseAsset() != null) {
+            List<String> assetIds = updateProjectRequestDTO.getProjectUseAsset().stream()
+                    .map(AssetUsageDTO::getPlatNomor)
+                    .toList();
+
+            // First release any existing reservations
+            assetReservationClient.updateProjectReservationStatus(updatedProject.getId(), "Batal");
+
+            // Then create new ones
+            assetReservationClient.reserveAssets(
+                    assetIds,
+                    updatedProject.getId(),
+                    updatedProject.getProjectStartDate(),
+                    updatedProject.getProjectEndDate());
+        }
 
         // Return appropriate response
         return projectToProjectResponseDetailDTO(updatedProject);
@@ -1112,7 +1182,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         // Tidak bisa update jika sudah selesai (2) atau batal (3)
         if (currentStatus == 2 || currentStatus == 3) {
-            throw new IllegalArgumentException("Status proyek sudah selesai atau batal, tidak bisa diubah lagi.");
+            throw new IllegalArgumentException("Status proyek sudah selesai atau batal tidak dapat diubah.");
         }
 
         // Tidak bisa kembali ke 0 (Direncanakan) dari status 1 (Dilaksanakan)
@@ -1145,24 +1215,9 @@ public class ProjectServiceImpl implements ProjectService {
         } else if (newStatus == 2) {
             statusText = "Selesai";
             project.setProjectEndDate(new Date());
-            if (project instanceof Distribution) {
-                Distribution distribution = (Distribution) project;
-                for (ProjectAssetUsage asset : distribution.getProjectUseAsset()) {
-                    updateAssetStatus(asset.getPlatNomor(), "Tersedia");
-                }
-            }
-
         } else if (newStatus == 3) {
             statusText = "Batal";
             project.setProjectEndDate(new Date());
-            if (project instanceof Distribution) {
-                Distribution distribution = (Distribution) project;
-                for (ProjectAssetUsage asset : distribution.getProjectUseAsset()) {
-                    updateAssetStatus(asset.getPlatNomor(), "Tersedia");
-                }
-            }
-
-
         }
 
         LogProject newLog = addLog("Mengubah Status menjadi " + statusText);
@@ -1170,6 +1225,14 @@ public class ProjectServiceImpl implements ProjectService {
         project.getProjectLogs().add(newLog);
 
         Project updatedProject = projectRepository.save(project);
+
+        // If project is cancelled, cancel all asset reservations
+        if (newStatus == 3) { // Cancelled
+            assetReservationClient.updateProjectReservationStatus(id, "Batal");
+        } else if (newStatus == 2) { // Completed
+            assetReservationClient.updateProjectReservationStatus(id, "Selesai");
+        }
+
         return projectToProjectResponseDetailDTO(updatedProject);
     }
 
