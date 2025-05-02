@@ -111,7 +111,7 @@ public class ProjectServiceImpl implements ProjectService {
     private ClientDetailDTO fetchClientById(String id) {
         var response = webClientProfile
                 .get()
-                .uri("/api/client/" + id)
+                .uri("/client/" + id)
                 .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<ClientDetailDTO>>() {
@@ -136,7 +136,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientAsset
                     .put()
-                    .uri("/api/asset/" + platNomor)
+                    .uri("/asset/" + platNomor)
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .bodyValue(new AssetUpdateStatusDTO(status))
                     .retrieve()
@@ -178,7 +178,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientAsset
                     .get()
-                    .uri("/api/asset/" + platNomor)
+                    .uri("/asset/" + platNomor)
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
@@ -240,7 +240,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientResource
                     .get()
-                    .uri("/api/resource/find/" + id)
+                    .uri("/resource/find/" + id)
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
@@ -305,7 +305,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientResource
                     .put()
-                    .uri("/api/resource/" + resourceId + "/deduct-stock")
+                    .uri("/resource/" + resourceId + "/deduct-stock")
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .bodyValue(new ResourceStockUpdateDTO(quantity)).retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
@@ -348,7 +348,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             var response = webClientResource
                     .put()
-                    .uri("/api/resource/" + resourceId + "/add-stock")
+                    .uri("/resource/" + resourceId + "/add-stock")
                     .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .bodyValue(new ResourceStockUpdateDTO(quantity))
                     .retrieve()
@@ -819,7 +819,7 @@ public class ProjectServiceImpl implements ProjectService {
                             && !distributionProject.getProjectUseAsset().isEmpty()) {
                         // Release assets that were in use
                         for (ProjectAssetUsage assetUsage : distributionProject.getProjectUseAsset()) {
-                            updateAssetStatus(assetUsage.getPlatNomor(), "Aktif");
+                            updateAssetStatus(assetUsage.getPlatNomor(), "Tersedia");
                         }
                         distributionProject.getProjectUseAsset().clear();
                     } else {
@@ -1050,15 +1050,27 @@ public class ProjectServiceImpl implements ProjectService {
             String idSearch, String projectStatus, String projectType,
             String projectName, String projectClientId, Date projectStartDate,
             Date projectEndDate) throws Exception {
+        final Date adjustedStartDate;
+        if (projectStartDate != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(projectStartDate);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            adjustedStartDate = calendar.getTime();
+        } else {
+            adjustedStartDate = null;
+        }
 
         final Date adjustedEndDate;
         if (projectEndDate != null) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(projectEndDate);
-            calendar.set(Calendar.HOUR_OF_DAY, 23);
-            calendar.set(Calendar.MINUTE, 59);
-            calendar.set(Calendar.SECOND, 59);
-            calendar.set(Calendar.MILLISECOND, 999);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
             adjustedEndDate = calendar.getTime();
         } else {
             adjustedEndDate = null;
@@ -1076,7 +1088,7 @@ public class ProjectServiceImpl implements ProjectService {
                         || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
                 .filter(project -> projectClientId == null
                         || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
-                .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(projectStartDate))
+                .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(adjustedStartDate))
                 .filter(project -> adjustedEndDate == null || !project.getProjectEndDate().after(adjustedEndDate))
                 .collect(Collectors.toList());
 
@@ -1136,7 +1148,7 @@ public class ProjectServiceImpl implements ProjectService {
             if (project instanceof Distribution) {
                 Distribution distribution = (Distribution) project;
                 for (ProjectAssetUsage asset : distribution.getProjectUseAsset()) {
-                    updateAssetStatus(asset.getPlatNomor(), "Aktif");
+                    updateAssetStatus(asset.getPlatNomor(), "Tersedia");
                 }
             }
 
@@ -1146,7 +1158,7 @@ public class ProjectServiceImpl implements ProjectService {
             if (project instanceof Distribution) {
                 Distribution distribution = (Distribution) project;
                 for (ProjectAssetUsage asset : distribution.getProjectUseAsset()) {
-                    updateAssetStatus(asset.getPlatNomor(), "Aktif");
+                    updateAssetStatus(asset.getPlatNomor(), "Tersedia");
                 }
             }
 
