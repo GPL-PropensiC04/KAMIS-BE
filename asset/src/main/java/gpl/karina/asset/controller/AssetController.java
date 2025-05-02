@@ -111,7 +111,7 @@ public class AssetController {
         }
     }
 
-    @RequestMapping(value = "/addAsset", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/addAsset", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponseDTO<AssetResponseDTO>> addAsset(
             @Valid @ModelAttribute AssetAddDTO assetTempDTO, BindingResult bindingResult) {
         BaseResponseDTO<AssetResponseDTO> response = new BaseResponseDTO<>();
