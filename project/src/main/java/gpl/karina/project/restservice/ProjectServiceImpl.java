@@ -379,15 +379,19 @@ public class ProjectServiceImpl implements ProjectService {
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
 
     private Date adjustedEndDate(Date endDate) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(endDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
+        // For consistency with front-end display, keep at 00:00:00 instead of 23:59:59
+        // This prevents timezone conversions from pushing the date to the next day
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
 
@@ -962,7 +966,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (updateProjectRequestDTO.getProjectDeliveryAddress() != null) {
             project.setProjectDeliveryAddress(updateProjectRequestDTO.getProjectDeliveryAddress());
         }
-        
+
         if (updateProjectRequestDTO.getProjectStartDate() != null) {
             project.setProjectStartDate(adjustedStartDate(updateProjectRequestDTO.getProjectStartDate()));
         }
