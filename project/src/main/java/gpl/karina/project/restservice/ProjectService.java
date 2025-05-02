@@ -9,14 +9,18 @@ import java.util.Date;
 
 public interface ProjectService {
     public ProjectResponseWrapperDTO addProject(AddProjectRequestDTO projectRequestDTO) throws Exception;
+
     public ProjectResponseWrapperDTO updateProject(UpdateProjectRequestDTO UpdateProjectRequestDTO) throws Exception;
+
     public List<listProjectResponseDTO> getAllProject(
-        String idSearch, String projectStatus, String projectType,
-        String projectName, String projectClientId, Date projectStartDate,
-        Date projectEndDate
-    ) throws Exception;
+            String idSearch, String projectStatus, String projectType,
+            String projectName, String projectClientId, Date projectStartDate,
+            Date projectEndDate, Long startNominal, Long endNominal) throws Exception;
+
     public ProjectResponseWrapperDTO getProjectById(String id) throws Exception;
+
     public ProjectResponseWrapperDTO updateProjectStatus(String id, Integer projectStatus) throws Exception;
+
     public ProjectResponseWrapperDTO updateProjectPayment(String id, Integer projectPaymentStatus) throws Exception;
     // public ProjectResponseDTO getProjectById(String id) throws Exception;
 }

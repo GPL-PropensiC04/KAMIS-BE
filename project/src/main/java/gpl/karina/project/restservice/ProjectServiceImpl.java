@@ -136,50 +136,6 @@ public class ProjectServiceImpl implements ProjectService {
      * @throws IllegalArgumentException if asset is invalid
      */
 
-    private void updateAssetStatus(String platNomor, String status) {
-        try {
-            var response = webClientAsset
-                    .put()
-                    .uri("/asset/" + platNomor)
-                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
-                    .bodyValue(new AssetUpdateStatusDTO(status))
-                    .retrieve()
-                    .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                        if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
-                            return clientResponse.bodyToMono(String.class)
-                                    .flatMap(body -> Mono.error(new IllegalArgumentException(
-                                            "Gagal memperbarui status aset: " + body)));
-                        }
-                        return Mono.error(new IllegalArgumentException(
-                                "Gagal memperbarui status aset: " + clientResponse.statusCode()));
-                    })
-                    .onStatus(HttpStatusCode::is5xxServerError, serverResponse -> {
-                        return Mono.error(new IllegalArgumentException(
-                                "Layanan aset sedang tidak tersedia, silakan coba lagi nanti"));
-                    })
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetDetailDTO>>() {
-                    })
-                    .block();
-
-            if (response == null || response.getData() == null) {
-                throw new IllegalArgumentException("Tidak ada respons yang valid dari layanan aset");
-            }
-
-            logger.info("Successfully updated asset status to {}", status);
-        } catch (WebClientRequestException e) {
-            logger.error("Network error updating asset status: {}", e.getMessage());
-            throw new IllegalArgumentException("Gagal terhubung ke layanan aset: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Validates an asset by its plate number
-     * 
-     * @param platNomor Plate number of the asset
-     * @return true if valid, false otherwise
-     * @throws IllegalArgumentException if asset is invalid
-     */
-
     private Boolean validateAsset(String platNomor) {
         try {
             var response = webClientAsset
@@ -417,6 +373,24 @@ public class ProjectServiceImpl implements ProjectService {
         return log; // Just create it, don't save it
     }
 
+    private Date adjustedStartDate(Date startDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        return calendar.getTime();
+    }
+
+    private Date adjustedEndDate(Date endDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(endDate);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        return calendar.getTime();
+    }
+
     private LogProjectResponseDTO logProjectToLogProjectResponseDTO(LogProject logProject) {
         LogProjectResponseDTO logProjectResponseDTO = new LogProjectResponseDTO();
         logProjectResponseDTO.setId(logProject.getId());
@@ -433,7 +407,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectStartDate(project.getProjectStartDate());
         projectResponseDTO.setProjectEndDate(project.getProjectEndDate());
         projectResponseDTO.setProjectType(project.getProjectType());
-        projectResponseDTO.setProjectPaymentStatus(0);
+        projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
         projectResponseDTO.setProjectStatus(project.getProjectStatus());
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
         projectResponseDTO.setProjectDescription(project.getProjectDescription());
@@ -443,6 +417,13 @@ public class ProjectServiceImpl implements ProjectService {
             Distribution distributionProject = (Distribution) project;
             Long totalPengeluaran = distributionProject.getProjectTotalPengeluaran();
             projectResponseDTO.setProjectTotalPengeluaran(totalPengeluaran);
+            projectResponseDTO.setProjectProfit(
+                    distributionProject.getProjectTotalPemasukkan() - distributionProject.getProjectTotalPengeluaran());
+        }
+
+        if (project instanceof Sell) {
+            projectResponseDTO.setProjectTotalPengeluaran(0L);
+            projectResponseDTO.setProjectProfit(project.getProjectTotalPemasukkan());
         }
 
         return projectResponseDTO;
@@ -1119,52 +1100,80 @@ public class ProjectServiceImpl implements ProjectService {
     public List<listProjectResponseDTO> getAllProject(
             String idSearch, String projectStatus, String projectType,
             String projectName, String projectClientId, Date projectStartDate,
-            Date projectEndDate) throws Exception {
-        final Date adjustedStartDate;
+            Date projectEndDate, Long startNominal, Long endNominal) throws Exception {
+
+        final Date adjustedStartDateFinal;
         if (projectStartDate != null) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(projectStartDate);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MILLISECOND, 0);
-            adjustedStartDate = calendar.getTime();
+            adjustedStartDateFinal = adjustedStartDate(projectStartDate);
         } else {
-            adjustedStartDate = null;
+            adjustedStartDateFinal = null;
         }
 
-        final Date adjustedEndDate;
+        final Date adjustedEndDateFinal;
         if (projectEndDate != null) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(projectEndDate);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.set(Calendar.MILLISECOND, 0);
-            adjustedEndDate = calendar.getTime();
+            adjustedEndDateFinal = adjustedEndDate(projectEndDate);
         } else {
-            adjustedEndDate = null;
+            adjustedEndDateFinal = null;
         }
+
+        // Handle combined search for ID or name
+        final String searchTerm = idSearch != null ? idSearch.toLowerCase() : null;
+        final String nameSearch = projectName != null ? projectName.toLowerCase() : null;
 
         List<Project> projects = projectRepository.findAll();
 
         List<Project> filteredProjects = projects.stream()
-                .filter(project -> idSearch == null || project.getId().toLowerCase().contains(idSearch.toLowerCase()))
+                // If search term is provided, check if it matches either ID or Name
+                .filter(project -> {
+                    if (searchTerm == null && nameSearch == null) {
+                        return true; // No search term provided, include all
+                    }
+
+                    boolean matchesId = searchTerm != null &&
+                            project.getId().toLowerCase().contains(searchTerm);
+                    boolean matchesName = nameSearch != null &&
+                            project.getProjectName().toLowerCase().contains(nameSearch);
+                    boolean searchMatch = searchTerm != null &&
+                            (project.getId().toLowerCase().contains(searchTerm) ||
+                                    project.getProjectName().toLowerCase().contains(searchTerm));
+
+                    return matchesId || matchesName || searchMatch;
+                })
                 .filter(project -> projectStatus == null
                         || String.valueOf(project.getProjectStatus()).equalsIgnoreCase(projectStatus))
                 .filter(project -> projectType == null
                         || project.getProjectType().toString().equalsIgnoreCase(projectType))
-                .filter(project -> projectName == null
-                        || project.getProjectName().toLowerCase().contains(projectName.toLowerCase()))
                 .filter(project -> projectClientId == null
                         || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
-                .filter(project -> projectStartDate == null || !project.getProjectStartDate().before(adjustedStartDate))
-                .filter(project -> adjustedEndDate == null || !project.getProjectEndDate().after(adjustedEndDate))
+                .filter(project -> adjustedStartDateFinal == null
+                        || !project.getProjectStartDate().before(adjustedStartDateFinal))
+                .filter(project -> adjustedEndDateFinal == null
+                        || !project.getProjectEndDate().after(adjustedEndDateFinal))
+                .filter(project -> {
+                    // Calculate profit for filtering
+                    Long profit = calculateProjectProfit(project);
+                    return (startNominal == null || profit >= startNominal) &&
+                            (endNominal == null || profit <= endNominal);
+                })
                 .collect(Collectors.toList());
 
         return filteredProjects.stream()
                 .map(this::projectToProjectResponseAllDTO)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper method to calculate project profit
+     */
+    private Long calculateProjectProfit(Project project) {
+        if (project instanceof Distribution) {
+            Distribution distribution = (Distribution) project;
+            return distribution.getProjectTotalPemasukkan() - distribution.getProjectTotalPengeluaran();
+        } else if (project instanceof Sell) {
+            // For Sell projects, profit is the same as income since there are no expenses
+            return project.getProjectTotalPemasukkan();
+        }
+        return 0L; // Default case
     }
 
     @Override

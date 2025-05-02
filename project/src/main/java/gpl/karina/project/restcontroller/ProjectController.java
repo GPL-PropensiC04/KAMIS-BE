@@ -167,11 +167,14 @@ public class ProjectController {
             @RequestParam(name = "namaProject", required = false) String projectName,
             @RequestParam(name = "clientProject", required = false) String projectClientId,
             @RequestParam(name = "tanggalMulai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectStartDate,
-            @RequestParam(name = "tanggalSelesai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectEndDate) {
+            @RequestParam(name = "tanggalSelesai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectEndDate,
+            @RequestParam(name = "startNominal", required = false) Long startNominal,
+            @RequestParam(name = "endNominal", required = false) Long endNominal) {
         BaseResponseDTO<List<listProjectResponseDTO>> response = new BaseResponseDTO<>();
         try {
             List<listProjectResponseDTO> listProject = projectService.getAllProject(idSearch, projectStatus,
-                    projectType, projectName, projectClientId, projectStartDate, projectEndDate);
+                    projectType, projectName, projectClientId, projectStartDate, projectEndDate, startNominal,
+                    endNominal);
             if (listProject.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Tidak ada proyek yang ditemukan");

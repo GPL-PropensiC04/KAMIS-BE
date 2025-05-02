@@ -31,4 +31,5 @@ public class listProjectResponseDTO {
 
     private Long projectTotalPemasukkan;
     private Long projectTotalPengeluaran;
+    private Long projectProfit;
 }
