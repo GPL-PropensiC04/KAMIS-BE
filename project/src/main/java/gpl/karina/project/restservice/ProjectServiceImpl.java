@@ -638,7 +638,7 @@ public class ProjectServiceImpl implements ProjectService {
             String id = "P" + String.format("%03d", projectNumber) + todayFormatted;
             sellProject.setId(id);
 
-            // Handle resource usage
+            // Handle resource usagef
             Long totalPemasukkan = 0L;
             List<ProjectResourceUsage> projectResourceUsages = new ArrayList<>();
 
