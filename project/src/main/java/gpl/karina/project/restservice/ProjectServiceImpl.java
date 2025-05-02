@@ -678,8 +678,8 @@ public class ProjectServiceImpl implements ProjectService {
         project.setProjectClientId(projectRequestDTO.getProjectClientId());
         project.setProjectType(projectRequestDTO.getProjectType());
         project.setProjectDeliveryAddress(projectRequestDTO.getProjectDeliveryAddress());
-        project.setProjectStartDate(projectRequestDTO.getProjectStartDate());
-        project.setProjectEndDate(projectRequestDTO.getProjectEndDate());
+        project.setProjectStartDate(adjustedStartDate(projectRequestDTO.getProjectStartDate()));
+        project.setProjectEndDate(adjustedEndDate(projectRequestDTO.getProjectEndDate()));
         project.setCreatedDate(today);
         project.setProjectLogs(new ArrayList<>());
 
@@ -962,13 +962,13 @@ public class ProjectServiceImpl implements ProjectService {
         if (updateProjectRequestDTO.getProjectDeliveryAddress() != null) {
             project.setProjectDeliveryAddress(updateProjectRequestDTO.getProjectDeliveryAddress());
         }
-
+        
         if (updateProjectRequestDTO.getProjectStartDate() != null) {
-            project.setProjectStartDate(updateProjectRequestDTO.getProjectStartDate());
+            project.setProjectStartDate(adjustedStartDate(updateProjectRequestDTO.getProjectStartDate()));
         }
 
         if (updateProjectRequestDTO.getProjectEndDate() != null) {
-            project.setProjectEndDate(updateProjectRequestDTO.getProjectEndDate());
+            project.setProjectEndDate(adjustedEndDate(updateProjectRequestDTO.getProjectEndDate()));
         }
 
         LogProject newLog = addLog(logBuilder.toString());
