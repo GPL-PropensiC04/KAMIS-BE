@@ -3,7 +3,7 @@ package gpl.karina.resource.security;
 // import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -33,8 +33,12 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/resource/viewall").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")
                         .requestMatchers("/api/resource/update/**").hasAnyAuthority("Operasional", "Admin")
                         .requestMatchers("/api/resource/addToDb/**").hasAnyAuthority("Operasional", "Admin")
-                        .requestMatchers("/api/resource/find/**").hasAnyAuthority("Operasional", "Admin")
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/resource/add-supplier").hasAnyAuthority("Operasional", "Admin")
+                        .requestMatchers("/api/resource/update-supplier").hasAnyAuthority("Operasional", "Admin")
+                        .requestMatchers("/api/resource/find/**").hasAnyAuthority("Operasional", "Admin", "Direksi", "Finance")
+                        .requestMatchers(HttpMethod.PUT, "/api/resource/{idResource:[\\d]+}/deduct-stock").hasAnyAuthority("Operasional", "Admin")
+                        .requestMatchers(HttpMethod.PUT, "/api/resource/{idResource:[\\d]+}/add-stock").hasAnyAuthority("Operasional", "Admin")      
+                        .requestMatchers("/api/resource/**").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")                                      .anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 

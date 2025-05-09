@@ -2,6 +2,7 @@ package gpl.karina.purchase.restdto.response;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -14,7 +15,7 @@ public class PurchaseResponseDTO {
     private Date purchaseSubmissionDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
     private Date purchaseUpdateDate;
-    private String purchaseSupplier;
+    private UUID purchaseSupplier;
     private String purchaseType;
     private String purchaseStatus;
     private List<ResourceTempResponseDTO> purchaseResource;

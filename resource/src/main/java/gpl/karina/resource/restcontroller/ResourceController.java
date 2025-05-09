@@ -7,7 +7,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,8 +16,10 @@ import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.exception.DataNotFound;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.request.UpdateResourceDTO;
+import gpl.karina.resource.restdto.request.UpdateResourceStockDTO;
 import gpl.karina.resource.restdto.response.ResourceResponseDTO;
 import gpl.karina.resource.restdto.response.BaseResponseDTO;
+import gpl.karina.resource.restdto.request.AddSupplierIdDTO;
 import gpl.karina.resource.restservice.ResourceRestService;
 import jakarta.validation.Valid;
 
@@ -26,8 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Date;
 import java.util.List;
-
-import gpl.karina.resource.exception.UserUnauthorized;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/resource")
@@ -74,10 +75,38 @@ public class ResourceController {
 
     }
 
-    @GetMapping("/test")
-    public String test() {
-        return "Hello World";
+    @GetMapping("/find-by-supplier/{idSupplier}")
+    public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllSuplierResosource(@PathVariable(name = "idSupplier") String idSupplier) {
+        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();    
+        try {
+            // Mengirim token ke service
+            List<ResourceResponseDTO> resources = resourceRestService.getAllSuplierResosource(UUID.fromString(idSupplier));
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("OK");
+            baseResponseDTO.setData(resources);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (UserNotFound e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        } catch (UserUnauthorized e) {
+            baseResponseDTO.setStatus(HttpStatus.FORBIDDEN.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        }
     }
+
 
     @GetMapping("/viewall")
     public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllResources() {
@@ -144,6 +173,64 @@ public class ResourceController {
         }
     }
 
+    @PutMapping("/{idResource}/add-stock")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceStock(
+            @PathVariable("idResource") Long idResource,
+            @Valid @RequestBody UpdateResourceStockDTO stockOp) {
+        
+        BaseResponseDTO<ResourceResponseDTO> response = new BaseResponseDTO<>();
+        
+        try {
+            ResourceResponseDTO resource = resourceRestService.addResourceStock(idResource, stockOp.getQuantity());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Stock berhasil ditambahkan");
+            response.setData(resource);
+            response.setTimestamp(new Date());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setData(null);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan: " + e.getMessage());
+            response.setData(null);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/{idResource}/deduct-stock")
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> deductResourceStock(
+            @PathVariable("idResource") Long idResource,
+            @Valid @RequestBody UpdateResourceStockDTO stockOp) {
+        
+        BaseResponseDTO<ResourceResponseDTO> response = new BaseResponseDTO<>();
+        
+        try {
+            ResourceResponseDTO resource = resourceRestService.deductResourceStock(idResource, stockOp.getQuantity());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Stock berhasil dikurangi");
+            response.setData(resource);
+            response.setTimestamp(new Date());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setData(null);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan: " + e.getMessage());
+            response.setData(null);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/find/{idResource}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable(name = "idResource") Long idResource) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
@@ -157,7 +244,7 @@ public class ResourceController {
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     
-        } catch (UserNotFound e) {
+        } catch (IllegalArgumentException | UserNotFound e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());
             baseResponseDTO.setData(null);
@@ -179,7 +266,7 @@ public class ResourceController {
     }
 
     @PutMapping("/addToDb/{idResource}/{stockUpdate}")
-    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable Long idResource, @PathVariable Integer stockUpdate) {
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable(name = "idResource") Long idResource, @PathVariable(name = "stockUpdate") Integer stockUpdate) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
     
         try {
@@ -211,4 +298,68 @@ public class ResourceController {
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PutMapping("/add-supplier")
+    public ResponseEntity<BaseResponseDTO<Void>> addSupplierId(
+            @Valid @RequestBody AddSupplierIdDTO dto,
+            BindingResult bindingResult) {
+
+        BaseResponseDTO<Void> response = new BaseResponseDTO<>();
+
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMessages = new StringBuilder();
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                errorMessages.append(error.getDefaultMessage()).append("; ");
+            }
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(errorMessages.toString());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        try {
+            resourceRestService.addSupplierId(dto.getSupplierId(), dto.getResourceId());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Data supplier berhasil diperbarui");
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/update-supplier")
+    public ResponseEntity<BaseResponseDTO<Void>> updateSupplierId(
+            @Valid @RequestBody AddSupplierIdDTO dto,
+            BindingResult bindingResult) {
+
+        BaseResponseDTO<Void> response = new BaseResponseDTO<>();
+
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMessages = new StringBuilder();
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                errorMessages.append(error.getDefaultMessage()).append("; ");
+            }
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(errorMessages.toString());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            resourceRestService.updateSupplierId(dto.getSupplierId(), dto.getResourceId());
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Data supplier berhasil diupdate");
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

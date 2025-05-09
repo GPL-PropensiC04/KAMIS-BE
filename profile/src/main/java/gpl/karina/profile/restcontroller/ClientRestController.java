@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gpl.karina.profile.restdto.request.AddClientRequestDTO;
 import gpl.karina.profile.restdto.request.UpdateClientRequestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
+import gpl.karina.profile.restdto.response.ClientListResponseDTO;
 import gpl.karina.profile.restdto.response.ClientResponseDTO;
 import gpl.karina.profile.restservice.ClientService;
 import jakarta.validation.Valid;
@@ -33,7 +35,7 @@ public class ClientRestController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> addPurchase(
+    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> addClient(
             @Valid @RequestBody AddClientRequestDTO addClientRequestDTO, BindingResult bindingResult) {
         BaseResponseDTO<ClientResponseDTO> response = new BaseResponseDTO<>();
         if (bindingResult.hasErrors()) {
@@ -63,21 +65,36 @@ public class ClientRestController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> listClient() {
-        var baseResponseDTO = new BaseResponseDTO<List<ClientResponseDTO>>();
-        List<ClientResponseDTO> listClient = clientService.getAllClient();
+    public ResponseEntity<BaseResponseDTO<List<ClientListResponseDTO>>> listClient(
+            @RequestParam(name = "nameClient", required = false) String nameClient,
+            @RequestParam(name = "typeClient", required = false) Boolean typeClient,
+            @RequestParam(name = "minProfit", required = false) Long minProfit,
+            @RequestParam(name = "maxProfit", required = false) Long maxProfit) {
+        var baseResponseDTO = new BaseResponseDTO<List<ClientListResponseDTO>>();
+        List<ClientListResponseDTO> listClient;
+        String message;
+
+        if (nameClient == null && typeClient == null) {
+            // If no filters, return all clients
+            listClient = clientService.getAllClient();
+            message = "List Client berhasil ditemukan";
+        } else {
+            // If filters present, return filtered clients
+            listClient = clientService.filterClients(nameClient, typeClient, minProfit, maxProfit);
+            message = "List Client berhasil difilter";
+        }
 
         baseResponseDTO.setStatus(HttpStatus.OK.value());
         baseResponseDTO.setData(listClient);
-        baseResponseDTO.setMessage(String.format("List Client berhasil ditemukan"));
+        baseResponseDTO.setMessage(message);
         baseResponseDTO.setTimestamp(new Date());
         return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getClientDetail(@PathVariable("id") UUID id) {
+    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> getClientDetail(@PathVariable("id") UUID id) {
         var baseResponseDTO = new BaseResponseDTO<ClientResponseDTO>();
-        
+
         try {
             ClientResponseDTO client = clientService.getClientById(id);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -86,6 +103,7 @@ public class ClientRestController {
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setData(null);
             baseResponseDTO.setMessage("Client dengan ID " + id + " tidak ditemukan");
@@ -95,7 +113,7 @@ public class ClientRestController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> updateClient(@PathVariable UUID id, 
+    public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> updateClient(@PathVariable UUID id,
             @RequestBody UpdateClientRequestDTO updateClientRequestDTO) {
         var baseResponseDTO = new BaseResponseDTO<ClientResponseDTO>();
         try {

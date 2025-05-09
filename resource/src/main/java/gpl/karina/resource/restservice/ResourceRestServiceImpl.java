@@ -1,12 +1,11 @@
 package gpl.karina.resource.restservice;
 
 
-import gpl.karina.resource.exception.UserNotFound;
-import gpl.karina.resource.exception.UserUnauthorized;
 import gpl.karina.resource.model.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -14,8 +13,10 @@ import gpl.karina.resource.repository.ResourceRepository;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.request.UpdateResourceDTO;
 import gpl.karina.resource.restdto.response.ResourceResponseDTO;
+import jakarta.transaction.Transactional;
 
 @Service
+@Transactional
 public class ResourceRestServiceImpl implements ResourceRestService {
     private final ResourceRepository resourceRepository;
 
@@ -30,8 +31,10 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         addResourceResponseDTO.setResourceDescription(resource.getResourceDescription());   
         addResourceResponseDTO.setResourceStock(resource.getResourceStock());
         addResourceResponseDTO.setResourcePrice(resource.getResourcePrice());
+        // addResourceResponseDTO.setResourceSupplierId(resource.getSupplierId());
         return addResourceResponseDTO;
     }
+
     @Override
     public ResourceResponseDTO addResource(AddResourceDTO addResourceDTO) {
         if (addResourceDTO.getResourcePrice() < 0) {
@@ -46,6 +49,9 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         if (addResourceDTO.getResourceDescription() == null) {
             throw new IllegalArgumentException("Deskripsi barang tidak boleh kosong");
         }
+        if (addResourceDTO.getResourceSupplierId() == null) {
+            throw new IllegalArgumentException("Supplier ID tidak boleh kosong");
+        }
         Resource resource = new Resource();
         if (resourceRepository.findByResourceName(addResourceDTO.getResourceName()) != null) {
             throw new IllegalArgumentException("Nama barang sudah ada di database");
@@ -54,6 +60,9 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         resource.setResourceDescription(addResourceDTO.getResourceDescription());
         resource.setResourceStock(addResourceDTO.getResourceStock());
         resource.setResourcePrice(addResourceDTO.getResourcePrice());
+        List<UUID> supplierIds = new ArrayList<>();
+        supplierIds.add(UUID.fromString(addResourceDTO.getResourceSupplierId()));
+        resource.setSupplierId(supplierIds);
         
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
@@ -61,19 +70,6 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     @Override
     public List<ResourceResponseDTO> getAllResources() {
-        // // Verifikasi token dan dapatkan informasi pengguna
-        // EndUserResponseDTO currentUser = profileService.getCurrentUser(token);
-        // if (currentUser == null) {
-        //     throw new UserNotFound("You Must Login First");
-        // }
-    
-        // // Periksa apakah pengguna memiliki peran ADMIN atau NURSE
-        // String role = currentUser.getRole();
-        // if (!"ADMIN".equalsIgnoreCase(role) && !"NURSE".equalsIgnoreCase(role)) {
-        //     throw new UserUnauthorized("You are not authorized to view assets");
-        // }
-    
-        // Mengambil semua janji dari database
         List<Resource> resources = resourceRepository.findAll();
         List<ResourceResponseDTO> responseDTOs = new ArrayList<>();
         resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
@@ -92,7 +88,66 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         }     
         resource.setResourceDescription(updateResourceDTO.getResourceDescription());
         resource.setResourcePrice(updateResourceDTO.getResourcePrice());
+        resource.setResourceStock(updateResourceDTO.getResourceStock());
         
+        resourceRepository.save(resource);
+        return resourceToResourceResponseDTO(resource);
+    }
+
+    /**
+     * Adds stock to a resource
+     * @param idResource The resource ID
+     * @param quantity The quantity to add (must be positive)
+     * @return Updated resource response
+     */
+    @Override
+    public ResourceResponseDTO addResourceStock(Long idResource, Integer quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Jumlah penambahan stok harus positif");
+        }
+        
+        Resource resource = resourceRepository.findByIdWithPessimisticLock(idResource)
+            .orElseThrow(() -> new IllegalArgumentException("Resource tidak ditermukan"));
+        
+        // Add the stock
+        resource.setResourceStock(resource.getResourceStock() + quantity);
+        
+        // Save and return
+        resourceRepository.save(resource);
+        return resourceToResourceResponseDTO(resource);
+    }
+
+    /**
+     * Deducts stock from a resource
+     * @param idResource The resource ID
+     * @param quantity The quantity to deduct (must be positive)
+     * @return Updated resource response
+     * @throws IllegalArgumentException if insufficient stock
+     */
+    @Override
+    public ResourceResponseDTO deductResourceStock(Long idResource, Integer quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Jumlah pengurangan stok harus positif");
+        }
+        
+        Resource resource = resourceRepository.findByIdWithPessimisticLock(idResource)
+            .orElseThrow(() -> new IllegalArgumentException("Resource tidak ditermukan"));
+        
+        // Resource resource = resourceRepository.findById(idResource)
+        //     .orElseThrow(() -> new IllegalArgumentException("Resource tidak ditemukan"));
+
+        // Check if we have enough stock
+        int newStock = resource.getResourceStock() - quantity;
+        if (newStock < 0) {
+            throw new IllegalArgumentException(
+                "Stock tidak mencukupi. Tersedia: " + resource.getResourceStock() + 
+                ", permintaan: " + quantity);
+        }
+        
+        // Update the stock
+        resource.setResourceStock(newStock);
+        
+        // Save and return
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
     }
@@ -112,4 +167,75 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
     }
+
+    @Override
+    public List<ResourceResponseDTO> getAllSuplierResosource(UUID idSupplier) {
+        List<Resource> resources = resourceRepository.findBySupplierId(idSupplier);
+        List<ResourceResponseDTO> responseDTOs = new ArrayList<>();
+        resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
+        return responseDTOs;
+    }
+
+    @Override
+    public Void addSupplierId(UUID supplierId, List<Long> resourceIdList) {
+        for (Long resourceId : resourceIdList) {
+            Resource resource = resourceRepository.findById(resourceId)
+                    .orElseThrow(() -> new IllegalArgumentException("Resource dengan ID " + resourceId + " tidak ditemukan."));
+    
+            List<UUID> supplierIds = resource.getSupplierId();
+            if (supplierIds == null) {
+                supplierIds = new ArrayList<>();
+                resource.setSupplierId(supplierIds);
+            }
+            
+            if (!supplierIds.contains(supplierId)) {
+                supplierIds.add(supplierId);
+                resourceRepository.save(resource);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void updateSupplierId(UUID supplierId, List<Long> resourceIdList) {
+        // Step 1: Resource yang sudah mengandung supplierId
+        List<Resource> existingResources = resourceRepository.findBySupplierId(supplierId);
+
+        // Step 2: Hapus supplierId dari resource yang tidak ada di resourceIdList
+        for (Resource resource : existingResources) {
+            if (!resourceIdList.contains(resource.getId())) {
+                List<UUID> supplierIds = resource.getSupplierId();
+                if (supplierIds != null && supplierIds.contains(supplierId)) {
+                    supplierIds.remove(supplierId);
+                    resourceRepository.save(resource);
+                }
+            }
+        }
+
+        // Step 3: Tambahkan supplierId ke resource yang baru
+        for (Long resourceId : resourceIdList) {
+            boolean alreadyAssociated = existingResources.stream()
+                    .anyMatch(resource -> resource.getId().equals(resourceId));
+
+            if (!alreadyAssociated) {
+                Resource resource = resourceRepository.findById(resourceId)
+                        .orElseThrow(() -> new IllegalArgumentException("Resource dengan ID " + resourceId + " tidak ditemukan."));
+
+                List<UUID> supplierIds = resource.getSupplierId();
+                if (supplierIds == null) {
+                    supplierIds = new ArrayList<>();
+                    resource.setSupplierId(supplierIds);
+                }
+
+                if (!supplierIds.contains(supplierId)) {
+                    supplierIds.add(supplierId);
+                    resourceRepository.save(resource);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    
 }
