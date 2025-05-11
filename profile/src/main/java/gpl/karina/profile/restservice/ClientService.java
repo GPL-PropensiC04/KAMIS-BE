@@ -6,6 +6,7 @@ import java.util.UUID;
 import gpl.karina.profile.restdto.request.AddClientRequestDTO;
 import gpl.karina.profile.restdto.request.UpdateClientRequestDTO;
 import gpl.karina.profile.restdto.response.ClientResponseDTO;
+import gpl.karina.profile.restdto.response.PageResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
 
 public interface ClientService {

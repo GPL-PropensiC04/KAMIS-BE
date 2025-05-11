@@ -6,16 +6,20 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import gpl.karina.profile.model.Client;
 import gpl.karina.profile.repository.ClientRepository;
 import gpl.karina.profile.restdto.request.AddClientRequestDTO;
 import gpl.karina.profile.restdto.request.UpdateClientRequestDTO;
 import gpl.karina.profile.restdto.response.ClientResponseDTO;
+import gpl.karina.profile.restdto.response.PageResponseDTO;
 import gpl.karina.profile.restdto.response.ProjectResponseDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
@@ -197,4 +201,5 @@ public class ClientServiceImpl implements ClientService {
 
         return clientListResponseDTO;
     }
+
 }
