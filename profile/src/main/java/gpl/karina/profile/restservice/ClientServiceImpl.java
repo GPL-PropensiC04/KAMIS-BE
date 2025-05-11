@@ -6,20 +6,16 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import gpl.karina.profile.model.Client;
 import gpl.karina.profile.repository.ClientRepository;
 import gpl.karina.profile.restdto.request.AddClientRequestDTO;
 import gpl.karina.profile.restdto.request.UpdateClientRequestDTO;
 import gpl.karina.profile.restdto.response.ClientResponseDTO;
-import gpl.karina.profile.restdto.response.PageResponseDTO;
 import gpl.karina.profile.restdto.response.ProjectResponseDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
@@ -200,59 +196,5 @@ public class ClientServiceImpl implements ClientService {
         clientListResponseDTO.setTotalProfit(totalProfit);
 
         return clientListResponseDTO;
-    }
-
-    @Override
-    public PageResponseDTO<ClientListResponseDTO> getAllClientPaginated(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Client> clientPage = clientRepository.findAll(pageable);
-        
-        List<ClientListResponseDTO> clientDTOs = clientPage.getContent().stream()
-                .map(this::listClientToClientResponseDTO)
-                .toList();
-        
-        return new PageResponseDTO<>(
-                clientDTOs,
-                clientPage.getNumber(),
-                clientPage.getSize(),
-                clientPage.getTotalElements(),
-                clientPage.getTotalPages(),
-                clientPage.isLast()
-        );
-    }
-
-    @Override
-    public PageResponseDTO<ClientListResponseDTO> filterClientsPaginated(
-            String nameClient, Boolean typeClient, Long minProfit, Long maxProfit, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Client> clientPage;
-        
-        if (nameClient != null && typeClient != null) {
-            clientPage = clientRepository.findByNameClientContainingIgnoreCaseAndTypeClient(nameClient, typeClient, pageable);
-        } else if (nameClient != null) {
-            clientPage = clientRepository.findByNameClientContainingIgnoreCase(nameClient, pageable);
-        } else if (typeClient != null) {
-            clientPage = clientRepository.findByTypeClient(typeClient, pageable);
-        } else {
-            clientPage = clientRepository.findAll(pageable);
-        }
-        
-        List<ClientListResponseDTO> clientDTOs = clientPage.getContent().stream()
-                .map(this::listClientToClientResponseDTO)
-                .filter(dto -> (minProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() >= minProfit)))
-                .filter(dto -> (maxProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() <= maxProfit)))
-                .toList();
-        
-        // Note: The profit filtering happens in memory, so the pagination might not be 100% accurate
-        // A better solution would involve moving profit filtering to a JOIN query or similar
-        
-        return new PageResponseDTO<>(
-                clientDTOs,
-                clientPage.getNumber(),
-                clientPage.getSize(),
-                clientPage.getTotalElements(),
-                clientPage.getTotalPages(),
-                clientPage.isLast()
-        );
     }
 }
