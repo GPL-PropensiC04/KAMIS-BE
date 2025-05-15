@@ -22,7 +22,6 @@ import gpl.karina.profile.restdto.request.UpdateClientRequestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
 import gpl.karina.profile.restdto.response.ClientResponseDTO;
-import gpl.karina.profile.restdto.response.PageResponseDTO;
 import gpl.karina.profile.restservice.ClientService;
 import jakarta.validation.Valid;
 
@@ -66,30 +65,27 @@ public class ClientRestController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<BaseResponseDTO<PageResponseDTO<ClientListResponseDTO>>> listClient(
+    public ResponseEntity<BaseResponseDTO<List<ClientListResponseDTO>>> listClient(
             @RequestParam(name = "nameClient", required = false) String nameClient,
             @RequestParam(name = "typeClient", required = false) Boolean typeClient,
             @RequestParam(name = "minProfit", required = false) Long minProfit,
-            @RequestParam(name = "maxProfit", required = false) Long maxProfit,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size) {
-        
-        var baseResponseDTO = new BaseResponseDTO<PageResponseDTO<ClientListResponseDTO>>();
-        PageResponseDTO<ClientListResponseDTO> pageResult;
+            @RequestParam(name = "maxProfit", required = false) Long maxProfit) {
+        var baseResponseDTO = new BaseResponseDTO<List<ClientListResponseDTO>>();
+        List<ClientListResponseDTO> listClient;
         String message;
 
-        if (nameClient == null && typeClient == null && minProfit == null && maxProfit == null) {
-            // If no filters, return all clients with pagination
-            pageResult = clientService.getAllClientPaginated(page, size);
+        if (nameClient == null && typeClient == null) {
+            // If no filters, return all clients
+            listClient = clientService.getAllClient();
             message = "List Client berhasil ditemukan";
         } else {
-            // If filters present, return filtered clients with pagination
-            pageResult = clientService.filterClientsPaginated(nameClient, typeClient, minProfit, maxProfit, page, size);
+            // If filters present, return filtered clients
+            listClient = clientService.filterClients(nameClient, typeClient, minProfit, maxProfit);
             message = "List Client berhasil difilter";
         }
 
         baseResponseDTO.setStatus(HttpStatus.OK.value());
-        baseResponseDTO.setData(pageResult);
+        baseResponseDTO.setData(listClient);
         baseResponseDTO.setMessage(message);
         baseResponseDTO.setTimestamp(new Date());
         return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
