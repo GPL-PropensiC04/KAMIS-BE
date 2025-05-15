@@ -15,7 +15,4 @@ public interface ClientService {
     ClientResponseDTO getClientById(UUID id) throws Exception;
     ClientResponseDTO updateClient(UUID id, UpdateClientRequestDTO updateClientRequestDTO);
     List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient, Long minProfit, Long maxProfit);
-    PageResponseDTO<ClientListResponseDTO> getAllClientPaginated(int page, int size);
-    PageResponseDTO<ClientListResponseDTO> filterClientsPaginated(String nameClient, Boolean typeClient, Long minProfit,
-            Long maxProfit, int page, int size);
 }
