@@ -1,10 +1,21 @@
 package gpl.karina.finance.report.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
+import gpl.karina.finance.report.dto.response.ProjectResponseDTO;
+import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import reactor.core.publisher.Mono;
 
 @Service
 @Transactional
@@ -12,6 +23,17 @@ public class LapkeuServiceImpl implements LapkeuService {
 
     private final LapkeuRepository lapkeuRepository;
     private final HttpServletRequest request;
+
+    @Value("${project.service.url}")
+    private String projectServiceUrl;
+
+    @Value("${purchase.service.url}")
+    private String purchaseServiceUrl;
+
+    @Value("${asset.service.url}")
+    private String assetServiceUrl;
+
+    private final WebClient webClient = WebClient.create();
 
     public LapkeuServiceImpl(LapkeuRepository lapkeuRepository, HttpServletRequest request) {
         this.lapkeuRepository = lapkeuRepository;
@@ -24,6 +46,94 @@ public class LapkeuServiceImpl implements LapkeuService {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    @Override
+    public List<LapkeuResponseDTO> fetchAllLapkeu() {
+        List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
+        return lapkeuList.stream()
+                .map(l -> new LapkeuResponseDTO(
+                        l.getId(),
+                        l.getActivityType(),
+                        l.getPemasukan(),
+                        l.getPengeluaran(),
+                        l.getDescription()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public void syncLapkeuFromAllModules() {
+        String token = getTokenFromRequest();
+        List<Lapkeu> lapkeuList = new ArrayList<>();
+
+        // 1. Ambil data Distribusi (projectType = 1)
+        var projectResponse = webClient.get()
+            .uri(projectServiceUrl + "/api/project/all")
+            .headers(headers -> headers.setBearerAuth(token))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<List<ProjectResponseDTO>>() {})
+            .block();
+
+        if (projectResponse != null) {
+            for (var project : projectResponse) {
+                Lapkeu lapkeu = new Lapkeu();
+                lapkeu.setId(project.getId());
+                if (project.getProjectType() != null && project.getProjectType()) {
+                    lapkeu.setActivityType(1); // 1 = PENJUALAN
+                } else {
+                    lapkeu.setActivityType(0); // 0 = DISTRIBUSI
+                }
+                lapkeu.setPemasukan(project.getProjectTotalPemasukkan());
+                lapkeu.setPengeluaran(project.getProjectTotalPengeluaran());
+                lapkeu.setDescription(project.getProjectName());
+                lapkeuList.add(lapkeu);
+            }
+        }
+
+        // 2. Ambil data Purchase
+        var purchaseResponse = webClient.get()
+            .uri(purchaseServiceUrl + "/api/purchase/all")
+            .headers(headers -> headers.setBearerAuth(token))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<List<PurchaseDTO>>() {})
+            .block();
+
+        if (purchaseResponse != null) {
+            for (var purchase : purchaseResponse) {
+                Lapkeu lapkeu = new Lapkeu();
+                lapkeu.setId(purchase.getId());
+                lapkeu.setActivityType(2); // 2 = PURCHASE
+                lapkeu.setPemasukan(0L);
+                lapkeu.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
+                lapkeu.setDescription(purchase.getPurchaseNote());
+                lapkeuList.add(lapkeu);
+            }
+        }
+
+        // 4. Ambil data Maintenance
+        var maintenanceResponse = webClient.get()
+            .uri(assetServiceUrl + "/api/maintenance/all")
+            .headers(headers -> headers.setBearerAuth(token))
+            .retrieve()
+            .bodyToMono(new ParameterizedTypeReference<List<MaintenanceDTO>>() {})
+            .block();
+
+        if (maintenanceResponse != null) {
+            for (var maintenance : maintenanceResponse) {
+                Lapkeu lapkeu = new Lapkeu();
+                lapkeu.setId(String.valueOf(maintenance.getId()));
+                lapkeu.setActivityType(3); // 3 = MAINTENANCE
+                lapkeu.setPemasukan(0L);
+                lapkeu.setPengeluaran(maintenance.getBiaya() != null ? maintenance.getBiaya().longValue() : 0L);
+                lapkeu.setDescription(maintenance.getDeskripsiPekerjaan());
+                lapkeuList.add(lapkeu);
+            }
+        }
+
+        // Simpan ke database (replace/insert sesuai kebutuhan)
+        for (Lapkeu lapkeu : lapkeuList) {
+            lapkeuRepository.save(lapkeu);
+        }
     }
 
     // Implement the methods defined in the LapkeuService interface here

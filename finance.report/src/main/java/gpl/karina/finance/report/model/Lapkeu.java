@@ -1,7 +1,6 @@
 package gpl.karina.finance.report.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -12,9 +11,23 @@ import lombok.Setter;
 @Setter
 @Getter
 @Entity
-// @AllArgsConstructor
-// @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "Lapkeu")
 public class Lapkeu {
-    
+    @Id
+    @Column(name = "id", nullable = false)
+    private String id; // ID aktivitas (distribusi/penjualan/purchasing/maintenance)
+
+    @Column(name = "jenis_aktivitas", nullable = false)
+    private Integer activityType; // 0 : DISTRIBUSI, 1 : PENJUALAN, 2 : PURCHASE, 3 : MAINTENANCE
+
+    @Column
+    private Long pemasukan; // Null jika tidak ada pemasukan
+
+    @Column
+    private Long pengeluaran; // Null jika tidak ada pengeluaran
+
+    @Column
+    private String description; // Keterangan tambahan (opsional)
 }
