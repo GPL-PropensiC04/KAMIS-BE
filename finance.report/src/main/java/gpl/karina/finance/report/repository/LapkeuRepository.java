@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import gpl.karina.finance.report.model.Lapkeu;
 
 @Repository
-public interface LapkeuRepository extends JpaRepository<Lapkeu, Long> {
+public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
 }

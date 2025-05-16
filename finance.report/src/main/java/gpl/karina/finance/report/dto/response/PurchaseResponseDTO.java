@@ -8,5 +8,5 @@ public class PurchaseResponseDTO {
     private String purchaseType;
     private String purchaseStatus;
     private Integer purchasePrice;
-    private Boolean projectType; 
+    private String purchaseNote;
 }

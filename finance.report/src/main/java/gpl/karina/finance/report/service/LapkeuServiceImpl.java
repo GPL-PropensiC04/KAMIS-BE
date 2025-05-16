@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.dto.response.ProjectResponseDTO;
 import gpl.karina.finance.report.dto.response.PurchaseResponseDTO;
@@ -17,29 +19,29 @@ import gpl.karina.finance.report.dto.response.MaintenanceResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import reactor.core.publisher.Mono;
 
 @Service
 @Transactional
 public class LapkeuServiceImpl implements LapkeuService {
 
     private final LapkeuRepository lapkeuRepository;
-    private final HttpServletRequest request;
 
-    @Value("${project.service.url}")
-    private String projectServiceUrl;
+    @Autowired
+    private HttpServletRequest request;
 
-    @Value("${purchase.service.url}")
-    private String purchaseServiceUrl;
+    @Value("${finance.report.app.profileUrl}")
+    private String projectUrl;
 
-    @Value("${asset.service.url}")
-    private String assetServiceUrl;
+    @Value("${finance.report.app.purchaseUrl}")
+    private String purchaseUrl;
+
+    @Value("${finance.report.app.assetUrl}")
+    private String assetUrl;
 
     private final WebClient webClient = WebClient.create();
 
-    public LapkeuServiceImpl(LapkeuRepository lapkeuRepository, HttpServletRequest request) {
+    public LapkeuServiceImpl(LapkeuRepository lapkeuRepository) {
         this.lapkeuRepository = lapkeuRepository;
-        this.request = request;
     }
 
     public String getTokenFromRequest() {
@@ -52,6 +54,7 @@ public class LapkeuServiceImpl implements LapkeuService {
 
     @Override
     public List<LapkeuResponseDTO> fetchAllLapkeu() {
+        syncLapkeuFromAllModules();
         List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
         return lapkeuList.stream()
                 .map(l -> new LapkeuResponseDTO(
@@ -67,7 +70,6 @@ public class LapkeuServiceImpl implements LapkeuService {
         lapkeuList.addAll(fetchPurchaseLapkeu(token));
         lapkeuList.addAll(fetchMaintenanceLapkeu(token));
 
-        // Simpan ke database (replace/insert sesuai kebutuhan)
         for (Lapkeu lapkeu : lapkeuList) {
             lapkeuRepository.save(lapkeu);
         }
@@ -76,14 +78,14 @@ public class LapkeuServiceImpl implements LapkeuService {
     private List<Lapkeu> fetchProjectLapkeu(String token) {
         List<Lapkeu> lapkeuList = new ArrayList<>();
         var projectResponse = webClient.get()
-            .uri(projectServiceUrl + "/api/project/all")
+            .uri(projectUrl + "api/project/all")
             .headers(headers -> headers.setBearerAuth(token))
             .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<List<ProjectResponseDTO>>() {})
+            .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<ProjectResponseDTO>>>() {})
             .block();
-
+        
         if (projectResponse != null) {
-            for (var project : projectResponse) {
+            for (var project : projectResponse.getData()) {
                 Lapkeu lapkeu = new Lapkeu();
                 lapkeu.setId(project.getId());
                 if (project.getProjectType() && project.getProjectPaymentStatus() == 1) {
@@ -103,14 +105,14 @@ public class LapkeuServiceImpl implements LapkeuService {
     private List<Lapkeu> fetchPurchaseLapkeu(String token) {
         List<Lapkeu> lapkeuList = new ArrayList<>();
         var purchaseResponse = webClient.get()
-            .uri(purchaseServiceUrl + "/api/purchase/all")
+            .uri(purchaseUrl + "api/purchase/viewall")
             .headers(headers -> headers.setBearerAuth(token))
             .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<List<PurchaseResponseDTO>>() {})
+            .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<PurchaseResponseDTO>>>() {})
             .block();
 
-        if (purchaseResponse != null) {
-            for (var purchase : purchaseResponse) {
+        if (purchaseResponse != null && purchaseResponse.getData() != null) {
+            for (var purchase : purchaseResponse.getData()) {
                 Lapkeu lapkeu = new Lapkeu();
                 lapkeu.setId(purchase.getPurchaseId());
                 lapkeu.setActivityType(2); // 2 = PURCHASE
@@ -127,7 +129,7 @@ public class LapkeuServiceImpl implements LapkeuService {
     private List<Lapkeu> fetchMaintenanceLapkeu(String token) {
         List<Lapkeu> lapkeuList = new ArrayList<>();
         var maintenanceResponse = webClient.get()
-            .uri(assetServiceUrl + "/api/maintenance/all")
+            .uri(assetUrl + "api/maintenance/all")
             .headers(headers -> headers.setBearerAuth(token))
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<List<MaintenanceResponseDTO>>() {})

@@ -27,13 +27,16 @@ public class CorsConfig {
     @Value("${finance.report.app.frontendUrl}")
     private String frontendUrl;
 
+    @Value("${finance.report.app.assetUrl}")
+    private String assetUrl;
+
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry){
                 registry.addMapping("/**")
-                        .allowedOrigins(frontendUrl, profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl)
+                        .allowedOrigins(frontendUrl, profileUrl, financeUrl, projectUrl, purchaseUrl, resourceUrl, assetUrl)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
