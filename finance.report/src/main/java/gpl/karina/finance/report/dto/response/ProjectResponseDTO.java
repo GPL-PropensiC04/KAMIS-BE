@@ -6,7 +6,7 @@ import lombok.Data;
 public class ProjectResponseDTO {
     private String id;
     private String projectName;
-    private String projectStatus;
+    private Integer projectPaymentStatus;
     private Long projectTotalPemasukkan;
     private Long projectTotalPengeluaran;
     private Boolean projectType; 
