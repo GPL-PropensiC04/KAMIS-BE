@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -412,6 +414,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
         projectResponseDTO.setProjectDescription(project.getProjectDescription());
         projectResponseDTO.setProjectTotalPemasukkan(project.getProjectTotalPemasukkan());
+        projectResponseDTO.setProjectPaymentDate(project.getProjectPaymentDate());
 
         if (project instanceof Distribution) {
             Distribution distributionProject = (Distribution) project;
@@ -453,6 +456,7 @@ public class ProjectServiceImpl implements ProjectService {
                 dto.setProjectTotalPengeluaran(distributionProject.getProjectTotalPengeluaran());
                 dto.setProjectStartDate(distributionProject.getProjectStartDate());
                 dto.setProjectEndDate(distributionProject.getProjectEndDate());
+                dto.setProjectPaymentDate(distributionProject.getProjectPaymentDate());
 
                 // Map asset usages
                 if (distributionProject.getProjectUseAsset() != null) {
@@ -498,6 +502,7 @@ public class ProjectServiceImpl implements ProjectService {
                 dto.setProjectTotalPemasukkan(sellProject.getProjectTotalPemasukkan());
                 dto.setProjectStartDate(sellProject.getProjectStartDate());
                 dto.setProjectEndDate(sellProject.getProjectEndDate());
+                dto.setProjectPaymentDate(sellProject.getProjectPaymentDate());
 
                 // Map resource usages (Sell-specific)
                 if (sellProject.getProjectUseResource() != null) {
@@ -680,6 +685,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setProjectDeliveryAddress(projectRequestDTO.getProjectDeliveryAddress());
         project.setProjectStartDate(projectRequestDTO.getProjectStartDate());
         project.setProjectEndDate(projectRequestDTO.getProjectEndDate());
+        project.setProjectPaymentDate(null);
         project.setCreatedDate(today);
         project.setProjectLogs(new ArrayList<>());
 
@@ -1275,6 +1281,9 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         project.setProjectPaymentStatus(projectPaymentStatus);
+        
+        ZonedDateTime jakartaNow = ZonedDateTime.now(ZoneId.of("Asia/Jakarta"));
+        project.setProjectPaymentDate(Date.from(jakartaNow.toInstant()));
 
         LogProject newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
         project.getProjectLogs().add(newLog);

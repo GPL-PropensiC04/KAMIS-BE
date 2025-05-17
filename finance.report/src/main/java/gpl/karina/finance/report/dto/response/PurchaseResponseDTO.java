@@ -1,5 +1,6 @@
 package gpl.karina.finance.report.dto.response;
 
+import java.util.Date;
 import java.util.List;
 
 import lombok.Data;
@@ -12,4 +13,5 @@ public class PurchaseResponseDTO {
     private Integer purchasePrice;
     private List<ResourceTempResponseDTO> purchaseResource;
     private AssetTempResponseDTO purchaseAsset;
+    private Date purchasePaymentDate;
 }

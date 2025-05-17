@@ -1,5 +1,7 @@
 package gpl.karina.finance.report.model;
 
+import java.util.Date;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,4 +32,7 @@ public class Lapkeu {
 
     @Column
     private String description; // Keterangan tambahan (opsional)
+
+    @Column(name = "Tanggal Pembayaran")
+    private Date paymentDate;
 }

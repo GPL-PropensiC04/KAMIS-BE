@@ -1,5 +1,6 @@
 package gpl.karina.finance.report.service;
 
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,7 +64,7 @@ public class LapkeuServiceImpl implements LapkeuService {
         List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
         return lapkeuList.stream()
                 .map(l -> new LapkeuResponseDTO(
-                        l.getId(), l.getActivityType(), l.getPemasukan(), l.getPengeluaran(), l.getDescription()))
+                        l.getId(), l.getActivityType(), l.getPemasukan(), l.getPengeluaran(), l.getDescription(), (Date) l.getPaymentDate()))
                 .collect(Collectors.toList());
     }
 
@@ -102,10 +103,8 @@ public class LapkeuServiceImpl implements LapkeuService {
                     lapkeu.setPemasukan(project.getProjectTotalPemasukkan());
                     lapkeu.setPengeluaran(project.getProjectTotalPengeluaran());
                     lapkeu.setDescription(project.getProjectName());
+                    lapkeu.setPaymentDate(project.getProjectPaymentDate());
                     lapkeuList.add(lapkeu);
-                }
-                else {
-                    continue;
                 }
             }
         }
@@ -172,12 +171,13 @@ public class LapkeuServiceImpl implements LapkeuService {
 
         if (purchaseResponse != null && purchaseResponse.getData() != null) {
             for (var purchase : purchaseResponse.getData()) {
-                if ("Selesai".equals(purchase.getPurchaseStatus())) {
+                if (purchase.getPurchasePaymentDate() != null) {
                     Lapkeu lapkeu = new Lapkeu();
                     lapkeu.setId(purchase.getPurchaseId());
                     lapkeu.setActivityType(2); // 2 = PURCHASE
                     lapkeu.setPemasukan(0L);
                     lapkeu.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
+                    lapkeu.setPaymentDate(purchase.getPurchasePaymentDate());
                     
                     if ("Aset".equalsIgnoreCase(purchase.getPurchaseType())) {
                         var asset = fetchAssetTempById(purchase.getPurchaseId(), token);
@@ -190,8 +190,6 @@ public class LapkeuServiceImpl implements LapkeuService {
                         // Fetch detail purchase untuk dapatkan list resource yang lengkap
                         var purchaseDetail = fetchPurchaseDetailById(purchase.getPurchaseId(), token);
                         List<ResourceTempResponseDTO> resourceList = purchaseDetail != null ? purchaseDetail.getPurchaseResource() : null;
-
-                        System.out.println("DEBUG: purchaseDetail.getPurchaseResource() = " + resourceList);
 
                         if (resourceList != null && !resourceList.isEmpty()) {
                             String barang = resourceList.stream()
@@ -226,6 +224,7 @@ public class LapkeuServiceImpl implements LapkeuService {
                 lapkeu.setActivityType(3); // 3 = MAINTENANCE
                 lapkeu.setPemasukan(0L);
                 lapkeu.setPengeluaran(maintenance.getBiaya() != null ? maintenance.getBiaya().longValue() : 0L);
+                lapkeu.setPaymentDate(maintenance.getTanggalMulaiMaintenance());
                 lapkeu.setDescription(maintenance.getPlatNomor());
                 lapkeuList.add(lapkeu);
             }
