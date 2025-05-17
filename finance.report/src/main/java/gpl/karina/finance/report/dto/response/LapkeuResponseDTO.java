@@ -1,5 +1,7 @@
 package gpl.karina.finance.report.dto.response;
 
+import java.util.Date;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,4 +15,5 @@ public class LapkeuResponseDTO {
     private Long pemasukan;
     private Long pengeluaran;
     private String description;
+    private Date paymentDate; // Tanggal Pembayaran
 }

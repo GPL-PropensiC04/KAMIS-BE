@@ -293,27 +293,43 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
         Boolean purchaseType = purchase.isPurchaseType();
         if (purchaseType) {
+            // Resource
             purchaseResponseDTO.setPurchaseType("Resource");
 
             List<ResourceTemp> resourceTemps = purchase.getPurchaseResource();
             List<ResourceTempResponseDTO> resourceTempResponseDTOs = new ArrayList<>();
-            for (ResourceTemp resourceTemp : resourceTemps) {
-                resourceTempResponseDTOs.add(resourceTempToResourceTempResponseDTO(resourceTemp));
+            if (resourceTemps != null) {
+                for (ResourceTemp resourceTemp : resourceTemps) {
+                    resourceTempResponseDTOs.add(resourceTempToResourceTempResponseDTO(resourceTemp));
+                }
             }
             purchaseResponseDTO.setPurchaseResource(resourceTempResponseDTOs);
+            purchaseResponseDTO.setPurchaseAsset(null); // Pastikan null jika resource
         } else {
+            // Aset
             purchaseResponseDTO.setPurchaseType("Aset");
 
-            AssetTemp assetTemp = assetTempRepository.findById(purchase.getPurchaseAsset()).orElse(null);
-            purchaseResponseDTO.setPurchaseAsset(assetTempToAssetTempResponseDTO(assetTemp));
+            AssetTempResponseDTO assetDTO = null;
+            if (purchase.getPurchaseAsset() != null) {
+                AssetTemp assetTemp = assetTempRepository.findById(purchase.getPurchaseAsset()).orElse(null);
+                if (assetTemp != null) {
+                    assetDTO = assetTempToAssetTempResponseDTO(assetTemp);
+                }
+            }
+            purchaseResponseDTO.setPurchaseAsset(assetDTO);
+            purchaseResponseDTO.setPurchaseResource(null); // Pastikan null jika aset
         }
 
-        purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
-        
+        // Status sudah di-set di atas, baris ini bisa dihapus jika tidak perlu
+        // purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
+
+        // Mapping logs
         List<LogPurchase> logs = purchase.getPurchaseLogs();
         List<LogPurchaseResponseDTO> logsDTO = new ArrayList<>();
-        for (LogPurchase log : logs) {
-            logsDTO.add(logPurchaseToLogPurchaseResponseDTO(log));
+        if (logs != null) {
+            for (LogPurchase log : logs) {
+                logsDTO.add(logPurchaseToLogPurchaseResponseDTO(log));
+            }
         }
         purchaseResponseDTO.setPurchaseLogs(logsDTO);
 
