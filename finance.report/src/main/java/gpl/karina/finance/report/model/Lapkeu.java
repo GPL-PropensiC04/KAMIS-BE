@@ -20,7 +20,7 @@ public class Lapkeu {
     private String id; // ID aktivitas (distribusi/penjualan/purchasing/maintenance)
 
     @Column(name = "jenis_aktivitas", nullable = false)
-    private Integer activityType; // 0 : DISTRIBUSI, 1 : PENJUALAN, 2 : PURCHASE, 3 : MAINTENANCE
+    private Integer activityType; // 0 : PENJUALAN, 1 : DISTRIBUSI, 2 : PURCHASE, 3 : MAINTENANCE
 
     @Column
     private Long pemasukan; // Null jika tidak ada pemasukan

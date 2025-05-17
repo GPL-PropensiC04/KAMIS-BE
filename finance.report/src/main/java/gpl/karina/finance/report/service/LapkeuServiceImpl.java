@@ -30,6 +30,9 @@ public class LapkeuServiceImpl implements LapkeuService {
     private HttpServletRequest request;
 
     @Value("${finance.report.app.profileUrl}")
+    private String profileUrl;
+
+    @Value("${finance.report.app.projectUrl}")
     private String projectUrl;
 
     @Value("${finance.report.app.purchaseUrl}")
@@ -86,17 +89,22 @@ public class LapkeuServiceImpl implements LapkeuService {
         
         if (projectResponse != null) {
             for (var project : projectResponse.getData()) {
-                Lapkeu lapkeu = new Lapkeu();
-                lapkeu.setId(project.getId());
-                if (project.getProjectType() && project.getProjectPaymentStatus() == 1) {
-                    lapkeu.setActivityType(1); // 1 = PENJUALAN
-                } else {
-                    lapkeu.setActivityType(0); // 0 = DISTRIBUSI
+                if (project.getProjectPaymentStatus() == 1) {
+                    Lapkeu lapkeu = new Lapkeu();
+                    lapkeu.setId(project.getId());
+                    if (Boolean.TRUE.equals(project.getProjectType())) {
+                        lapkeu.setActivityType(1); // 1 = Distribusi
+                    } else {
+                        lapkeu.setActivityType(0); // 0 = Penjualan
+                    }
+                    lapkeu.setPemasukan(project.getProjectTotalPemasukkan());
+                    lapkeu.setPengeluaran(project.getProjectTotalPengeluaran());
+                    lapkeu.setDescription(project.getProjectName());
+                    lapkeuList.add(lapkeu);
                 }
-                lapkeu.setPemasukan(project.getProjectTotalPemasukkan());
-                lapkeu.setPengeluaran(project.getProjectTotalPengeluaran());
-                lapkeu.setDescription(project.getProjectName());
-                lapkeuList.add(lapkeu);
+                else {
+                    continue;
+                }
             }
         }
         return lapkeuList;
@@ -118,8 +126,18 @@ public class LapkeuServiceImpl implements LapkeuService {
                 lapkeu.setActivityType(2); // 2 = PURCHASE
                 lapkeu.setPemasukan(0L);
                 lapkeu.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
-                // lapkeu.setDescription(purchase.getPurchaseNote()); // diganti nopol / resource apa saja
-                lapkeu.setDescription("test success");
+                // lapkeu.setDescription("test success");
+                if ("Aset".equalsIgnoreCase(purchase.getPurchaseType()) && purchase.getPurchaseAsset() != null) {
+                    lapkeu.setDescription("Pembelian " + purchase.getPurchaseAsset().getAssetNameString());
+                } else if ("Resource".equalsIgnoreCase(purchase.getPurchaseType()) && purchase.getPurchaseResource() != null) {
+                    String barang = purchase.getPurchaseResource().stream()
+                        .map(r -> r.getResourceName())
+                        .reduce((a, b) -> a + ", " + b)
+                        .orElse("-");
+                    lapkeu.setDescription(barang);
+                } else {
+                    lapkeu.setDescription("-");
+                }
                 lapkeuList.add(lapkeu);
             }
         }
@@ -132,11 +150,11 @@ public class LapkeuServiceImpl implements LapkeuService {
             .uri(assetUrl + "api/maintenance/all")
             .headers(headers -> headers.setBearerAuth(token))
             .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<List<MaintenanceResponseDTO>>() {})
+            .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<MaintenanceResponseDTO>>>() {})
             .block();
 
         if (maintenanceResponse != null) {
-            for (var maintenance : maintenanceResponse) {
+            for (var maintenance : maintenanceResponse.getData()) {
                 Lapkeu lapkeu = new Lapkeu();
                 lapkeu.setId(String.valueOf(maintenance.getId()));
                 lapkeu.setActivityType(3); // 3 = MAINTENANCE
@@ -147,8 +165,5 @@ public class LapkeuServiceImpl implements LapkeuService {
             }
         }
         return lapkeuList;
-    }
-
-    // Implement the methods defined in the LapkeuService interface here
-    
+    }    
 }
