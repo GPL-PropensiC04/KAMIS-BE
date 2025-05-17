@@ -11,10 +11,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.dto.response.ProjectResponseDTO;
 import gpl.karina.finance.report.dto.response.PurchaseResponseDTO;
+import gpl.karina.finance.report.dto.response.ResourceTempResponseDTO;
 import gpl.karina.finance.report.dto.response.MaintenanceResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
@@ -110,6 +112,55 @@ public class LapkeuServiceImpl implements LapkeuService {
         return lapkeuList;
     }
 
+    private AssetTempResponseDTO fetchAssetTempById(String purchaseId, String token) {
+        try {
+            // 1. Fetch detail purchase
+            var purchaseDetailResponse = webClient.get()
+                .uri(purchaseUrl + "api/purchase/detail/" + purchaseId)
+                .headers(headers -> headers.setBearerAuth(token))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<PurchaseResponseDTO>>() {})
+                .block();
+
+            PurchaseResponseDTO purchase = purchaseDetailResponse != null ? purchaseDetailResponse.getData() : null;
+            if (purchase == null) return null;
+
+            // Log untuk debug
+
+            // 2. Cek tipe purchase
+            if ("Aset".equalsIgnoreCase(purchase.getPurchaseType()) && purchase.getPurchaseAsset() != null) {
+                var assetResponse = webClient.get()
+                    .uri(purchaseUrl + "api/purchase/asset/" + purchase.getPurchaseAsset().getId())
+                    .headers(headers -> headers.setBearerAuth(token))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetTempResponseDTO>>() {})
+                    .block();
+
+                return assetResponse != null ? assetResponse.getData() : null;
+            }
+
+            // 4. Jika bukan aset, return null
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private PurchaseResponseDTO fetchPurchaseDetailById(String purchaseId, String token) {
+        try {
+            var purchaseDetailResponse = webClient.get()
+                .uri(purchaseUrl + "api/purchase/detail/" + purchaseId)
+                .headers(headers -> headers.setBearerAuth(token))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<PurchaseResponseDTO>>() {})
+                .block();
+
+            return purchaseDetailResponse != null ? purchaseDetailResponse.getData() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private List<Lapkeu> fetchPurchaseLapkeu(String token) {
         List<Lapkeu> lapkeuList = new ArrayList<>();
         var purchaseResponse = webClient.get()
@@ -121,24 +172,39 @@ public class LapkeuServiceImpl implements LapkeuService {
 
         if (purchaseResponse != null && purchaseResponse.getData() != null) {
             for (var purchase : purchaseResponse.getData()) {
-                Lapkeu lapkeu = new Lapkeu();
-                lapkeu.setId(purchase.getPurchaseId());
-                lapkeu.setActivityType(2); // 2 = PURCHASE
-                lapkeu.setPemasukan(0L);
-                lapkeu.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
-                // lapkeu.setDescription("test success");
-                if ("Aset".equalsIgnoreCase(purchase.getPurchaseType()) && purchase.getPurchaseAsset() != null) {
-                    lapkeu.setDescription("Pembelian " + purchase.getPurchaseAsset().getAssetNameString());
-                } else if ("Resource".equalsIgnoreCase(purchase.getPurchaseType()) && purchase.getPurchaseResource() != null) {
-                    String barang = purchase.getPurchaseResource().stream()
-                        .map(r -> r.getResourceName())
-                        .reduce((a, b) -> a + ", " + b)
-                        .orElse("-");
-                    lapkeu.setDescription(barang);
-                } else {
-                    lapkeu.setDescription("-");
+                if ("Selesai".equals(purchase.getPurchaseStatus())) {
+                    Lapkeu lapkeu = new Lapkeu();
+                    lapkeu.setId(purchase.getPurchaseId());
+                    lapkeu.setActivityType(2); // 2 = PURCHASE
+                    lapkeu.setPemasukan(0L);
+                    lapkeu.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
+                    
+                    if ("Aset".equalsIgnoreCase(purchase.getPurchaseType())) {
+                        var asset = fetchAssetTempById(purchase.getPurchaseId(), token);
+                        if (asset != null && asset.getAssetNameString() != null) {
+                            lapkeu.setDescription("Pembelian " + asset.getAssetNameString());
+                        } else {
+                            lapkeu.setDescription("Pembelian aset (data tidak ditemukan)");
+                        }
+                    } else if ("Resource".equalsIgnoreCase(purchase.getPurchaseType())) {
+                        // Fetch detail purchase untuk dapatkan list resource yang lengkap
+                        var purchaseDetail = fetchPurchaseDetailById(purchase.getPurchaseId(), token);
+                        List<ResourceTempResponseDTO> resourceList = purchaseDetail != null ? purchaseDetail.getPurchaseResource() : null;
+
+                        System.out.println("DEBUG: purchaseDetail.getPurchaseResource() = " + resourceList);
+
+                        if (resourceList != null && !resourceList.isEmpty()) {
+                            String barang = resourceList.stream()
+                                .map(r -> r.getResourceName())
+                                .reduce((a, b) -> a + ", " + b)
+                                .orElse("-");
+                            lapkeu.setDescription("Pembelian " + barang);
+                        } else {
+                            lapkeu.setDescription("Pembelian resource (data tidak ditemukan)");
+                        }
+                    }
+                    lapkeuList.add(lapkeu);
                 }
-                lapkeuList.add(lapkeu);
             }
         }
         return lapkeuList;
