@@ -27,7 +27,7 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configure(http))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/lapkeu/**").hasAnyAuthority("Admin", "Direksi", "Finance")
+                        .requestMatchers("/api/lapkeu/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

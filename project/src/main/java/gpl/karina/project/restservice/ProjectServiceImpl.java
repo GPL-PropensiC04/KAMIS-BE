@@ -2,6 +2,7 @@ package gpl.karina.project.restservice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -38,6 +39,7 @@ import gpl.karina.project.restdto.ResourceUsageDTO;
 import gpl.karina.project.restdto.fetch.AssetDetailDTO;
 import gpl.karina.project.restdto.fetch.ClientDetailDTO;
 import gpl.karina.project.restdto.fetch.ResourceDetailDTO;
+import gpl.karina.project.restdto.request.AddLapkeuDTO;
 import gpl.karina.project.restdto.request.AddProjectRequestDTO;
 import gpl.karina.project.restdto.request.UpdateProjectRequestDTO;
 import gpl.karina.project.restdto.response.ActivityLineDTO;
@@ -66,11 +68,12 @@ public class ProjectServiceImpl implements ProjectService {
     private String resourceUrl;
     @Value("${project.app.assetUrl}")
     private String assetUrl;
+    @Value("${project.app.financeUrl}")
+    private String financeUrl;
+
     private WebClient webClientResource;
     private WebClient webClientAsset;
     private WebClient webClientProfile;
-
-    private final HttpServletRequest request;
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
@@ -79,6 +82,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final WebClient.Builder webClientBuilder;
     private final JwtUtils jwtUtils;
     private final AssetReservationClient assetReservationClient;
+    private final HttpServletRequest request;
 
     public ProjectServiceImpl(ProjectRepository projectRepository, WebClient.Builder webClientBuilder,
             HttpServletRequest request, JwtUtils jwtUtils, LogProjectRepository logProjectRepository,
@@ -1292,6 +1296,40 @@ public class ProjectServiceImpl implements ProjectService {
         project.getProjectLogs().add(newLog);
 
         Project updatedProject = projectRepository.save(project);
+
+        if (projectPaymentStatus == 1) {
+            try {
+                AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
+                lapkeuRequest.setId(project.getId());
+                lapkeuRequest.setActivityType(Boolean.TRUE.equals(project.getProjectType()) ? 1 : 0); // 1: Distribusi, 0: Penjualan
+                lapkeuRequest.setPemasukan(project.getProjectTotalPemasukkan());
+                lapkeuRequest.setPengeluaran(project instanceof Distribution ? ((Distribution) project).getProjectTotalPengeluaran() : 0L);
+                lapkeuRequest.setDescription(project.getProjectName());
+                lapkeuRequest.setPaymentDate(project.getProjectPaymentDate());
+
+                webClientBuilder.build()
+                    .post()
+                    .uri(financeUrl + "/lapkeu/add")
+                    .bodyValue(lapkeuRequest)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+            } catch (Exception e) {
+                logger.error("Gagal insert ke Lapkeu: " + e.getMessage());
+            }
+        }
+        else if (projectPaymentStatus == 2) {
+            try {
+                webClientBuilder.build()
+                    .delete()
+                    .uri(financeUrl + "/lapkeu/" + project.getId())
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+            } catch (Exception e) {
+                logger.error("Gagal hapus data Lapkeu: " + e.getMessage());
+            }
+        }
         return projectToProjectResponseDetailDTO(updatedProject);
     }
 
