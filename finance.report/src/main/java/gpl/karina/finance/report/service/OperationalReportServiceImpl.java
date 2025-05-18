@@ -3,6 +3,7 @@ package gpl.karina.finance.report.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
@@ -61,14 +62,13 @@ public class OperationalReportServiceImpl implements OperationalReportService {
         return null;
     }
 
-    private List<ActivityLineDTO> fetchPurchaseActivity(String startDate, String endDate, String periodType, String status) {
+    private List<ActivityLineDTO> fetchPurchaseActivity(String range, String periodType, String status) {
         var response = webClientPurchase
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("purchase/chart/purchase-activity")
-                        .queryParam("startDate", startDate)
-                        .queryParam("endDate", endDate)
-                        .queryParam("periodType", periodType)
+                        .queryParam("range", range)
+                        .queryParamIfPresent("periodType", Optional.ofNullable(periodType))
                         .queryParam("status", status)
                         .build())
                 .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
@@ -82,16 +82,15 @@ public class OperationalReportServiceImpl implements OperationalReportService {
         return response.getData();
     }
 
-    public List<ActivityLineDTO> fetchProjectActivity(boolean isDistribusi, String startDate, String endDate, String periodType, String status) {
+    public List<ActivityLineDTO> fetchProjectActivity(boolean isDistribusi, String range, String periodType, String status) {
         String path = isDistribusi ? "project/chart/distribusi-activity" : "project/chart/penjualan-activity";
 
         var response = webClientProject
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(path)
-                        .queryParam("startDate", startDate)
-                        .queryParam("endDate", endDate)
-                        .queryParam("periodType", periodType)
+                        .queryParam("range", range)
+                        .queryParamIfPresent("periodType", Optional.ofNullable(periodType))
                         .queryParam("status", status)
                         .build())
                 .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
@@ -105,16 +104,15 @@ public class OperationalReportServiceImpl implements OperationalReportService {
         return response.getData();
     }
 
+
     @Override
     public List<ActivityComparisonResponseDTO> fetchCombinedActivityLineChart(
-            String startDate, String endDate, String periodType, String status) {
+            String range, String periodType, String status) {
 
-        // Fetch masing-masing data
-        List<ActivityLineDTO> pembelian = fetchPurchaseActivity(startDate, endDate, periodType, status);
-        List<ActivityLineDTO> penjualan = fetchProjectActivity(false, startDate, endDate, periodType, status);
-        List<ActivityLineDTO> distribusi = fetchProjectActivity(true, startDate, endDate, periodType, status);
+        List<ActivityLineDTO> pembelian = fetchPurchaseActivity(range, periodType, status);
+        List<ActivityLineDTO> penjualan = fetchProjectActivity(false, range, periodType, status);
+        List<ActivityLineDTO> distribusi = fetchProjectActivity(true, range, periodType, status);
 
-        // Gabungkan berdasarkan period
         Map<String, ActivityComparisonResponseDTO> resultMap = new TreeMap<>();
 
         for (ActivityLineDTO dto : pembelian) {
@@ -137,7 +135,5 @@ public class OperationalReportServiceImpl implements OperationalReportService {
 
         return new ArrayList<>(resultMap.values());
     }
-
-
 
 }

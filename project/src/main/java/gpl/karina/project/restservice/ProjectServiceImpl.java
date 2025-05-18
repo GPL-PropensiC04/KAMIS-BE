@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1335,10 +1338,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<ActivityLineDTO> getProjectActivityLine(
-        String periodType, Date startDate, Date endDate, String statusFilter, boolean isDistribusi) {
+        String periodType, String range, String statusFilter, boolean isDistribusi) {
 
         List<Object[]> rawData;
-        Boolean projectType = isDistribusi; // true = distribusi, false = penjualan
+        Boolean projectType = isDistribusi;
 
         List<Integer> statusList;
         boolean excludeMode;
@@ -1359,12 +1362,54 @@ public class ProjectServiceImpl implements ProjectService {
                 break;
         }
 
-        // Default date range: this year
-        if (startDate == null || endDate == null) {
-            LocalDate start = LocalDate.now().withDayOfYear(1);
-            startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            endDate = new Date();
+        // Tentukan default periodType berdasarkan range
+        if (periodType == null || periodType.isBlank()) {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    periodType = "WEEKLY";
+                    break;
+                case "THIS_QUARTER":
+                    periodType = "MONTHLY";
+                    break;
+                case "THIS_YEAR":
+                default:
+                    periodType = "MONTHLY";
+                    break;
+            }
         }
+
+        // Tentukan tanggal berdasarkan range
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                if (!periodType.equalsIgnoreCase("WEEKLY")) {
+                    throw new IllegalArgumentException("THIS_MONTH hanya mendukung periodType = WEEKLY");
+                }
+                start = now.withDayOfMonth(1);
+                break;
+            case "THIS_QUARTER":
+                if (!periodType.equalsIgnoreCase("MONTHLY")) {
+                    throw new IllegalArgumentException("THIS_QUARTER hanya mendukung periodType = MONTHLY");
+                }
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+            case "THIS_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("THIS_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = now.withDayOfYear(1);
+                break;
+            default:
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
         Map<String, ActivityLineDTO> resultMap = new HashMap<>();
         List<String> fullPeriods;
@@ -1374,6 +1419,9 @@ public class ProjectServiceImpl implements ProjectService {
                 rawData = excludeMode
                     ? projectRepository.getMonthlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
                     : projectRepository.getMonthlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
                 fullPeriods = generateMonthPeriods(startDate, endDate);
                 break;
 
@@ -1381,6 +1429,9 @@ public class ProjectServiceImpl implements ProjectService {
                 rawData = excludeMode
                     ? projectRepository.getQuarterlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
                     : projectRepository.getQuarterlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
                 fullPeriods = generateQuarterPeriods(startDate, endDate);
                 break;
 
@@ -1388,20 +1439,75 @@ public class ProjectServiceImpl implements ProjectService {
                 rawData = excludeMode
                     ? projectRepository.getYearlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
                     : projectRepository.getYearlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
                 fullPeriods = generateYearPeriods(startDate, endDate);
                 break;
 
-            default:
-                throw new IllegalArgumentException("Invalid period type");
-        }
+            case "WEEKLY":
+                rawData = excludeMode
+                    ? projectRepository.getDailyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
+                    : projectRepository.getDailyProjectCountInStatus(startDate, endDate, statusList, projectType);
 
-        for (Object[] row : rawData) {
-            resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                int fixedMonth = start.getMonthValue();
+                int fixedYear = start.getYear();
+
+                for (Object[] row : rawData) {
+                    LocalDate date = ((Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    String period = getMonthWeekLabel(date, fixedMonth, fixedYear);
+
+                    resultMap.computeIfAbsent(period, p -> new ActivityLineDTO(p, 0L));
+                    ActivityLineDTO dto = resultMap.get(period);
+                    dto.setCount(dto.getCount() + (row[1] != null ? (Long) row[1] : 0L));
+                }
+
+                fullPeriods = generateMonthWeekPeriods(startDate, endDate);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid period type: " + periodType);
         }
 
         return fullPeriods.stream()
                 .map(p -> resultMap.getOrDefault(p, new ActivityLineDTO(p, 0L)))
                 .collect(Collectors.toList());
+    }
+
+    private String getMonthWeekLabel(LocalDate anyDateInWeek, int fixedMonth, int fixedYear) {
+        LocalDate firstDayOfMonth = LocalDate.of(fixedYear, fixedMonth, 1);
+        int weekOfMonth = (int) ChronoUnit.WEEKS.between(
+                firstDayOfMonth.with(DayOfWeek.MONDAY),
+                anyDateInWeek.with(DayOfWeek.MONDAY)
+        ) + 1;
+
+        return String.format("%04d-%02d-W%d", fixedYear, fixedMonth, weekOfMonth);
+    }
+
+    private List<String> generateMonthWeekPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate pointer = toLocalDate(startDate).with(DayOfWeek.MONDAY);
+        LocalDate end = toLocalDate(endDate);
+
+        int targetMonth = toLocalDate(startDate).getMonthValue();
+        int targetYear = toLocalDate(startDate).getYear();
+
+        while (!pointer.isAfter(end)) {
+            // Hanya tambahkan minggu yang mengandung hari dari bulan & tahun target
+            for (int i = 0; i < 7; i++) {
+                LocalDate day = pointer.plusDays(i);
+                if (day.getMonthValue() == targetMonth && day.getYear() == targetYear) {
+                    String label = getMonthWeekLabel(pointer, targetMonth, targetYear);
+                    if (!periods.contains(label)) {
+                        periods.add(label);
+                    }
+                    break;
+                }
+            }
+            pointer = pointer.plusWeeks(1);
+        }
+
+        return periods;
     }
 
     private List<String> generateMonthPeriods(Date startDate, Date endDate) {

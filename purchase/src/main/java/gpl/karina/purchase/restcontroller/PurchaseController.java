@@ -386,18 +386,13 @@ public class PurchaseController {
 
     @GetMapping("/chart/purchase-activity")
     public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getPurchaseActivityLineChart(
-        @RequestParam(name = "startDate", required = false) 
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-
-        @RequestParam(name = "endDate", required = false) 
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-
-        @RequestParam(name = "periodType", defaultValue = "MONTHLY") String periodType,
+        @RequestParam(name = "periodType", required = false) String periodType,
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range,
         @RequestParam(name = "status", defaultValue = "ALL") String status
     ) {
         BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
         try {
-            List<ActivityLineDTO> result = purchaseRestService.getPurchaseActivityLine(periodType, startDate, endDate, status);
+            List<ActivityLineDTO> result = purchaseRestService.getPurchaseActivityLine(periodType, range, status);
 
             if (result.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -413,6 +408,13 @@ public class PurchaseController {
             response.setData(result);
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data aktivitas pembelian: " + e.getMessage());
@@ -421,5 +423,6 @@ public class PurchaseController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 }

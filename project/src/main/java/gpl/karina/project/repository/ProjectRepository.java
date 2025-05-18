@@ -18,6 +18,31 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
     List<Project> findByProjectStartDate(Date today);
 
     List<Project> findBycreatedDate(Date today);
+
+    // =====WEEKLY=====
+    @Query("SELECT p.createdDate, COUNT(p) " +
+        "FROM Project p " +
+        "WHERE p.createdDate BETWEEN :startDate AND :endDate " +
+        "AND p.projectType = :projectType " +
+        "AND p.projectStatus IN :statuses " +
+        "GROUP BY p.createdDate")
+    List<Object[]> getDailyProjectCountInStatus(@Param("startDate") Date startDate,
+                                                @Param("endDate") Date endDate,
+                                                @Param("statuses") List<Integer> statuses,
+                                                @Param("projectType") Boolean projectType);
+
+    @Query("SELECT p.createdDate, COUNT(p) " +
+        "FROM Project p " +
+        "WHERE p.createdDate BETWEEN :startDate AND :endDate " +
+        "AND p.projectType = :projectType " +
+        "AND p.projectStatus NOT IN :statuses " +
+        "GROUP BY p.createdDate")
+    List<Object[]> getDailyProjectCountExcludeStatus(@Param("startDate") Date startDate,
+                                                    @Param("endDate") Date endDate,
+                                                    @Param("statuses") List<Integer> statuses,
+                                                    @Param("projectType") Boolean projectType);
+
+
     
     // ===== MONTHLY =====
     @Query("SELECT TO_CHAR(p.createdDate, 'YYYY-MM'), COUNT(p) " +

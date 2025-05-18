@@ -26,5 +26,5 @@ public interface PurchaseRestService {
     PurchaseResponseDTO updatePurchaseStatusPembayaran(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId);
     AssetTempResponseDTO getDetailAsset(Long id);
     List<PurchaseResponseDTO> getPurchasesBySupplier(UUID supplierId);
-    List<ActivityLineDTO> getPurchaseActivityLine(String periodType, Date startDate, Date endDate, String statusFilter);
+    List<ActivityLineDTO> getPurchaseActivityLine(String periodType, String range, String statusFilter);
 }
