@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
+import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.service.LapkeuService;
 
@@ -50,6 +51,35 @@ public class LapkeuController {
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data laporan keuangan: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/chart-pengeluaran")
+    public ResponseEntity<BaseResponseDTO<List<ChartPengeluaranResponseDTO>>> getPengeluaranPerAktivitas(
+        @RequestParam(name = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+        @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate
+    ) {
+        BaseResponseDTO<List<ChartPengeluaranResponseDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<ChartPengeluaranResponseDTO> listPengeluaran = lapkeuService.getPengeluaranChartData(startDate, endDate);
+            if (listPengeluaran.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data pengeluaran yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan daftar pengeluaran per aktivitas");
+            response.setTimestamp(new Date());
+            response.setData(listPengeluaran);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data pengeluaran: " + e.getMessage());
             response.setTimestamp(new Date());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
