@@ -2,6 +2,7 @@ package gpl.karina.finance.report.service;
 
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,6 +59,16 @@ public class LapkeuServiceImpl implements LapkeuService {
         return null;
     }
 
+    private Date getDateOnly(Date date) {
+        if (date == null) return null;
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        return cal.getTime();
+    }
+
     @Override
     public List<LapkeuResponseDTO> fetchAllLapkeu(Date startDate, Date endDate) {
         syncLapkeuFromAllModules();
@@ -109,13 +120,14 @@ public class LapkeuServiceImpl implements LapkeuService {
                     lapkeu.setId(project.getId());
                     if (Boolean.TRUE.equals(project.getProjectType())) {
                         lapkeu.setActivityType(1); // 1 = Distribusi
+                        lapkeu.setDescription("Distribusi - " + project.getProjectName());
                     } else {
                         lapkeu.setActivityType(0); // 0 = Penjualan
+                        lapkeu.setDescription("Penjualan - " + project.getProjectName());
                     }
                     lapkeu.setPemasukan(project.getProjectTotalPemasukkan());
                     lapkeu.setPengeluaran(project.getProjectTotalPengeluaran());
-                    lapkeu.setDescription(project.getProjectName());
-                    lapkeu.setPaymentDate(project.getProjectPaymentDate());
+                    lapkeu.setPaymentDate(getDateOnly(project.getProjectPaymentDate()));
                     lapkeuList.add(lapkeu);
                 }
             }
@@ -189,12 +201,12 @@ public class LapkeuServiceImpl implements LapkeuService {
                     lapkeu.setActivityType(2); // 2 = PURCHASE
                     lapkeu.setPemasukan(0L);
                     lapkeu.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
-                    lapkeu.setPaymentDate(purchase.getPurchasePaymentDate());
+                    lapkeu.setPaymentDate(getDateOnly(purchase.getPurchasePaymentDate()));
                     
                     if ("Aset".equalsIgnoreCase(purchase.getPurchaseType())) {
                         var asset = fetchAssetTempById(purchase.getPurchaseId(), token);
                         if (asset != null && asset.getAssetNameString() != null) {
-                            lapkeu.setDescription("Pembelian " + asset.getAssetNameString());
+                            lapkeu.setDescription("Pembelian Resource - " + asset.getAssetNameString());
                         } else {
                             lapkeu.setDescription("Pembelian aset (data tidak ditemukan)");
                         }
@@ -208,7 +220,7 @@ public class LapkeuServiceImpl implements LapkeuService {
                                 .map(r -> r.getResourceName())
                                 .reduce((a, b) -> a + ", " + b)
                                 .orElse("-");
-                            lapkeu.setDescription("Pembelian " + barang);
+                            lapkeu.setDescription("Pembelian Aset - " + barang);
                         } else {
                             lapkeu.setDescription("Pembelian resource (data tidak ditemukan)");
                         }
@@ -236,8 +248,8 @@ public class LapkeuServiceImpl implements LapkeuService {
                 lapkeu.setActivityType(3); // 3 = MAINTENANCE
                 lapkeu.setPemasukan(0L);
                 lapkeu.setPengeluaran(maintenance.getBiaya() != null ? maintenance.getBiaya().longValue() : 0L);
-                lapkeu.setPaymentDate(maintenance.getTanggalMulaiMaintenance());
-                lapkeu.setDescription(maintenance.getPlatNomor());
+                lapkeu.setPaymentDate(getDateOnly(maintenance.getTanggalMulaiMaintenance()));
+                lapkeu.setDescription("Maintenance Aset - "+ maintenance.getPlatNomor());
                 lapkeuList.add(lapkeu);
             }
         }

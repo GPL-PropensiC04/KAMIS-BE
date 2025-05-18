@@ -34,5 +34,6 @@ public class Lapkeu {
     private String description; // Keterangan tambahan (opsional)
 
     @Column(name = "Tanggal Pembayaran")
+    @Temporal(TemporalType.DATE)
     private Date paymentDate;
 }
