@@ -11,6 +11,6 @@ public interface LapkeuService {
     List<LapkeuResponseDTO> fetchAllLapkeu(Date startDate, Date endDate, Integer activityType);
     LapkeuResponseDTO createLapkeu(LapkeuResponseDTO lapkeuDTO);
     void deleteLapkeu(String id);
-    List<ChartPengeluaranResponseDTO> getPengeluaranChartData(Date startDate, Date endDate);
+    List<ChartPengeluaranResponseDTO> getPengeluaranChartData(String range);
     List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, String range);
 }

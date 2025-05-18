@@ -127,19 +127,39 @@ public class LapkeuServiceImpl implements LapkeuService {
     }
 
     @Override
-    public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(Date startDate, Date endDate) {
-        List<Object[]> rawData;
+    public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(String range) {
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
 
-        if (startDate != null && endDate != null) {
-            rawData = lapkeuRepository.getTotalPengeluaranPerActivityTypeBetweenDates(startDate, endDate);
-        } else {
-            rawData = lapkeuRepository.getTotalPengeluaranPerActivityType();
+        // Tentukan rentang tanggal berdasarkan range
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                start = now.withDayOfMonth(1);
+                break;
+
+            case "THIS_QUARTER":
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+
+            case "THIS_YEAR":
+            default:
+                start = now.withDayOfYear(1);
+                break;
         }
 
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        List<Object[]> rawData = lapkeuRepository.getTotalPengeluaranPerActivityTypeBetweenDates(startDate, endDate);
+
         return rawData.stream()
-            .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
-            .collect(Collectors.toList());
+                .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, String range) {

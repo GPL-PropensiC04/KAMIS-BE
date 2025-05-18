@@ -103,12 +103,12 @@ public class LapkeuController {
     
     @GetMapping("/chart-pengeluaran")
     public ResponseEntity<BaseResponseDTO<List<ChartPengeluaranResponseDTO>>> getPengeluaranPerAktivitas(
-        @RequestParam(name = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-        @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range
     ) {
         BaseResponseDTO<List<ChartPengeluaranResponseDTO>> response = new BaseResponseDTO<>();
         try {
-            List<ChartPengeluaranResponseDTO> listPengeluaran = lapkeuService.getPengeluaranChartData(startDate, endDate);
+            List<ChartPengeluaranResponseDTO> listPengeluaran = lapkeuService.getPengeluaranChartData(range);
+
             if (listPengeluaran.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Tidak ada data pengeluaran yang ditemukan");
@@ -116,11 +116,20 @@ public class LapkeuController {
                 response.setData(null);
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
+
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Berhasil mendapatkan daftar pengeluaran per aktivitas");
             response.setTimestamp(new Date());
             response.setData(listPengeluaran);
             return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data pengeluaran: " + e.getMessage());
@@ -129,6 +138,7 @@ public class LapkeuController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @GetMapping("/chart-pemasukan-pengeluaran")
     public ResponseEntity<BaseResponseDTO<List<IncomeExpenseLineResponseDTO>>> getPemasukanPengeluaranPerPeriode(
