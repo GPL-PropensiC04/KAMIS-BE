@@ -1301,7 +1301,11 @@ public class ProjectServiceImpl implements ProjectService {
                 lapkeuRequest.setActivityType(Boolean.TRUE.equals(project.getProjectType()) ? 1 : 0); // 1: Distribusi, 0: Penjualan
                 lapkeuRequest.setPemasukan(project.getProjectTotalPemasukkan());
                 lapkeuRequest.setPengeluaran(project instanceof Distribution ? ((Distribution) project).getProjectTotalPengeluaran() : 0L);
-                lapkeuRequest.setDescription(project.getProjectName());
+                if (project instanceof Sell) {
+                    lapkeuRequest.setDescription("Penjualan - " + project.getProjectName());
+                } else {
+                    lapkeuRequest.setDescription("Distribusi - " + project.getProjectName());
+                }
                 lapkeuRequest.setPaymentDate(project.getProjectPaymentDate());
 
                 webClientBuilder.build()
