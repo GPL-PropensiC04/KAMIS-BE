@@ -24,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
+import gpl.karina.finance.report.dto.response.IncomeExpenseBarResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
@@ -263,6 +264,16 @@ public class LapkeuServiceImpl implements LapkeuService {
         return fullPeriods.stream()
                 .map(period -> resultMap.getOrDefault(period, new IncomeExpenseLineResponseDTO(period, 0L, 0L)))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<IncomeExpenseBarResponseDTO> getIncomeExpenseBarChart(String periodType, String range) {
+        List<IncomeExpenseLineResponseDTO> lineData = getIncomeExpenseLineChart(periodType, range);
+        List<IncomeExpenseBarResponseDTO> barData = new ArrayList<>();
+        for (IncomeExpenseLineResponseDTO dto : lineData) {
+            barData.add(new IncomeExpenseBarResponseDTO(dto.getPeriod(), dto.getTotalPemasukan(), dto.getTotalPengeluaran()));
+        }
+        return barData;
     }
 
     private String getMonthWeekLabel(LocalDate anyDateInWeek, int fixedMonth, int fixedYear) {

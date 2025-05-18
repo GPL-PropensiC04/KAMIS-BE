@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
+import gpl.karina.finance.report.dto.response.IncomeExpenseBarResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 
@@ -13,4 +14,5 @@ public interface LapkeuService {
     void deleteLapkeu(String id);
     List<ChartPengeluaranResponseDTO> getPengeluaranChartData(String range);
     List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, String range);
+    List<IncomeExpenseBarResponseDTO> getIncomeExpenseBarChart(String periodType, String range);
 }
