@@ -40,13 +40,6 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
            "ORDER BY period")
     List<Object[]> getIncomeExpenseMonthlyFiltered(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-    @Query("SELECT TO_CHAR(l.paymentDate, 'YYYY-MM') AS period, SUM(l.pemasukan), SUM(l.pengeluaran) " +
-           "FROM Lapkeu l " +
-           "GROUP BY TO_CHAR(l.paymentDate, 'YYYY-MM') " +
-           "ORDER BY period")
-    List<Object[]> getIncomeExpenseMonthly();
-
-
     // ==========================
     // ======= QUARTERLY ========
     // ==========================
@@ -59,14 +52,6 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
            "ORDER BY period")
     List<Object[]> getIncomeExpenseQuarterlyFiltered(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-    @Query("SELECT CONCAT(EXTRACT(YEAR FROM l.paymentDate), '-Q', EXTRACT(QUARTER FROM l.paymentDate)) AS period, " +
-           "SUM(l.pemasukan), SUM(l.pengeluaran) " +
-           "FROM Lapkeu l " +
-           "GROUP BY EXTRACT(YEAR FROM l.paymentDate), EXTRACT(QUARTER FROM l.paymentDate) " +
-           "ORDER BY period")
-    List<Object[]> getIncomeExpenseQuarterly();
-
-
     // ==========================
     // ========= YEARLY =========
     // ==========================
@@ -77,12 +62,5 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
            "GROUP BY EXTRACT(YEAR FROM l.paymentDate) " +
            "ORDER BY period")
     List<Object[]> getIncomeExpenseYearlyFiltered(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
-
-    @Query("SELECT CAST(EXTRACT(YEAR FROM l.paymentDate) AS string) AS period, SUM(l.pemasukan), SUM(l.pengeluaran) " +
-           "FROM Lapkeu l " +
-           "GROUP BY EXTRACT(YEAR FROM l.paymentDate) " +
-           "ORDER BY period")
-    List<Object[]> getIncomeExpenseYearly();
-
 
 }
