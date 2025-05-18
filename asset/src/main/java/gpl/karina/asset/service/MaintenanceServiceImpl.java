@@ -75,7 +75,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             lapkeuRequest.setActivityType(3); // PURCHASE
             lapkeuRequest.setPemasukan(0L);
             lapkeuRequest.setPengeluaran(requestDTO.getBiaya() != null ? requestDTO.getBiaya().longValue() : 0L);
-            lapkeuRequest.setDescription("Maintenance");
+            lapkeuRequest.setDescription("Maintenance - " + asset.getPlatNomor());
             lapkeuRequest.setPaymentDate(savedMaintenance.getTanggalMulaiMaintenance());
 
             webClientBuilder.build()
