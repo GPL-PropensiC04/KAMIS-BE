@@ -30,6 +30,18 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
     );
 
     // =========================
+    // ======== WEEKLY ========
+    // =========================
+
+    @Query("SELECT l.paymentDate, SUM(l.pemasukan), SUM(l.pengeluaran) " +
+       "FROM Lapkeu l " +
+       "WHERE l.paymentDate BETWEEN :startDate AND :endDate " +
+       "GROUP BY l.paymentDate ORDER BY l.paymentDate")
+    List<Object[]> getIncomeExpenseRawByDay(@Param("startDate") Date startDate,
+                                            @Param("endDate") Date endDate);
+
+
+    // =========================
     // ======== MONTHLY ========
     // =========================
 
