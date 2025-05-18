@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
+import gpl.karina.finance.report.dto.response.BaseResponseDTO;
+import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
@@ -111,4 +114,20 @@ public class LapkeuServiceImpl implements LapkeuService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lapkeu not found"));
         lapkeuRepository.delete(lapkeu);
     }
-}
+
+    @Override
+    public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(Date startDate, Date endDate) {
+        List<Object[]> rawData;
+
+        if (startDate != null && endDate != null) {
+            rawData = lapkeuRepository.getTotalPengeluaranPerActivityTypeBetweenDates(startDate, endDate);
+        } else {
+            rawData = lapkeuRepository.getTotalPengeluaranPerActivityType();
+        }
+
+        return rawData.stream()
+            .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
+            .collect(Collectors.toList());
+        }
+
+    }
