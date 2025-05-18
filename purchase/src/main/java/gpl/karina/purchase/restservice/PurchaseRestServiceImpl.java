@@ -928,7 +928,22 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
             lapkeuRequest.setActivityType(2); // PURCHASE
             lapkeuRequest.setPemasukan(0L);
             lapkeuRequest.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
-            lapkeuRequest.setDescription("Pembelian");
+            String namaBarang = "";
+            if (!purchase.isPurchaseType()) {
+                // Tipe aset
+                if (purchase.getPurchaseAsset() != null) {
+                    AssetTemp assetTemp = assetTempRepository.findById(purchase.getPurchaseAsset()).orElse(null);
+                    if (assetTemp != null) {
+                        namaBarang = assetTemp.getAssetName();
+                    }
+                }
+            } else {
+                List<ResourceTemp> resources = purchase.getPurchaseResource();
+                if (resources != null && !resources.isEmpty()) {
+                    namaBarang = resources.get(0).getResourceName();
+                }
+            }
+            lapkeuRequest.setDescription("Pembelian - " + namaBarang);
             lapkeuRequest.setPaymentDate(purchase.getPurchasePaymentDate());
 
             webClientBuilder.build()
