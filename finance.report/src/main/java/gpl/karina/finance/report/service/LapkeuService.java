@@ -7,4 +7,6 @@ import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 
 public interface LapkeuService {
     List<LapkeuResponseDTO> fetchAllLapkeu(Date startDate, Date endDate, Integer activityType);
+    LapkeuResponseDTO createLapkeu(LapkeuResponseDTO lapkeuDTO);
+    void deleteLapkeu(String id);
 }
