@@ -31,6 +31,7 @@ import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseStatusDTO;
+import gpl.karina.purchase.restdto.response.ActivityLineDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseListResponseDTO;
@@ -382,4 +383,43 @@ public class PurchaseController {
         }
     }
     
+
+    @GetMapping("/chart/purchase-activity")
+    public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getPurchaseActivityLineChart(
+        @RequestParam(name = "startDate", required = false) 
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+
+        @RequestParam(name = "endDate", required = false) 
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
+
+        @RequestParam(name = "periodType", defaultValue = "MONTHLY") String periodType,
+        @RequestParam(name = "status", defaultValue = "ALL") String status
+    ) {
+        BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<ActivityLineDTO> result = purchaseRestService.getPurchaseActivityLine(periodType, startDate, endDate, status);
+
+            if (result.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data aktivitas pembelian yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan data aktivitas pembelian per periode");
+            response.setTimestamp(new Date());
+            response.setData(result);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data aktivitas pembelian: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

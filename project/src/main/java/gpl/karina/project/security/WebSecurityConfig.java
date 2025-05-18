@@ -35,6 +35,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/test").permitAll()
                         .requestMatchers("/api/project/add").hasAnyAuthority( ROLE_OPERASIONAL)
+                        .requestMatchers("/api/project/chart/**").hasAnyAuthority( ROLE_OPERASIONAL)
                         .requestMatchers("/api/project/update/**").hasAnyAuthority( ROLE_OPERASIONAL, ROLE_DIREKSI)
                         .requestMatchers("/api/project/update-status/**").hasAnyAuthority(ROLE_OPERASIONAL)
                         .requestMatchers("/api/project/update-payment/**").hasAnyAuthority(ROLE_FINANCE)
