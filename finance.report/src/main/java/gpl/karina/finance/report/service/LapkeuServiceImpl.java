@@ -209,7 +209,7 @@ public class LapkeuServiceImpl implements LapkeuService {
                     if ("Aset".equalsIgnoreCase(purchase.getPurchaseType())) {
                         var asset = fetchAssetTempById(purchase.getPurchaseId(), token);
                         if (asset != null && asset.getAssetNameString() != null) {
-                            lapkeu.setDescription("Pembelian Resource - " + asset.getAssetNameString());
+                            lapkeu.setDescription("Pembelian Aset - " + asset.getAssetNameString());
                         } else {
                             lapkeu.setDescription("Pembelian aset (data tidak ditemukan)");
                         }
@@ -223,7 +223,7 @@ public class LapkeuServiceImpl implements LapkeuService {
                                 .map(r -> r.getResourceName())
                                 .reduce((a, b) -> a + ", " + b)
                                 .orElse("-");
-                            lapkeu.setDescription("Pembelian Aset - " + barang);
+                            lapkeu.setDescription("Pembelian Resource - " + barang);
                         } else {
                             lapkeu.setDescription("Pembelian resource (data tidak ditemukan)");
                         }
