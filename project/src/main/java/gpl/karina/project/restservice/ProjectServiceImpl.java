@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,6 +42,7 @@ import gpl.karina.project.restdto.fetch.ResourceDetailDTO;
 import gpl.karina.project.restdto.request.AddLapkeuDTO;
 import gpl.karina.project.restdto.request.AddProjectRequestDTO;
 import gpl.karina.project.restdto.request.UpdateProjectRequestDTO;
+import gpl.karina.project.restdto.response.ActivityLineDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
 import gpl.karina.project.restdto.response.LogProjectResponseDTO;
@@ -1329,4 +1332,118 @@ public class ProjectServiceImpl implements ProjectService {
         }
         return projectToProjectResponseDetailDTO(updatedProject);
     }
+
+    @Override
+    public List<ActivityLineDTO> getProjectActivityLine(
+        String periodType, Date startDate, Date endDate, String statusFilter, boolean isDistribusi) {
+
+        List<Object[]> rawData;
+        Boolean projectType = isDistribusi; // true = distribusi, false = penjualan
+
+        List<Integer> statusList;
+        boolean excludeMode;
+
+        switch (statusFilter.toUpperCase()) {
+            case "CANCELLED":
+                statusList = List.of(3); // Batal
+                excludeMode = false;
+                break;
+            case "DONE":
+                statusList = List.of(2); // Selesai
+                excludeMode = false;
+                break;
+            case "ALL":
+            default:
+                statusList = List.of(3); // exclude Batal
+                excludeMode = true;
+                break;
+        }
+
+        // Default date range: this year
+        if (startDate == null || endDate == null) {
+            LocalDate start = LocalDate.now().withDayOfYear(1);
+            startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            endDate = new Date();
+        }
+
+        Map<String, ActivityLineDTO> resultMap = new HashMap<>();
+        List<String> fullPeriods;
+
+        switch (periodType.toUpperCase()) {
+            case "MONTHLY":
+                rawData = excludeMode
+                    ? projectRepository.getMonthlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
+                    : projectRepository.getMonthlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                fullPeriods = generateMonthPeriods(startDate, endDate);
+                break;
+
+            case "QUARTERLY":
+                rawData = excludeMode
+                    ? projectRepository.getQuarterlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
+                    : projectRepository.getQuarterlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                fullPeriods = generateQuarterPeriods(startDate, endDate);
+                break;
+
+            case "YEARLY":
+                rawData = excludeMode
+                    ? projectRepository.getYearlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
+                    : projectRepository.getYearlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                fullPeriods = generateYearPeriods(startDate, endDate);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid period type");
+        }
+
+        for (Object[] row : rawData) {
+            resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+        }
+
+        return fullPeriods.stream()
+                .map(p -> resultMap.getOrDefault(p, new ActivityLineDTO(p, 0L)))
+                .collect(Collectors.toList());
+    }
+
+    private List<String> generateMonthPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            periods.add(start.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateQuarterPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            int quarter = (start.getMonthValue() - 1) / 3 + 1;
+            String period = start.getYear() + "-Q" + quarter;
+            if (!periods.contains(period)) {
+                periods.add(period);
+            }
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateYearPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        int startYear = toLocalDate(startDate).getYear();
+        int endYear = toLocalDate(endDate).getYear();
+        for (int year = startYear; year <= endYear; year++) {
+            periods.add(String.valueOf(year));
+        }
+        return periods;
+    }
+
+    private LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
 }

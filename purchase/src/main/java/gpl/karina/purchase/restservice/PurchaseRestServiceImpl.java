@@ -2,6 +2,9 @@ package gpl.karina.purchase.restservice;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -44,6 +47,7 @@ import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.ResourceTempDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseStatusDTO;
+import gpl.karina.purchase.restdto.response.ActivityLineDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.LogPurchaseResponseDTO;
@@ -966,6 +970,110 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         System.out.println("Purchases: " + purchaseResponseDTOs);
         
         return purchaseResponseDTOs;
+    }
+
+    @Override
+    public List<ActivityLineDTO> getPurchaseActivityLine(String periodType, Date startDate, Date endDate, String statusFilter) {
+        List<Object[]> rawData;
+        List<String> statuses = null;
+
+        switch (statusFilter.toUpperCase()) {
+            case "CANCELLED":
+                statuses = List.of("Ditolak", "Dibatalkan");
+                break;
+            case "DONE":
+                statuses = List.of("Selesai"); // sesuaikan dengan status "berhasil"
+                break;
+            case "ALL":
+                statuses = List.of("Ditolak", "Dibatalkan"); // akan digunakan dalam `NOT IN`
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid status filter");
+        }
+
+        // Default fallback date
+        if (startDate == null || endDate == null) {
+            LocalDate start = LocalDate.now().withDayOfYear(1);
+            startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            endDate = new Date();
+        }
+
+        List<String> fullPeriods;
+        Map<String, ActivityLineDTO> resultMap = new HashMap<>();
+
+        switch (periodType.toUpperCase()) {
+            case "MONTHLY":
+                rawData = "ALL".equalsIgnoreCase(statusFilter)
+                        ? purchaseRepository.getMonthlyPurchaseCountExcludeStatus(startDate, endDate, statuses)
+                        : purchaseRepository.getMonthlyPurchaseCountInStatus(startDate, endDate, statuses);
+                fullPeriods = generateMonthPeriods(startDate, endDate);
+                break;
+            case "QUARTERLY":
+                rawData = "ALL".equalsIgnoreCase(statusFilter)
+                        ? purchaseRepository.getQuarterlyPurchaseCountExcludeStatus(startDate, endDate, statuses)
+                        : purchaseRepository.getQuarterlyPurchaseCountInStatus(startDate, endDate, statuses);
+                fullPeriods = generateQuarterPeriods(startDate, endDate);
+                break;
+            case "YEARLY":
+                rawData = "ALL".equalsIgnoreCase(statusFilter)
+                        ? purchaseRepository.getYearlyPurchaseCountExcludeStatus(startDate, endDate, statuses)
+                        : purchaseRepository.getYearlyPurchaseCountInStatus(startDate, endDate, statuses);
+                fullPeriods = generateYearPeriods(startDate, endDate);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid period type");
+        }
+
+        for (Object[] row : rawData) {
+            resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+        }
+
+        return fullPeriods.stream()
+                .map(p -> resultMap.getOrDefault(p, new ActivityLineDTO(p, 0L)))
+                .collect(Collectors.toList());
+    }
+
+
+    private List<String> generateMonthPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            periods.add(start.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateQuarterPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            int quarter = (start.getMonthValue() - 1) / 3 + 1;
+            String period = start.getYear() + "-Q" + quarter;
+            if (!periods.contains(period)) {
+                periods.add(period);
+            }
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateYearPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        int startYear = toLocalDate(startDate).getYear();
+        int endYear = toLocalDate(endDate).getYear();
+        for (int year = startYear; year <= endYear; year++) {
+            periods.add(String.valueOf(year));
+        }
+        return periods;
+    }
+
+    private LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
 }
