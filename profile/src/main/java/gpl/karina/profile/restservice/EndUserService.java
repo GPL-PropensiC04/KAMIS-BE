@@ -1,5 +1,6 @@
 package gpl.karina.profile.restservice;
 
+import java.util.List;
 import java.util.Optional;
 
 import gpl.karina.profile.restdto.request.LoginRequestDTO;
@@ -11,4 +12,5 @@ public interface EndUserService {
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO);
     public void addUser(AddUserReqeuestDTO addUserReqeuestDTO);
     public Optional<EndUserResponseDTO> findByEmail(String email);
+    public List<EndUserResponseDTO> getAllUsers();
 }
