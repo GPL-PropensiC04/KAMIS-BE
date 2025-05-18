@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
+import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.dto.response.ProjectResponseDTO;
 import gpl.karina.finance.report.dto.response.PurchaseResponseDTO;
@@ -258,4 +259,20 @@ public class LapkeuServiceImpl implements LapkeuService {
         }
         return lapkeuList;
     }    
-}
+
+    @Override
+    public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(Date startDate, Date endDate) {
+        List<Object[]> rawData;
+
+        if (startDate != null && endDate != null) {
+            rawData = lapkeuRepository.getTotalPengeluaranPerActivityTypeBetweenDates(startDate, endDate);
+        } else {
+            rawData = lapkeuRepository.getTotalPengeluaranPerActivityType();
+        }
+
+        return rawData.stream()
+            .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
+            .collect(Collectors.toList());
+        }
+
+    }
