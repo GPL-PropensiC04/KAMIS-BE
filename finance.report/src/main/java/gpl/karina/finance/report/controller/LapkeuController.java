@@ -29,11 +29,12 @@ public class LapkeuController {
     @GetMapping("/all")
     public ResponseEntity<BaseResponseDTO<List<LapkeuResponseDTO>>> getAllLapkeu(
         @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
-        @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate
+        @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate,
+        @RequestParam(name = "activityType", required = false) Integer activityType
     ) {
         BaseResponseDTO<List<LapkeuResponseDTO>> response = new BaseResponseDTO<>();
         try {
-            List<LapkeuResponseDTO> listLapkeu = lapkeuService.fetchAllLapkeu(startDate, endDate);
+            List<LapkeuResponseDTO> listLapkeu = lapkeuService.fetchAllLapkeu(startDate, endDate, activityType);
             if (listLapkeu.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Tidak ada data laporan keuangan yang ditemukan");

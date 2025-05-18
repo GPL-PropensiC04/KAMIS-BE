@@ -70,7 +70,7 @@ public class LapkeuServiceImpl implements LapkeuService {
     }
 
     @Override
-    public List<LapkeuResponseDTO> fetchAllLapkeu(Date startDate, Date endDate) {
+    public List<LapkeuResponseDTO> fetchAllLapkeu(Date startDate, Date endDate, Integer activityType) {
         syncLapkeuFromAllModules();
         List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
         List<Lapkeu> filtered = lapkeuList.stream()
@@ -81,13 +81,16 @@ public class LapkeuServiceImpl implements LapkeuService {
                 if (endDate != null && l.getPaymentDate() != null && l.getPaymentDate().after(endDate)) {
                     return false;
                 }
+                if (activityType != null && !activityType.equals(l.getActivityType())) {
+                    return false;
+                }
                 return true;
             })
             .collect(Collectors.toList());
             
         return filtered.stream()
             .map(l -> new LapkeuResponseDTO(
-                    l.getId(), l.getActivityType(), l.getPemasukan(), l.getPengeluaran(), l.getDescription(), (Date) l.getPaymentDate()))
+                    l.getId(), l.getActivityType(), l.getPemasukan(), l.getPengeluaran(), l.getDescription(), l.getPaymentDate()))
             .collect(Collectors.toList());
     }
 
