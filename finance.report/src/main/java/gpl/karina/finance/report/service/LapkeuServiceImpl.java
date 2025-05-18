@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
+import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.dto.response.ProjectResponseDTO;
 import gpl.karina.finance.report.dto.response.PurchaseResponseDTO;
@@ -273,6 +274,43 @@ public class LapkeuServiceImpl implements LapkeuService {
         return rawData.stream()
             .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, Date startDate, Date endDate) {
+        List<Object[]> rawData;
+
+        boolean useFilter = startDate != null && endDate != null;
+
+        switch (periodType.toUpperCase()) {
+            case "YEARLY":
+                rawData = useFilter
+                    ? lapkeuRepository.getIncomeExpenseYearlyFiltered(startDate, endDate)
+                    : lapkeuRepository.getIncomeExpenseYearly();
+                break;
+
+            case "QUARTERLY":
+                rawData = useFilter
+                    ? lapkeuRepository.getIncomeExpenseQuarterlyFiltered(startDate, endDate)
+                    : lapkeuRepository.getIncomeExpenseQuarterly();
+                break;
+
+            case "MONTHLY":
+            default:
+                rawData = useFilter
+                    ? lapkeuRepository.getIncomeExpenseMonthlyFiltered(startDate, endDate)
+                    : lapkeuRepository.getIncomeExpenseMonthly();
+                break;
         }
 
+        return rawData.stream()
+                .map(row -> new IncomeExpenseLineResponseDTO(
+                        (String) row[0],
+                        (Long) row[1],
+                        (Long) row[2]
+                ))
+                .collect(Collectors.toList());
     }
+
+
+}
