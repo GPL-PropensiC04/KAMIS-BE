@@ -25,5 +25,5 @@ public interface ProjectService {
     public ProjectResponseWrapperDTO updateProjectPayment(String id, Integer projectPaymentStatus) throws Exception;
     // public ProjectResponseDTO getProjectById(String id) throws Exception;
 
-    List<ActivityLineDTO> getProjectActivityLine(String periodType, Date startDate, Date endDate, String statusFilter, boolean isDistribusi);
+    List<ActivityLineDTO> getProjectActivityLine(String periodType, String range, String statusFilter, boolean isDistribusi);
 }

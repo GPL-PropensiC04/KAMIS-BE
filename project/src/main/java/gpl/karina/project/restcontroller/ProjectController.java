@@ -259,19 +259,13 @@ public class ProjectController {
 
     @GetMapping("/chart/penjualan-activity")
     public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getPenjualanActivityLineChart(
-        @RequestParam(name = "startDate", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-
-        @RequestParam(name = "endDate", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-
-        @RequestParam(name = "periodType", defaultValue = "MONTHLY") String periodType,
-
+        @RequestParam(name = "periodType", required = false) String periodType,
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range,
         @RequestParam(name = "status", defaultValue = "ALL") String status
     ) {
         BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
         try {
-            List<ActivityLineDTO> data = projectService.getProjectActivityLine(periodType, startDate, endDate, status, false); // false = penjualan
+            List<ActivityLineDTO> data = projectService.getProjectActivityLine(periodType, range, status, false); // false = penjualan
 
             if (data.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -286,6 +280,14 @@ public class ProjectController {
             response.setTimestamp(new Date());
             response.setData(data);
             return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data aktivitas penjualan: " + e.getMessage());
@@ -295,21 +297,16 @@ public class ProjectController {
         }
     }
 
+
     @GetMapping("/chart/distribusi-activity")
     public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getDistribusiActivityLineChart(
-        @RequestParam(name = "startDate", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-
-        @RequestParam(name = "endDate", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-
-        @RequestParam(name = "periodType", defaultValue = "MONTHLY") String periodType,
-
+        @RequestParam(name = "periodType", required = false) String periodType,
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range,
         @RequestParam(name = "status", defaultValue = "ALL") String status
     ) {
         BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
         try {
-            List<ActivityLineDTO> data = projectService.getProjectActivityLine(periodType, startDate, endDate, status, true); // true = distribusi
+            List<ActivityLineDTO> data = projectService.getProjectActivityLine(periodType, range, status, true); // true = distribusi
 
             if (data.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -324,6 +321,14 @@ public class ProjectController {
             response.setTimestamp(new Date());
             response.setData(data);
             return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data aktivitas distribusi: " + e.getMessage());
@@ -332,6 +337,7 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
 }
