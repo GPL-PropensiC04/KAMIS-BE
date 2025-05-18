@@ -1,6 +1,7 @@
 package gpl.karina.finance.report.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
@@ -10,6 +11,7 @@ import gpl.karina.finance.report.service.LapkeuService;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,10 +27,14 @@ public class LapkeuController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<BaseResponseDTO<List<LapkeuResponseDTO>>> getAllLapkeu() {
+    public ResponseEntity<BaseResponseDTO<List<LapkeuResponseDTO>>> getAllLapkeu(
+        @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
+        @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate,
+        @RequestParam(name = "activityType", required = false) Integer activityType
+    ) {
         BaseResponseDTO<List<LapkeuResponseDTO>> response = new BaseResponseDTO<>();
         try {
-            List<LapkeuResponseDTO> listLapkeu = lapkeuService.fetchAllLapkeu();
+            List<LapkeuResponseDTO> listLapkeu = lapkeuService.fetchAllLapkeu(startDate, endDate, activityType);
             if (listLapkeu.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Tidak ada data laporan keuangan yang ditemukan");
