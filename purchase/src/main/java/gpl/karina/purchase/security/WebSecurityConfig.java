@@ -34,6 +34,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/supplier/**")
                         .hasAnyAuthority("Admin", "Direksi", "Finance", "Operasional")
                         .requestMatchers("/api/purchase/add").hasAnyAuthority("Operasional","Admin")
+                        .requestMatchers("/api/purchase/chart/**").hasAnyAuthority("Operasional","Admin")
                         .requestMatchers("/api/purchase/viewall**").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")
                         .requestMatchers("/api/purchase/update/**").hasAnyAuthority("Operasional", "Admin")
                         .requestMatchers("/api/purchase/detail/**").hasAnyAuthority("Direksi", "Finance", "Operasional", "Admin")
