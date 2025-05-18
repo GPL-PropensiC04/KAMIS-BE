@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import gpl.karina.project.restdto.request.AddProjectRequestDTO;
 import gpl.karina.project.restdto.request.UpdateProjectPaymentRequestDTO;
 import gpl.karina.project.restdto.request.UpdateProjectRequestDTO;
+import gpl.karina.project.restdto.response.ActivityLineDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
@@ -255,4 +256,82 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/chart/penjualan-activity")
+    public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getPenjualanActivityLineChart(
+        @RequestParam(name = "startDate", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+
+        @RequestParam(name = "endDate", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
+
+        @RequestParam(name = "periodType", defaultValue = "MONTHLY") String periodType,
+
+        @RequestParam(name = "status", defaultValue = "ALL") String status
+    ) {
+        BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<ActivityLineDTO> data = projectService.getProjectActivityLine(periodType, startDate, endDate, status, false); // false = penjualan
+
+            if (data.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data aktivitas penjualan yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan data aktivitas penjualan per periode");
+            response.setTimestamp(new Date());
+            response.setData(data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data aktivitas penjualan: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/chart/distribusi-activity")
+    public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getDistribusiActivityLineChart(
+        @RequestParam(name = "startDate", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+
+        @RequestParam(name = "endDate", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
+
+        @RequestParam(name = "periodType", defaultValue = "MONTHLY") String periodType,
+
+        @RequestParam(name = "status", defaultValue = "ALL") String status
+    ) {
+        BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<ActivityLineDTO> data = projectService.getProjectActivityLine(periodType, startDate, endDate, status, true); // true = distribusi
+
+            if (data.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data aktivitas distribusi yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan data aktivitas distribusi per periode");
+            response.setTimestamp(new Date());
+            response.setData(data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data aktivitas distribusi: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 }
