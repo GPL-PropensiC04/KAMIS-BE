@@ -62,6 +62,7 @@ public class LapkeuServiceImpl implements LapkeuService {
     public List<LapkeuResponseDTO> fetchAllLapkeu(Date startDate, Date endDate) {
         syncLapkeuFromAllModules();
         List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
+
         List<Lapkeu> filtered = lapkeuList.stream()
             .filter(l -> {
                 if (startDate != null && l.getPaymentDate() != null && l.getPaymentDate().before(startDate)) {
