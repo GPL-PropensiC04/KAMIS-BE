@@ -47,4 +47,5 @@ public class DistributionResponseDTO {
     private Long projectTotalPengeluaran;
 
     private List<LogProjectResponseDTO> projectLogs;
+    private Date projectPaymentDate;
 }

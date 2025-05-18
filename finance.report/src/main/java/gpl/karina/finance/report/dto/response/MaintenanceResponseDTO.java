@@ -1,5 +1,7 @@
 package gpl.karina.finance.report.dto.response;
 
+import java.util.Date;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,4 +14,5 @@ public class MaintenanceResponseDTO {
     private Float biaya;
     private String platNomor;
     private String namaAset;
+    private Date tanggalMulaiMaintenance;
 }

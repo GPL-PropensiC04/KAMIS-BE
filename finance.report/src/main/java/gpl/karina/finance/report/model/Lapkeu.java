@@ -1,5 +1,7 @@
 package gpl.karina.finance.report.model;
 
+import java.util.Date;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +22,7 @@ public class Lapkeu {
     private String id; // ID aktivitas (distribusi/penjualan/purchasing/maintenance)
 
     @Column(name = "jenis_aktivitas", nullable = false)
-    private Integer activityType; // 0 : DISTRIBUSI, 1 : PENJUALAN, 2 : PURCHASE, 3 : MAINTENANCE
+    private Integer activityType; // 0 : PENJUALAN, 1 : DISTRIBUSI, 2 : PURCHASE, 3 : MAINTENANCE
 
     @Column
     private Long pemasukan; // Null jika tidak ada pemasukan
@@ -30,4 +32,7 @@ public class Lapkeu {
 
     @Column
     private String description; // Keterangan tambahan (opsional)
+
+    @Column(name = "Tanggal Pembayaran")
+    private Date paymentDate;
 }
