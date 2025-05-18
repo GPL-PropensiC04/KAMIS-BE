@@ -37,6 +37,7 @@ import gpl.karina.purchase.repository.AssetTempRepository;
 import gpl.karina.purchase.repository.LogPurchaseRepository;
 import gpl.karina.purchase.repository.PurchaseRepository;
 import gpl.karina.purchase.repository.ResourceTempRepository;
+import gpl.karina.purchase.restdto.request.AddLapkeuDTO;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
 import gpl.karina.purchase.restdto.request.AddPurchaseIdDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
@@ -68,6 +69,9 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
     private String assetUrl;
     @Value("${purchase.app.profileUrl}")
     private String profileUrl;
+    @Value("${purchase.app.financeUrl}")
+    private String financeUrl;
+
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
     private final ResourceTempRepository resourceTempRepository;
@@ -910,6 +914,26 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         purchase.setPurchaseNote(updatePurchaseStatusDTO.getPurchaseNote());
         purchase.setPurchasePaymentDate(new Date());
         purchase.setPurchaseUpdateDate(new Date());
+
+        try {
+            AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
+            lapkeuRequest.setId(purchase.getId());
+            lapkeuRequest.setActivityType(2); // PURCHASE
+            lapkeuRequest.setPemasukan(0L);
+            lapkeuRequest.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
+            lapkeuRequest.setDescription("Pembelian");
+            lapkeuRequest.setPaymentDate(purchase.getPurchasePaymentDate());
+
+            webClientBuilder.build()
+                .post()
+                .uri(financeUrl + "/lapkeu/add") 
+                .bodyValue(lapkeuRequest)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+        } catch (Exception e) {
+            logger.error("Gagal insert ke Lapkeu: " + e.getMessage());
+        }
 
         LogPurchase newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
         purchase.getPurchaseLogs().add(newLog);

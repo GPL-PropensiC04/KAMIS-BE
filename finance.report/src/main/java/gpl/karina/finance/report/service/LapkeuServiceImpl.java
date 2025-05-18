@@ -13,20 +13,16 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 
 import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
-import gpl.karina.finance.report.dto.response.ProjectResponseDTO;
-import gpl.karina.finance.report.dto.response.PurchaseResponseDTO;
-import gpl.karina.finance.report.dto.response.ResourceTempResponseDTO;
-import gpl.karina.finance.report.dto.response.MaintenanceResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,8 +48,6 @@ public class LapkeuServiceImpl implements LapkeuService {
     @Value("${finance.report.app.assetUrl}")
     private String assetUrl;
 
-    private final WebClient webClient = WebClient.create();
-
     public LapkeuServiceImpl(LapkeuRepository lapkeuRepository) {
         this.lapkeuRepository = lapkeuRepository;
     }
@@ -66,19 +60,8 @@ public class LapkeuServiceImpl implements LapkeuService {
         return null;
     }
 
-    private Date getDateOnly(Date date) {
-        if (date == null) return null;
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        return cal.getTime();
-    }
-
     @Override
     public List<LapkeuResponseDTO> fetchAllLapkeu(Date startDate, Date endDate, Integer activityType) {
-        syncLapkeuFromAllModules();
         List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
         List<Lapkeu> filtered = lapkeuList.stream()
             .filter(l -> {
@@ -101,170 +84,44 @@ public class LapkeuServiceImpl implements LapkeuService {
             .collect(Collectors.toList());
     }
 
-    public void syncLapkeuFromAllModules() {
-        String token = getTokenFromRequest();
-        List<Lapkeu> lapkeuList = new ArrayList<>();
+    @Override
+    public LapkeuResponseDTO createLapkeu(LapkeuResponseDTO lapkeuDTO) {
+        Lapkeu lapkeu = new Lapkeu();
+        lapkeu.setId(lapkeuDTO.getId());
+        lapkeu.setActivityType(lapkeuDTO.getActivityType());
+        lapkeu.setPemasukan(lapkeuDTO.getPemasukan());
+        lapkeu.setPengeluaran(lapkeuDTO.getPengeluaran());
+        lapkeu.setDescription(lapkeuDTO.getDescription());
+        lapkeu.setPaymentDate(lapkeuDTO.getPaymentDate());
 
-        lapkeuList.addAll(fetchProjectLapkeu(token));
-        lapkeuList.addAll(fetchPurchaseLapkeu(token));
-        lapkeuList.addAll(fetchMaintenanceLapkeu(token));
-
-        for (Lapkeu lapkeu : lapkeuList) {
-            lapkeuRepository.save(lapkeu);
-        }
-    }
-
-    private List<Lapkeu> fetchProjectLapkeu(String token) {
-        List<Lapkeu> lapkeuList = new ArrayList<>();
-        var projectResponse = webClient.get()
-            .uri(projectUrl + "api/project/all")
-            .headers(headers -> headers.setBearerAuth(token))
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<ProjectResponseDTO>>>() {})
-            .block();
-        
-        if (projectResponse != null) {
-            for (var project : projectResponse.getData()) {
-                if (project.getProjectPaymentStatus() == 1) {
-                    Lapkeu lapkeu = new Lapkeu();
-                    lapkeu.setId(project.getId());
-                    if (Boolean.TRUE.equals(project.getProjectType())) {
-                        lapkeu.setActivityType(1); // 1 = Distribusi
-                        lapkeu.setDescription("Distribusi - " + project.getProjectName());
-                    } else {
-                        lapkeu.setActivityType(0); // 0 = Penjualan
-                        lapkeu.setDescription("Penjualan - " + project.getProjectName());
-                    }
-                    lapkeu.setPemasukan(project.getProjectTotalPemasukkan());
-                    lapkeu.setPengeluaran(project.getProjectTotalPengeluaran());
-                    lapkeu.setPaymentDate(getDateOnly(project.getProjectPaymentDate()));
-                    lapkeuList.add(lapkeu);
-                }
-            }
-        }
-        return lapkeuList;
-    }
-
-    private AssetTempResponseDTO fetchAssetTempById(String purchaseId, String token) {
         try {
-            // 1. Fetch detail purchase
-            var purchaseDetailResponse = webClient.get()
-                .uri(purchaseUrl + "api/purchase/detail/" + purchaseId)
-                .headers(headers -> headers.setBearerAuth(token))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<PurchaseResponseDTO>>() {})
-                .block();
-
-            PurchaseResponseDTO purchase = purchaseDetailResponse != null ? purchaseDetailResponse.getData() : null;
-            if (purchase == null) return null;
-
-            // Log untuk debug
-
-            // 2. Cek tipe purchase
-            if ("Aset".equalsIgnoreCase(purchase.getPurchaseType()) && purchase.getPurchaseAsset() != null) {
-                var assetResponse = webClient.get()
-                    .uri(purchaseUrl + "api/purchase/asset/" + purchase.getPurchaseAsset().getId())
-                    .headers(headers -> headers.setBearerAuth(token))
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetTempResponseDTO>>() {})
-                    .block();
-
-                return assetResponse != null ? assetResponse.getData() : null;
-            }
-
-            // 4. Jika bukan aset, return null
-            return null;
+            Lapkeu savedLapkeu = lapkeuRepository.save(lapkeu);
+            return convertToLapkeuResponseDTO(savedLapkeu);
         } catch (Exception e) {
-            return null;
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Error occurred while creating Lapkeu: " + e.getMessage()
+            );
         }
     }
 
-    private PurchaseResponseDTO fetchPurchaseDetailById(String purchaseId, String token) {
-        try {
-            var purchaseDetailResponse = webClient.get()
-                .uri(purchaseUrl + "api/purchase/detail/" + purchaseId)
-                .headers(headers -> headers.setBearerAuth(token))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<PurchaseResponseDTO>>() {})
-                .block();
-
-            return purchaseDetailResponse != null ? purchaseDetailResponse.getData() : null;
-        } catch (Exception e) {
-            return null;
-        }
+    private LapkeuResponseDTO convertToLapkeuResponseDTO(Lapkeu lapkeu) {
+        var lapkeuDTO = new LapkeuResponseDTO();
+        lapkeuDTO.setId(lapkeu.getId());
+        lapkeuDTO.setActivityType(lapkeu.getActivityType());
+        lapkeuDTO.setPemasukan(lapkeu.getPemasukan());
+        lapkeuDTO.setPengeluaran(lapkeu.getPengeluaran());
+        lapkeuDTO.setDescription(lapkeu.getDescription());
+        lapkeuDTO.setPaymentDate(lapkeu.getPaymentDate());
+        return lapkeuDTO;
     }
 
-    private List<Lapkeu> fetchPurchaseLapkeu(String token) {
-        List<Lapkeu> lapkeuList = new ArrayList<>();
-        var purchaseResponse = webClient.get()
-            .uri(purchaseUrl + "api/purchase/viewall")
-            .headers(headers -> headers.setBearerAuth(token))
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<PurchaseResponseDTO>>>() {})
-            .block();
-
-        if (purchaseResponse != null && purchaseResponse.getData() != null) {
-            for (var purchase : purchaseResponse.getData()) {
-                if (purchase.getPurchasePaymentDate() != null) {
-                    Lapkeu lapkeu = new Lapkeu();
-                    lapkeu.setId(purchase.getPurchaseId());
-                    lapkeu.setActivityType(2); // 2 = PURCHASE
-                    lapkeu.setPemasukan(0L);
-                    lapkeu.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
-                    lapkeu.setPaymentDate(getDateOnly(purchase.getPurchasePaymentDate()));
-                    
-                    if ("Aset".equalsIgnoreCase(purchase.getPurchaseType())) {
-                        var asset = fetchAssetTempById(purchase.getPurchaseId(), token);
-                        if (asset != null && asset.getAssetNameString() != null) {
-                            lapkeu.setDescription("Pembelian Aset - " + asset.getAssetNameString());
-                        } else {
-                            lapkeu.setDescription("Pembelian aset (data tidak ditemukan)");
-                        }
-                    } else if ("Resource".equalsIgnoreCase(purchase.getPurchaseType())) {
-                        // Fetch detail purchase untuk dapatkan list resource yang lengkap
-                        var purchaseDetail = fetchPurchaseDetailById(purchase.getPurchaseId(), token);
-                        List<ResourceTempResponseDTO> resourceList = purchaseDetail != null ? purchaseDetail.getPurchaseResource() : null;
-
-                        if (resourceList != null && !resourceList.isEmpty()) {
-                            String barang = resourceList.stream()
-                                .map(r -> r.getResourceName())
-                                .reduce((a, b) -> a + ", " + b)
-                                .orElse("-");
-                            lapkeu.setDescription("Pembelian Resource - " + barang);
-                        } else {
-                            lapkeu.setDescription("Pembelian resource (data tidak ditemukan)");
-                        }
-                    }
-                    lapkeuList.add(lapkeu);
-                }
-            }
-        }
-        return lapkeuList;
+    @Override
+    public void deleteLapkeu(String id) {
+        Lapkeu lapkeu = lapkeuRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lapkeu not found"));
+        lapkeuRepository.delete(lapkeu);
     }
-
-    private List<Lapkeu> fetchMaintenanceLapkeu(String token) {
-        List<Lapkeu> lapkeuList = new ArrayList<>();
-        var maintenanceResponse = webClient.get()
-            .uri(assetUrl + "api/maintenance/all")
-            .headers(headers -> headers.setBearerAuth(token))
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<List<MaintenanceResponseDTO>>>() {})
-            .block();
-
-        if (maintenanceResponse != null) {
-            for (var maintenance : maintenanceResponse.getData()) {
-                Lapkeu lapkeu = new Lapkeu();
-                lapkeu.setId(String.valueOf(maintenance.getId()));
-                lapkeu.setActivityType(3); // 3 = MAINTENANCE
-                lapkeu.setPemasukan(0L);
-                lapkeu.setPengeluaran(maintenance.getBiaya() != null ? maintenance.getBiaya().longValue() : 0L);
-                lapkeu.setPaymentDate(getDateOnly(maintenance.getTanggalMulaiMaintenance()));
-                lapkeu.setDescription("Maintenance Aset - "+ maintenance.getPlatNomor());
-                lapkeuList.add(lapkeu);
-            }
-        }
-        return lapkeuList;
-    }    
 
     @Override
     public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(Date startDate, Date endDate) {
