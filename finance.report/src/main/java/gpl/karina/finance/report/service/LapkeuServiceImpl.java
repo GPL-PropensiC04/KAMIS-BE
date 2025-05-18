@@ -1,7 +1,14 @@
 package gpl.karina.finance.report.service;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
+import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
@@ -128,6 +136,98 @@ public class LapkeuServiceImpl implements LapkeuService {
         return rawData.stream()
             .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
             .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, Date startDate, Date endDate) {
+        List<Object[]> rawData;
+        Map<String, IncomeExpenseLineResponseDTO> resultMap = new HashMap<>();
+
+        // Default fallback: tahun ini
+        if (startDate == null || endDate == null) {
+            LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
+            startDate = Date.from(startOfYear.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            endDate = new Date();
         }
 
+        List<String> fullPeriods;
+
+        switch (periodType.toUpperCase()) {
+            case "MONTHLY":
+                rawData = lapkeuRepository.getIncomeExpenseMonthlyFiltered(startDate, endDate);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new IncomeExpenseLineResponseDTO((String) row[0], (Long) row[1], (Long) row[2]));
+                }
+                fullPeriods = generateMonthPeriods(startDate, endDate);
+                break;
+
+            case "QUARTERLY":
+                rawData = lapkeuRepository.getIncomeExpenseQuarterlyFiltered(startDate, endDate);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new IncomeExpenseLineResponseDTO((String) row[0], (Long) row[1], (Long) row[2]));
+                }
+                fullPeriods = generateQuarterPeriods(startDate, endDate);
+                break;
+
+            case "YEARLY":
+                rawData = lapkeuRepository.getIncomeExpenseYearlyFiltered(startDate, endDate);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new IncomeExpenseLineResponseDTO((String) row[0], (Long) row[1], (Long) row[2]));
+                }
+                fullPeriods = generateYearPeriods(startDate, endDate);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid periodType: " + periodType);
+        }
+
+        return fullPeriods.stream()
+            .map(period -> resultMap.getOrDefault(period, new IncomeExpenseLineResponseDTO(period, 0L, 0L)))
+            .collect(Collectors.toList());
     }
+    
+    private List<String> generateMonthPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            periods.add(start.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateQuarterPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            int quarter = (start.getMonthValue() - 1) / 3 + 1;
+            String period = start.getYear() + "-Q" + quarter;
+            if (!periods.contains(period)) {
+                periods.add(period);
+            }
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateYearPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        int startYear = toLocalDate(startDate).getYear();
+        int endYear = toLocalDate(endDate).getYear();
+        for (int year = startYear; year <= endYear; year++) {
+            periods.add(String.valueOf(year));
+        }
+        return periods;
+    }
+
+    private LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+
+
+}
