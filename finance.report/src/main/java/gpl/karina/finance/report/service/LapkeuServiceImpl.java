@@ -2,9 +2,12 @@ package gpl.karina.finance.report.service;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -139,16 +142,61 @@ public class LapkeuServiceImpl implements LapkeuService {
     }
 
     @Override
-    public List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, Date startDate, Date endDate) {
+    public List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, String range) {
         List<Object[]> rawData;
         Map<String, IncomeExpenseLineResponseDTO> resultMap = new HashMap<>();
 
-        // Default fallback: tahun ini
-        if (startDate == null || endDate == null) {
-            LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
-            startDate = Date.from(startOfYear.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            endDate = new Date();
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        // Tetapkan default periodType berdasarkan range
+        if (periodType == null || periodType.isBlank()) {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    periodType = "WEEKLY";
+                    break;
+                case "THIS_QUARTER":
+                    periodType = "MONTHLY";
+                    break;
+                case "THIS_YEAR":
+                default:
+                    periodType = "MONTHLY";
+                    break;
+            }
         }
+
+        // Tentukan start & end date berdasarkan range
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                if (!periodType.equalsIgnoreCase("WEEKLY")) {
+                    throw new IllegalArgumentException("THIS_MONTH hanya mendukung periodType = WEEKLY");
+                }
+                start = now.withDayOfMonth(1);
+                break;
+
+            case "THIS_QUARTER":
+                if (!periodType.equalsIgnoreCase("MONTHLY")) {
+                    throw new IllegalArgumentException("THIS_QUARTER hanya mendukung periodType = MONTHLY");
+                }
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+
+            case "THIS_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("THIS_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = now.withDayOfYear(1);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
         List<String> fullPeriods;
 
@@ -169,21 +217,69 @@ public class LapkeuServiceImpl implements LapkeuService {
                 fullPeriods = generateQuarterPeriods(startDate, endDate);
                 break;
 
-            case "YEARLY":
-                rawData = lapkeuRepository.getIncomeExpenseYearlyFiltered(startDate, endDate);
-                for (Object[] row : rawData) {
-                    resultMap.put((String) row[0], new IncomeExpenseLineResponseDTO((String) row[0], (Long) row[1], (Long) row[2]));
-                }
-                fullPeriods = generateYearPeriods(startDate, endDate);
-                break;
+            case "WEEKLY":
+            rawData = lapkeuRepository.getIncomeExpenseRawByDay(startDate, endDate);
+            int fixedMonth = toLocalDate(startDate).getMonthValue();
+            int fixedYear = toLocalDate(startDate).getYear();
+
+            for (Object[] row : rawData) {
+                LocalDate date = ((Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                String period = getMonthWeekLabel(date, fixedMonth, fixedYear);
+
+                resultMap.computeIfAbsent(period, p -> new IncomeExpenseLineResponseDTO(p, 0L, 0L));
+                IncomeExpenseLineResponseDTO dto = resultMap.get(period);
+                dto.setTotalPemasukan(dto.getTotalPemasukan() + (row[1] != null ? (Long) row[1] : 0L));
+                dto.setTotalPengeluaran(dto.getTotalPengeluaran() + (row[2] != null ? (Long) row[2] : 0L));
+            }
+
+            fullPeriods = generateMonthWeekPeriods(startDate, endDate);
+            break;
+
 
             default:
-                throw new IllegalArgumentException("Invalid periodType: " + periodType);
+                throw new IllegalArgumentException("Period type tidak dikenali: " + periodType);
         }
 
         return fullPeriods.stream()
-            .map(period -> resultMap.getOrDefault(period, new IncomeExpenseLineResponseDTO(period, 0L, 0L)))
-            .collect(Collectors.toList());
+                .map(period -> resultMap.getOrDefault(period, new IncomeExpenseLineResponseDTO(period, 0L, 0L)))
+                .collect(Collectors.toList());
+    }
+
+    private String getMonthWeekLabel(LocalDate anyDateInWeek, int fixedMonth, int fixedYear) {
+        LocalDate firstDayOfMonth = LocalDate.of(fixedYear, fixedMonth, 1);
+        int weekOfMonth = (int) ChronoUnit.WEEKS.between(
+                firstDayOfMonth.with(DayOfWeek.MONDAY),
+                anyDateInWeek.with(DayOfWeek.MONDAY)
+        ) + 1;
+
+        return String.format("%04d-%02d-W%d", fixedYear, fixedMonth, weekOfMonth);
+    }
+
+
+    private List<String> generateMonthWeekPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate pointer = toLocalDate(startDate).with(DayOfWeek.MONDAY);
+        LocalDate end = toLocalDate(endDate);
+
+        int targetMonth = toLocalDate(startDate).getMonthValue();
+        int targetYear = toLocalDate(startDate).getYear();
+
+        while (!pointer.isAfter(end)) {
+            // Hanya tambahkan minggu yang mengandung hari dari bulan & tahun target
+            for (int i = 0; i < 7; i++) {
+                LocalDate day = pointer.plusDays(i);
+                if (day.getMonthValue() == targetMonth && day.getYear() == targetYear) {
+                    String label = getMonthWeekLabel(pointer, targetMonth, targetYear);
+                    if (!periods.contains(label)) {
+                        periods.add(label);
+                    }
+                    break;
+                }
+            }
+            pointer = pointer.plusWeeks(1);
+        }
+
+        return periods;
     }
     
     private List<String> generateMonthPeriods(Date startDate, Date endDate) {
@@ -214,20 +310,18 @@ public class LapkeuServiceImpl implements LapkeuService {
         return periods;
     }
 
-    private List<String> generateYearPeriods(Date startDate, Date endDate) {
-        List<String> periods = new ArrayList<>();
-        int startYear = toLocalDate(startDate).getYear();
-        int endYear = toLocalDate(endDate).getYear();
-        for (int year = startYear; year <= endYear; year++) {
-            periods.add(String.valueOf(year));
-        }
-        return periods;
-    }
+    // private List<String> generateYearPeriods(Date startDate, Date endDate) {
+    //     List<String> periods = new ArrayList<>();
+    //     int startYear = toLocalDate(startDate).getYear();
+    //     int endYear = toLocalDate(endDate).getYear();
+    //     for (int year = startYear; year <= endYear; year++) {
+    //         periods.add(String.valueOf(year));
+    //     }
+    //     return periods;
+    // }
 
     private LocalDate toLocalDate(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
-
-
 
 }
