@@ -16,6 +16,32 @@ public interface PurchaseRepository extends JpaRepository<Purchase, String> {
     long countByPurchaseSubmissionDate(Date purchaseSubmissionDate);
     // Purchase findByIdAndNotDeleted(String purchaseId);
     List<Purchase> findAllByPurchaseSupplier(UUID purchaseSupplier);
+    List<Purchase> findByPurchaseSubmissionDateBetween(Date startDate, Date endDate);
+    int countByPurchaseSubmissionDateBetween(Date start, Date end);
+
+
+    // ===============================
+    // ======= WEEKLY QUERIES =======
+    // ===============================
+
+    @Query("SELECT p.purchaseSubmissionDate, COUNT(p) " +
+       "FROM Purchase p " +
+       "WHERE p.purchaseSubmissionDate BETWEEN :startDate AND :endDate " +
+       "AND p.purchaseStatus IN :statuses " +
+       "GROUP BY p.purchaseSubmissionDate")
+    List<Object[]> getDailyPurchaseCountInStatus(@Param("startDate") Date startDate,
+                                             @Param("endDate") Date endDate,
+                                             @Param("statuses") List<String> statuses);
+
+    @Query("SELECT p.purchaseSubmissionDate, COUNT(p) " +
+       "FROM Purchase p " +
+       "WHERE p.purchaseSubmissionDate BETWEEN :startDate AND :endDate " +
+       "AND p.purchaseStatus NOT IN :statuses " +
+       "GROUP BY p.purchaseSubmissionDate")
+    List<Object[]> getDailyPurchaseCountExcludeStatus(@Param("startDate") Date startDate,
+                                                  @Param("endDate") Date endDate,
+                                                  @Param("statuses") List<String> statuses);
+
 
     // ===============================
     // ======= MONTHLY QUERIES =======

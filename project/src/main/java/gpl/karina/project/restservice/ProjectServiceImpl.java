@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -47,6 +50,7 @@ import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
 import gpl.karina.project.restdto.response.LogProjectResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
+import gpl.karina.project.restdto.response.SellDistributionSummaryDTO;
 import gpl.karina.project.restdto.response.SellResponseDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import gpl.karina.project.security.jwt.JwtUtils;
@@ -383,20 +387,46 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private Date adjustedStartDate(Date startDate) {
+        if (startDate == null)
+            return null;
+
+        // Extract date components without timezone conversion
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
+
+        // Set time to noon (12:00) to avoid timezone conversion issues
+        // Using noon instead of 00:00 or 23:59 prevents day shifting in most timezone
+        // conversions
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+
+        calendar.clear();
+        calendar.set(year, month, day, 12, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
     private Date adjustedEndDate(Date endDate) {
+        if (endDate == null)
+            return null;
+
+        // Extract date components without timezone conversion
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(endDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
+
+        // Set time to noon (12:00) to avoid timezone conversion issues
+        // Using noon instead of 00:00 or 23:59 prevents day shifting in most timezone
+        // conversions
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+
+        calendar.clear();
+        calendar.set(year, month, day, 12, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
@@ -977,11 +1007,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         if (updateProjectRequestDTO.getProjectStartDate() != null) {
-            project.setProjectStartDate(updateProjectRequestDTO.getProjectStartDate());
+            project.setProjectStartDate(adjustedStartDate(updateProjectRequestDTO.getProjectStartDate()));
         }
 
         if (updateProjectRequestDTO.getProjectEndDate() != null) {
-            project.setProjectEndDate(updateProjectRequestDTO.getProjectEndDate());
+            project.setProjectEndDate(adjustedEndDate(updateProjectRequestDTO.getProjectEndDate()));
         }
 
         LogProject newLog = addLog(logBuilder.toString());
@@ -1236,10 +1266,10 @@ public class ProjectServiceImpl implements ProjectService {
             statusText = "Dilaksanakan";
         } else if (newStatus == 2) {
             statusText = "Selesai";
-            project.setProjectEndDate(new Date());
+            project.setProjectEndDate(adjustedEndDate(new Date()));
         } else if (newStatus == 3) {
             statusText = "Batal";
-            project.setProjectEndDate(new Date());
+            project.setProjectEndDate(adjustedEndDate(new Date()));
         }
 
         LogProject newLog = addLog("Mengubah Status menjadi " + statusText);
@@ -1288,9 +1318,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         project.setProjectPaymentStatus(projectPaymentStatus);
-        
-        ZonedDateTime jakartaNow = ZonedDateTime.now(ZoneId.of("Asia/Jakarta"));
-        project.setProjectPaymentDate(Date.from(jakartaNow.toInstant()));
+        project.setProjectPaymentDate(new Date());
 
         LogProject newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
         project.getProjectLogs().add(newLog);
@@ -1304,7 +1332,11 @@ public class ProjectServiceImpl implements ProjectService {
                 lapkeuRequest.setActivityType(Boolean.TRUE.equals(project.getProjectType()) ? 1 : 0); // 1: Distribusi, 0: Penjualan
                 lapkeuRequest.setPemasukan(project.getProjectTotalPemasukkan());
                 lapkeuRequest.setPengeluaran(project instanceof Distribution ? ((Distribution) project).getProjectTotalPengeluaran() : 0L);
-                lapkeuRequest.setDescription(project.getProjectName());
+                if (project instanceof Sell) {
+                    lapkeuRequest.setDescription("Penjualan - " + project.getProjectName());
+                } else {
+                    lapkeuRequest.setDescription("Distribusi - " + project.getProjectName());
+                }
                 lapkeuRequest.setPaymentDate(project.getProjectPaymentDate());
 
                 webClientBuilder.build()
@@ -1335,10 +1367,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<ActivityLineDTO> getProjectActivityLine(
-        String periodType, Date startDate, Date endDate, String statusFilter, boolean isDistribusi) {
+        String periodType, String range, String statusFilter, boolean isDistribusi) {
 
         List<Object[]> rawData;
-        Boolean projectType = isDistribusi; // true = distribusi, false = penjualan
+        Boolean projectType = isDistribusi;
 
         List<Integer> statusList;
         boolean excludeMode;
@@ -1359,12 +1391,54 @@ public class ProjectServiceImpl implements ProjectService {
                 break;
         }
 
-        // Default date range: this year
-        if (startDate == null || endDate == null) {
-            LocalDate start = LocalDate.now().withDayOfYear(1);
-            startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            endDate = new Date();
+        // Tentukan default periodType berdasarkan range
+        if (periodType == null || periodType.isBlank()) {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    periodType = "WEEKLY";
+                    break;
+                case "THIS_QUARTER":
+                    periodType = "MONTHLY";
+                    break;
+                case "THIS_YEAR":
+                default:
+                    periodType = "MONTHLY";
+                    break;
+            }
         }
+
+        // Tentukan tanggal berdasarkan range
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                if (!periodType.equalsIgnoreCase("WEEKLY")) {
+                    throw new IllegalArgumentException("THIS_MONTH hanya mendukung periodType = WEEKLY");
+                }
+                start = now.withDayOfMonth(1);
+                break;
+            case "THIS_QUARTER":
+                if (!periodType.equalsIgnoreCase("MONTHLY")) {
+                    throw new IllegalArgumentException("THIS_QUARTER hanya mendukung periodType = MONTHLY");
+                }
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+            case "THIS_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("THIS_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = now.withDayOfYear(1);
+                break;
+            default:
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
         Map<String, ActivityLineDTO> resultMap = new HashMap<>();
         List<String> fullPeriods;
@@ -1374,6 +1448,9 @@ public class ProjectServiceImpl implements ProjectService {
                 rawData = excludeMode
                     ? projectRepository.getMonthlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
                     : projectRepository.getMonthlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
                 fullPeriods = generateMonthPeriods(startDate, endDate);
                 break;
 
@@ -1381,6 +1458,9 @@ public class ProjectServiceImpl implements ProjectService {
                 rawData = excludeMode
                     ? projectRepository.getQuarterlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
                     : projectRepository.getQuarterlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
                 fullPeriods = generateQuarterPeriods(startDate, endDate);
                 break;
 
@@ -1388,20 +1468,75 @@ public class ProjectServiceImpl implements ProjectService {
                 rawData = excludeMode
                     ? projectRepository.getYearlyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
                     : projectRepository.getYearlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
                 fullPeriods = generateYearPeriods(startDate, endDate);
                 break;
 
-            default:
-                throw new IllegalArgumentException("Invalid period type");
-        }
+            case "WEEKLY":
+                rawData = excludeMode
+                    ? projectRepository.getDailyProjectCountExcludeStatus(startDate, endDate, statusList, projectType)
+                    : projectRepository.getDailyProjectCountInStatus(startDate, endDate, statusList, projectType);
 
-        for (Object[] row : rawData) {
-            resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                int fixedMonth = start.getMonthValue();
+                int fixedYear = start.getYear();
+
+                for (Object[] row : rawData) {
+                    LocalDate date = ((Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    String period = getMonthWeekLabel(date, fixedMonth, fixedYear);
+
+                    resultMap.computeIfAbsent(period, p -> new ActivityLineDTO(p, 0L));
+                    ActivityLineDTO dto = resultMap.get(period);
+                    dto.setCount(dto.getCount() + (row[1] != null ? (Long) row[1] : 0L));
+                }
+
+                fullPeriods = generateMonthWeekPeriods(startDate, endDate);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid period type: " + periodType);
         }
 
         return fullPeriods.stream()
                 .map(p -> resultMap.getOrDefault(p, new ActivityLineDTO(p, 0L)))
                 .collect(Collectors.toList());
+    }
+
+    private String getMonthWeekLabel(LocalDate anyDateInWeek, int fixedMonth, int fixedYear) {
+        LocalDate firstDayOfMonth = LocalDate.of(fixedYear, fixedMonth, 1);
+        int weekOfMonth = (int) ChronoUnit.WEEKS.between(
+                firstDayOfMonth.with(DayOfWeek.MONDAY),
+                anyDateInWeek.with(DayOfWeek.MONDAY)
+        ) + 1;
+
+        return String.format("%04d-%02d-W%d", fixedYear, fixedMonth, weekOfMonth);
+    }
+
+    private List<String> generateMonthWeekPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate pointer = toLocalDate(startDate).with(DayOfWeek.MONDAY);
+        LocalDate end = toLocalDate(endDate);
+
+        int targetMonth = toLocalDate(startDate).getMonthValue();
+        int targetYear = toLocalDate(startDate).getYear();
+
+        while (!pointer.isAfter(end)) {
+            // Hanya tambahkan minggu yang mengandung hari dari bulan & tahun target
+            for (int i = 0; i < 7; i++) {
+                LocalDate day = pointer.plusDays(i);
+                if (day.getMonthValue() == targetMonth && day.getYear() == targetYear) {
+                    String label = getMonthWeekLabel(pointer, targetMonth, targetYear);
+                    if (!periods.contains(label)) {
+                        periods.add(label);
+                    }
+                    break;
+                }
+            }
+            pointer = pointer.plusWeeks(1);
+        }
+
+        return periods;
     }
 
     private List<String> generateMonthPeriods(Date startDate, Date endDate) {
@@ -1445,5 +1580,84 @@ public class ProjectServiceImpl implements ProjectService {
     private LocalDate toLocalDate(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
+
+    @Override
+    public SellDistributionSummaryDTO getSellDistributionSummaryByRange(String range) {
+        Calendar calendar = Calendar.getInstance();
+        Date startCurrent, endCurrent, startPrevious, endPrevious;
+
+        switch (range.toUpperCase()) {
+            case "THIS_YEAR":
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.YEAR, -1);
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_QUARTER":
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int quarterStartMonth = currentMonth / 3 * 3;
+
+                calendar.set(Calendar.MONTH, quarterStartMonth);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.add(Calendar.MONTH, 2);
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -3);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_MONTH":
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -1);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            default:
+                throw new IllegalArgumentException("Range tidak dikenali: " + range);
+        }
+
+        List<Integer> allStatuses = List.of(0, 1, 2, 3); // Semua status proyek
+
+        Long currentSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startCurrent, endCurrent, false, allStatuses);
+        Long previousSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startPrevious, endPrevious, false, allStatuses);
+
+        Long currentDistribution = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startCurrent, endCurrent, true, allStatuses);
+        Long previousDistribution = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startPrevious, endPrevious, true, allStatuses);
+
+        Double sellPercentage = calculatePercentageChange(currentSell, previousSell);
+        Double distributionPercentage = calculatePercentageChange(currentDistribution, previousDistribution);
+
+        return new SellDistributionSummaryDTO(currentSell, sellPercentage, currentDistribution, distributionPercentage);
+    }
+
+    private Double calculatePercentageChange(Long current, Long previous) {
+        if (previous == 0) {
+            return current > 0 ? 100.0 : 0.0;
+        }
+        return ((double) (current - previous) / previous) * 100;
+    }
+
 
 }

@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
+import gpl.karina.finance.report.dto.response.LapkeuPageResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
+import gpl.karina.finance.report.dto.response.LapkeuSummaryResponseDTO;
 import gpl.karina.finance.report.service.LapkeuService;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 
@@ -103,12 +105,12 @@ public class LapkeuController {
     
     @GetMapping("/chart-pengeluaran")
     public ResponseEntity<BaseResponseDTO<List<ChartPengeluaranResponseDTO>>> getPengeluaranPerAktivitas(
-        @RequestParam(name = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-        @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range
     ) {
         BaseResponseDTO<List<ChartPengeluaranResponseDTO>> response = new BaseResponseDTO<>();
         try {
-            List<ChartPengeluaranResponseDTO> listPengeluaran = lapkeuService.getPengeluaranChartData(startDate, endDate);
+            List<ChartPengeluaranResponseDTO> listPengeluaran = lapkeuService.getPengeluaranChartData(range);
+
             if (listPengeluaran.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
                 response.setMessage("Tidak ada data pengeluaran yang ditemukan");
@@ -116,11 +118,20 @@ public class LapkeuController {
                 response.setData(null);
                 return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
             }
+
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Berhasil mendapatkan daftar pengeluaran per aktivitas");
             response.setTimestamp(new Date());
             response.setData(listPengeluaran);
             return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data pengeluaran: " + e.getMessage());
@@ -129,6 +140,7 @@ public class LapkeuController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @GetMapping("/chart-pemasukan-pengeluaran")
     public ResponseEntity<BaseResponseDTO<List<IncomeExpenseLineResponseDTO>>> getPemasukanPengeluaranPerPeriode(
@@ -163,6 +175,54 @@ public class LapkeuController {
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<BaseResponseDTO<LapkeuSummaryResponseDTO>> getLapkeuSummary(
+        @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
+        @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate,
+        @RequestParam(name = "activityType", required = false) Integer activityType
+    ) {
+        BaseResponseDTO<LapkeuSummaryResponseDTO> response = new BaseResponseDTO<>();
+        try {
+            LapkeuSummaryResponseDTO summary = lapkeuService.getLapkeuSummary(startDate, endDate, activityType);
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan summary laporan keuangan");
+            response.setTimestamp(new Date());
+            response.setData(summary);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<BaseResponseDTO<LapkeuPageResponseDTO>> getLapkeuPage(
+        @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
+        @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate,
+        @RequestParam(name = "activityType", required = false) Integer activityType
+    ) {
+        BaseResponseDTO<LapkeuPageResponseDTO> response = new BaseResponseDTO<>();
+        try {
+            LapkeuSummaryResponseDTO summary = lapkeuService.getLapkeuSummary(startDate, endDate, activityType);
+            List<LapkeuResponseDTO> list = lapkeuService.fetchAllLapkeu(startDate, endDate, activityType);
+            LapkeuPageResponseDTO page = new LapkeuPageResponseDTO(summary, list);
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan data laporan keuangan");
+            response.setTimestamp(new Date());
+            response.setData(page);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan: " + e.getMessage());
             response.setTimestamp(new Date());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);

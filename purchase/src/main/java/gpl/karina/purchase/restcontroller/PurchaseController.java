@@ -36,6 +36,7 @@ import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseListResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
+import gpl.karina.purchase.restdto.response.PurchaseSummaryResponseDTO;
 import gpl.karina.purchase.restservice.PurchaseRestService;
 import jakarta.validation.Valid;
 
@@ -386,18 +387,13 @@ public class PurchaseController {
 
     @GetMapping("/chart/purchase-activity")
     public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getPurchaseActivityLineChart(
-        @RequestParam(name = "startDate", required = false) 
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-
-        @RequestParam(name = "endDate", required = false) 
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-
-        @RequestParam(name = "periodType", defaultValue = "MONTHLY") String periodType,
+        @RequestParam(name = "periodType", required = false) String periodType,
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range,
         @RequestParam(name = "status", defaultValue = "ALL") String status
     ) {
         BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
         try {
-            List<ActivityLineDTO> result = purchaseRestService.getPurchaseActivityLine(periodType, startDate, endDate, status);
+            List<ActivityLineDTO> result = purchaseRestService.getPurchaseActivityLine(periodType, range, status);
 
             if (result.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -413,9 +409,87 @@ public class PurchaseController {
             response.setData(result);
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data aktivitas pembelian: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/range")
+    public ResponseEntity<BaseResponseDTO<List<PurchaseListResponseDTO>>> getPurchaseListByRange(
+            @RequestParam(name = "range", defaultValue = "THIS_YEAR") String rangeParam) {
+
+        BaseResponseDTO<List<PurchaseListResponseDTO>> response = new BaseResponseDTO<>();
+
+        try {
+            List<PurchaseListResponseDTO> result = purchaseRestService.getPurchaseListByRange(rangeParam);
+
+            if (result.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data pembelian untuk range: " + rangeParam);
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan daftar pembelian untuk range: " + rangeParam);
+            response.setTimestamp(new Date());
+            response.setData(result);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter range tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data pembelian: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<BaseResponseDTO<PurchaseSummaryResponseDTO>> getPurchaseSummary(
+            @RequestParam(name = "range", defaultValue = "THIS_YEAR") String rangeParam) {
+
+        BaseResponseDTO<PurchaseSummaryResponseDTO> response = new BaseResponseDTO<>();
+
+        try {
+            PurchaseSummaryResponseDTO result = purchaseRestService.getPurchaseSummaryByRange(rangeParam);
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan ringkasan pembelian untuk range: " + rangeParam);
+            response.setTimestamp(new Date());
+            response.setData(result);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter range tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data ringkasan pembelian: " + e.getMessage());
             response.setTimestamp(new Date());
             response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);

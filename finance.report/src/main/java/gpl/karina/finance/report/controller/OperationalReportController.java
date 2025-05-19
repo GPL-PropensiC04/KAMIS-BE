@@ -28,29 +28,14 @@ public class OperationalReportController {
 
     @GetMapping("/activity-chart")
     public ResponseEntity<BaseResponseDTO<List<ActivityComparisonResponseDTO>>> getActivityComparisonChart(
-        @RequestParam(name = "startDate", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-
-        @RequestParam(name = "endDate", required = false)
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-
-        @RequestParam(name = "periodType", defaultValue = "MONTHLY") String periodType,
-
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range,
+        @RequestParam(name = "periodType", required = false) String periodType,
         @RequestParam(name = "status", defaultValue = "ALL") String status
     ) {
         BaseResponseDTO<List<ActivityComparisonResponseDTO>> response = new BaseResponseDTO<>();
         try {
-            // Konversi tanggal ke format yyyy-MM-dd (string), karena WebClient pakai query param
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String startStr = startDate != null
-                    ? startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(formatter)
-                    : null;
-            String endStr = endDate != null
-                    ? endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(formatter)
-                    : null;
-
             List<ActivityComparisonResponseDTO> data = operationalReportService
-                    .fetchCombinedActivityLineChart(startStr, endStr, periodType, status);
+                    .fetchCombinedActivityLineChart(range, periodType, status);
 
             if (data.isEmpty()) {
                 response.setStatus(HttpStatus.NOT_FOUND.value());
@@ -66,6 +51,13 @@ public class OperationalReportController {
             response.setData(data);
             return new ResponseEntity<>(response, HttpStatus.OK);
 
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setMessage("Terjadi kesalahan saat mengambil data aktivitas gabungan: " + e.getMessage());
@@ -74,5 +66,6 @@ public class OperationalReportController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 }

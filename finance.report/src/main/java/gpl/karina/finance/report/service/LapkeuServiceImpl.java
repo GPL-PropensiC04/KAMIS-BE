@@ -21,11 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
+import gpl.karina.finance.report.dto.response.LapkeuSummaryResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -127,19 +127,39 @@ public class LapkeuServiceImpl implements LapkeuService {
     }
 
     @Override
-    public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(Date startDate, Date endDate) {
-        List<Object[]> rawData;
+    public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(String range) {
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
 
-        if (startDate != null && endDate != null) {
-            rawData = lapkeuRepository.getTotalPengeluaranPerActivityTypeBetweenDates(startDate, endDate);
-        } else {
-            rawData = lapkeuRepository.getTotalPengeluaranPerActivityType();
+        // Tentukan rentang tanggal berdasarkan range
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                start = now.withDayOfMonth(1);
+                break;
+
+            case "THIS_QUARTER":
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+
+            case "THIS_YEAR":
+            default:
+                start = now.withDayOfYear(1);
+                break;
         }
 
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        List<Object[]> rawData = lapkeuRepository.getTotalPengeluaranPerActivityTypeBetweenDates(startDate, endDate);
+
         return rawData.stream()
-            .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
-            .collect(Collectors.toList());
+                .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, String range) {
@@ -324,4 +344,29 @@ public class LapkeuServiceImpl implements LapkeuService {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
+    @Override
+    public LapkeuSummaryResponseDTO getLapkeuSummary(Date startDate, Date endDate, Integer activityType) {
+        List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
+        List<Lapkeu> filtered = lapkeuList.stream()
+            .filter(l -> {
+                if (startDate != null && l.getPaymentDate() != null && l.getPaymentDate().before(startDate)) {
+                    return false;
+                }
+                if (endDate != null && l.getPaymentDate() != null && l.getPaymentDate().after(endDate)) {
+                    return false;
+                }
+                if (activityType != null && !activityType.equals(l.getActivityType())) {
+                    return false;
+                }
+                return true;
+            })
+            .collect(Collectors.toList());
+
+        int totalTransaksi = filtered.size();
+        long totalPemasukan = filtered.stream().mapToLong(l -> l.getPemasukan() != null ? l.getPemasukan() : 0L).sum();
+        long totalPengeluaran = filtered.stream().mapToLong(l -> l.getPengeluaran() != null ? l.getPengeluaran() : 0L).sum();
+        long totalProfit = totalPemasukan - totalPengeluaran;
+
+        return new LapkeuSummaryResponseDTO(totalTransaksi, totalPemasukan, totalPengeluaran, totalProfit);
+    }
 }
