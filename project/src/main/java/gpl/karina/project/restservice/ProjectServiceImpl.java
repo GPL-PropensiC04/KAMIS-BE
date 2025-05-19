@@ -387,20 +387,46 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private Date adjustedStartDate(Date startDate) {
+        if (startDate == null)
+            return null;
+
+        // Extract date components without timezone conversion
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
+
+        // Set time to noon (12:00) to avoid timezone conversion issues
+        // Using noon instead of 00:00 or 23:59 prevents day shifting in most timezone
+        // conversions
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+
+        calendar.clear();
+        calendar.set(year, month, day, 12, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
     private Date adjustedEndDate(Date endDate) {
+        if (endDate == null)
+            return null;
+
+        // Extract date components without timezone conversion
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(endDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
+
+        // Set time to noon (12:00) to avoid timezone conversion issues
+        // Using noon instead of 00:00 or 23:59 prevents day shifting in most timezone
+        // conversions
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+
+        calendar.clear();
+        calendar.set(year, month, day, 12, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
@@ -981,11 +1007,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         if (updateProjectRequestDTO.getProjectStartDate() != null) {
-            project.setProjectStartDate(updateProjectRequestDTO.getProjectStartDate());
+            project.setProjectStartDate(adjustedStartDate(updateProjectRequestDTO.getProjectStartDate()));
         }
 
         if (updateProjectRequestDTO.getProjectEndDate() != null) {
-            project.setProjectEndDate(updateProjectRequestDTO.getProjectEndDate());
+            project.setProjectEndDate(adjustedEndDate(updateProjectRequestDTO.getProjectEndDate()));
         }
 
         LogProject newLog = addLog(logBuilder.toString());
@@ -1240,10 +1266,10 @@ public class ProjectServiceImpl implements ProjectService {
             statusText = "Dilaksanakan";
         } else if (newStatus == 2) {
             statusText = "Selesai";
-            project.setProjectEndDate(new Date());
+            project.setProjectEndDate(adjustedEndDate(new Date()));
         } else if (newStatus == 3) {
             statusText = "Batal";
-            project.setProjectEndDate(new Date());
+            project.setProjectEndDate(adjustedEndDate(new Date()));
         }
 
         LogProject newLog = addLog("Mengubah Status menjadi " + statusText);
@@ -1292,9 +1318,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         project.setProjectPaymentStatus(projectPaymentStatus);
-        
-        ZonedDateTime jakartaNow = ZonedDateTime.now(ZoneId.of("Asia/Jakarta"));
-        project.setProjectPaymentDate(Date.from(jakartaNow.toInstant()));
+        project.setProjectPaymentDate(new Date());
 
         LogProject newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
         project.getProjectLogs().add(newLog);
