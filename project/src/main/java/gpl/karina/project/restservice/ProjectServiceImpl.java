@@ -137,8 +137,8 @@ public class ProjectServiceImpl implements ProjectService {
         if (response == null || response.getData() == null) {
             throw new IllegalArgumentException("Client not found with id: " + id);
         }
+        System.out.println(response);
         ClientDetailDTO clientDetailDTO = response.getData();
-        System.out.println(response.getData());
         return clientDetailDTO;
     }
 
@@ -454,8 +454,8 @@ public class ProjectServiceImpl implements ProjectService {
         // Fetch client name
         try {
             ClientDetailDTO clientDetail = fetchClientById(project.getProjectClientId());
-            projectResponseDTO.setProjectClientName(clientDetail.getClientName());
-            System.out.println(clientDetail.getClientName());
+            projectResponseDTO.setProjectClientName(clientDetail.getNameClient());
+            System.out.println(clientDetail.getNameClient());
         } catch (Exception e) {
             logger.error("Error fetching client name: {}", e.getMessage());
             projectResponseDTO.setProjectClientName("Unknown Client");
@@ -498,7 +498,7 @@ public class ProjectServiceImpl implements ProjectService {
                 // Fetch client name
                 try {
                     ClientDetailDTO clientDetail = fetchClientById(distributionProject.getProjectClientId());
-                    dto.setProjectClientName(clientDetail.getClientName());
+                    dto.setProjectClientName(clientDetail.getNameClient());
                 } catch (Exception e) {
                     logger.error("Error fetching client name: {}", e.getMessage());
                     dto.setProjectClientName("Unknown Client");
@@ -561,7 +561,7 @@ public class ProjectServiceImpl implements ProjectService {
                 // Fetch client name
                 try {
                     ClientDetailDTO clientDetail = fetchClientById(sellProject.getProjectClientId());
-                    dto.setProjectClientName(clientDetail.getClientName());
+                    dto.setProjectClientName(clientDetail.getNameClient());
                 } catch (Exception e) {
                     logger.error("Error fetching client name: {}", e.getMessage());
                     dto.setProjectClientName("Unknown Client");
