@@ -26,6 +26,8 @@ public class SellResponseDTO {
 
     private String projectClientId;
 
+    private String projectClientName;
+
     private String projectDeliveryAddress;
 
     List<ResourceUsageDTO> projectUseResource;
