@@ -26,6 +26,8 @@ public class DistributionResponseDTO {
 
     private String projectClientId;
 
+    private String projectClientName;
+
     List<AssetUsageDTO> projectUseAsset;
 
     private String projectDeliveryAddress;
