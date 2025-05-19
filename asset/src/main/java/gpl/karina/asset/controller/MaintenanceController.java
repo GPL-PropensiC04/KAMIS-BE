@@ -62,7 +62,7 @@ public class MaintenanceController {
         }
     }
 
-    @GetMapping
+    @GetMapping ("/all")
     public ResponseEntity<BaseResponseDTO<List<MaintenanceResponseDTO>>> getAllMaintenance() {
         BaseResponseDTO<List<MaintenanceResponseDTO>> response = new BaseResponseDTO<>();
         

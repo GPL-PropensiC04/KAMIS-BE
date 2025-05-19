@@ -88,7 +88,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         }     
         resource.setResourceDescription(updateResourceDTO.getResourceDescription());
         resource.setResourcePrice(updateResourceDTO.getResourcePrice());
-        resource.setResourceStock(resource.getResourceStock() + updateResourceDTO.getResourceStock());
+        resource.setResourceStock(updateResourceDTO.getResourceStock());
         
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
@@ -235,6 +235,20 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         }
 
         return null;
+    }
+
+    @Override
+    public List<ResourceResponseDTO> getResourcesByStock(Integer stock) {
+        if (stock < 0) {
+            throw new IllegalArgumentException("Stock tidak boleh kurang dari 0");
+        }
+
+        List<Resource> resources = resourceRepository.findByResourceStockLessThanEqual(stock);
+        List<ResourceResponseDTO> responseDTOs = new ArrayList<>();
+        for (Resource resource : resources) {
+            responseDTOs.add(resourceToResourceResponseDTO(resource));
+        }
+        return responseDTOs;
     }
 
     

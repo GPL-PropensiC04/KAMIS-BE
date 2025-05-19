@@ -29,15 +29,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AssetServiceImpl implements AssetService {
 
-    @Autowired
-    // private JwtTokenHolder tokenHolder;
-
     private final AssetDb assetDb;
     private final MaintenanceRepository maintenanceRepository;
+    private final WebClient.Builder webClientBuilder;
 
     public AssetServiceImpl(AssetDb assetDb, WebClient.Builder webClientBuilder, MaintenanceRepository maintenanceRepository) {
         this.assetDb = assetDb;
         this.maintenanceRepository = maintenanceRepository;
+        this.webClientBuilder = webClientBuilder;
     }
 
     private AssetListResponseDTO listAssetToAssetResponseDTO(Asset asset) {

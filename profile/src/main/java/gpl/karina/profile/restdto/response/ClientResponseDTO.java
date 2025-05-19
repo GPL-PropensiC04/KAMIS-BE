@@ -14,7 +14,7 @@ public class ClientResponseDTO {
     private String nameClient;
     private String noTelpClient;
     private String emailClient;
-    private String typeClient;
+    private boolean typeClient;
     private String companyClient;
     private String addressClient;
 

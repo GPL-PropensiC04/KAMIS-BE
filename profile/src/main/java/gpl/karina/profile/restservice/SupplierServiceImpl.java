@@ -74,7 +74,7 @@ public class SupplierServiceImpl implements SupplierService {
             throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
         }
 
-        String url = resourceUrl + "api/resource/add-supplier";
+        String url = resourceUrl + "/resource/add-supplier";
 
         AddSupplierIdDTO requestDTO = new AddSupplierIdDTO();
         requestDTO.setSupplierId(supplierId);
@@ -96,7 +96,7 @@ public class SupplierServiceImpl implements SupplierService {
             throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
         }
 
-        String url = resourceUrl + "api/resource/update-supplier";
+        String url = resourceUrl + "/resource/update-supplier";
 
         AddSupplierIdDTO requestDTO = new AddSupplierIdDTO();
         requestDTO.setSupplierId(supplierId);
@@ -118,7 +118,7 @@ public class SupplierServiceImpl implements SupplierService {
             throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
         }
     
-        String url = resourceUrl + "api/resource/viewall";
+        String url = resourceUrl + "/resource/viewall";
     
         try {
             BaseResponseDTO<List<ResourceResponseDTO>> response = webClient
@@ -157,7 +157,7 @@ public class SupplierServiceImpl implements SupplierService {
             throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
         }
     
-        String url = purchaseUrl + "api/purchase/supplier/" + supplierId; // contoh path baru yang lebih general
+        String url = purchaseUrl + "/purchase/supplier/" + supplierId; // contoh path baru yang lebih general
     
         try {
             BaseResponseDTO<List<PurchaseResponseDTO>> response = webClient
@@ -196,7 +196,7 @@ public class SupplierServiceImpl implements SupplierService {
             throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
         }
     
-        String url = assetUrl + "/api/asset/by-supplier/" + supplierId;
+        String url = assetUrl + "/asset/by-supplier/" + supplierId;
     
         try {
             BaseResponseDTO<List<AssetDTO>> response = webClient
@@ -235,7 +235,7 @@ public class SupplierServiceImpl implements SupplierService {
             throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
         }
     
-        String url = purchaseUrl + "/api/purchase/supplier/" + supplierId;
+        String url = purchaseUrl + "/purchase/supplier/" + supplierId;
     
         try {
             BaseResponseDTO<List<PurchaseResponseDTO>> response = webClient
@@ -274,7 +274,7 @@ public class SupplierServiceImpl implements SupplierService {
             throw new IllegalArgumentException("Token tidak ditemukan di header Authorization.");
         }
     
-        String url = resourceUrl + "/api/resource/find-by-supplier/" + supplierId;
+        String url = resourceUrl + "/resource/find-by-supplier/" + supplierId;
     
         try {
             BaseResponseDTO<List<ResourceResponseDTO>> response = webClient

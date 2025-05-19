@@ -93,9 +93,9 @@ public class ClientServiceImpl implements ClientService {
         clientResponseDTO.setUpdatedDate(client.getUpdatedDate());
 
         if (client.isTypeClient()) {
-            clientResponseDTO.setTypeClient("Perusahaan");
+            clientResponseDTO.setTypeClient(true);
         } else {
-            clientResponseDTO.setTypeClient("Perorangan");
+            clientResponseDTO.setTypeClient(false);
         }
 
         return clientResponseDTO;
@@ -191,10 +191,11 @@ public class ClientServiceImpl implements ClientService {
         clientListResponseDTO.setId(client.getId());
         clientListResponseDTO.setNameClient(client.getNameClient());
         clientListResponseDTO.setCompanyClient(client.getCompanyClient());
-        clientListResponseDTO.setTypeClient(client.isTypeClient() ? "Perusahaan" : "Perorangan");
+        clientListResponseDTO.setTypeClient(client.isTypeClient());
         clientListResponseDTO.setProjectCount(projects != null ? projects.size() : 0);
         clientListResponseDTO.setTotalProfit(totalProfit);
 
         return clientListResponseDTO;
     }
+
 }
