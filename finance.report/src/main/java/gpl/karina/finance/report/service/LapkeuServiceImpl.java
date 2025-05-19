@@ -243,7 +243,16 @@ public class LapkeuServiceImpl implements LapkeuService {
             int fixedYear = toLocalDate(startDate).getYear();
 
             for (Object[] row : rawData) {
-                LocalDate date = ((Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate date;
+                if (row[0] instanceof java.sql.Date) {
+                    date = ((java.sql.Date) row[0]).toLocalDate();
+                } else if (row[0] instanceof java.util.Date) {
+                    date = ((java.util.Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                } else if (row[0] instanceof String) {
+                    date = LocalDate.parse((String) row[0], DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                } else {
+                    throw new IllegalArgumentException("Unsupported date type: " + row[0].getClass());
+                }
                 String period = getMonthWeekLabel(date, fixedMonth, fixedYear);
 
                 resultMap.computeIfAbsent(period, p -> new IncomeExpenseLineResponseDTO(p, 0L, 0L));
