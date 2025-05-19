@@ -50,6 +50,7 @@ import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
 import gpl.karina.project.restdto.response.LogProjectResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
+import gpl.karina.project.restdto.response.SellDistributionSummaryDTO;
 import gpl.karina.project.restdto.response.SellResponseDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import gpl.karina.project.security.jwt.JwtUtils;
@@ -1555,5 +1556,84 @@ public class ProjectServiceImpl implements ProjectService {
     private LocalDate toLocalDate(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
+
+    @Override
+    public SellDistributionSummaryDTO getSellDistributionSummaryByRange(String range) {
+        Calendar calendar = Calendar.getInstance();
+        Date startCurrent, endCurrent, startPrevious, endPrevious;
+
+        switch (range.toUpperCase()) {
+            case "THIS_YEAR":
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.YEAR, -1);
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_QUARTER":
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int quarterStartMonth = currentMonth / 3 * 3;
+
+                calendar.set(Calendar.MONTH, quarterStartMonth);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.add(Calendar.MONTH, 2);
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -3);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_MONTH":
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -1);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            default:
+                throw new IllegalArgumentException("Range tidak dikenali: " + range);
+        }
+
+        List<Integer> allStatuses = List.of(0, 1, 2, 3); // Semua status proyek
+
+        Long currentSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startCurrent, endCurrent, false, allStatuses);
+        Long previousSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startPrevious, endPrevious, false, allStatuses);
+
+        Long currentDistribution = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startCurrent, endCurrent, true, allStatuses);
+        Long previousDistribution = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startPrevious, endPrevious, true, allStatuses);
+
+        Double sellPercentage = calculatePercentageChange(currentSell, previousSell);
+        Double distributionPercentage = calculatePercentageChange(currentDistribution, previousDistribution);
+
+        return new SellDistributionSummaryDTO(currentSell, sellPercentage, currentDistribution, distributionPercentage);
+    }
+
+    private Double calculatePercentageChange(Long current, Long previous) {
+        if (previous == 0) {
+            return current > 0 ? 100.0 : 0.0;
+        }
+        return ((double) (current - previous) / previous) * 100;
+    }
+
 
 }

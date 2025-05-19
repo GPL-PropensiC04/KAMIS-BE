@@ -57,6 +57,7 @@ import gpl.karina.purchase.restdto.response.LogPurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseListResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceResponseDTO;
+import gpl.karina.purchase.restdto.response.PurchaseSummaryResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
 import gpl.karina.purchase.security.jwt.JwtUtils;
 import jakarta.annotation.PostConstruct;
@@ -1198,6 +1199,119 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
     private LocalDate toLocalDate(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    @Override
+    public List<PurchaseListResponseDTO> getPurchaseListByRange(String range) {
+        // Tentukan rentang waktu berdasarkan range
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                start = now.withDayOfMonth(1);
+                break;
+            case "THIS_QUARTER":
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+            case "THIS_YEAR":
+                start = now.withDayOfYear(1);
+                break;
+            default:
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        // Konversi ke java.util.Date
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        // Reuse existing logic: panggil getAllPurchase dengan parameter lain null/default
+        return getAllPurchase(
+                null, // startNominal
+                null, // endNominal
+                null, // highNominal
+                startDate,
+                endDate,
+                false, // newDate
+                "all", // type
+                null   // idSearch
+        );
+    }
+
+    @Override
+    public PurchaseSummaryResponseDTO getPurchaseSummaryByRange(String range) {
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+
+        Date startCurrent, endCurrent, startPrevious, endPrevious;
+
+        switch (range.toUpperCase()) {
+            case "THIS_YEAR":
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.YEAR, -1);
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_QUARTER":
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int quarterStartMonth = currentMonth / 3 * 3;
+
+                calendar.set(Calendar.MONTH, quarterStartMonth);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.add(Calendar.MONTH, 2);
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -3);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_MONTH":
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -1);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            default:
+                throw new IllegalArgumentException("Range tidak dikenali: " + range);
+        }
+
+        // Hitung jumlah pembelian berdasarkan submission date
+        int currentCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startCurrent, endCurrent);
+        int previousCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startPrevious, endPrevious);
+
+        double percentageChange = 0.0;
+        if (previousCount > 0) {
+            percentageChange = ((double) (currentCount - previousCount) / previousCount) * 100;
+        } else if (currentCount > 0) {
+            percentageChange = 100.0;
+        }
+
+        return new PurchaseSummaryResponseDTO(currentCount, percentageChange);
     }
 
 }

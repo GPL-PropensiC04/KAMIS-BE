@@ -16,6 +16,8 @@ public interface PurchaseRepository extends JpaRepository<Purchase, String> {
     long countByPurchaseSubmissionDate(Date purchaseSubmissionDate);
     // Purchase findByIdAndNotDeleted(String purchaseId);
     List<Purchase> findAllByPurchaseSupplier(UUID purchaseSupplier);
+    List<Purchase> findByPurchaseSubmissionDateBetween(Date startDate, Date endDate);
+    int countByPurchaseSubmissionDateBetween(Date start, Date end);
 
 
     // ===============================

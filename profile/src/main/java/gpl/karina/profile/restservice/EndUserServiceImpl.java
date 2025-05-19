@@ -1,6 +1,8 @@
 package gpl.karina.profile.restservice;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -145,5 +147,12 @@ public class EndUserServiceImpl implements EndUserService {
         endUser.setPassword(addUserReqeuestDTO.getPassword());
         endUser.setUsername(addUserReqeuestDTO.getUsername());
         operasionalRepository.save(endUser);
+    }
+
+    @Override
+    public List<EndUserResponseDTO> getAllUsers() {
+        return endUserRepository.findAll().stream()
+            .map(this::endUserToEndUserResponseDTO)
+            .collect(Collectors.toList());
     }
 }
