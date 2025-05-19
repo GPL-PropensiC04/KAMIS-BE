@@ -17,6 +17,5 @@ public class LapkeuResponseDTO {
     private Long pemasukan;
     private Long pengeluaran;
     private String description;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy", timezone = "Asia/Jakarta")
     private Date paymentDate; // Tanggal Pembayaran
 }
