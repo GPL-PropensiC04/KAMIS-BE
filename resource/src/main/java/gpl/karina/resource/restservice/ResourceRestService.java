@@ -18,4 +18,5 @@ public interface ResourceRestService {
     List<ResourceResponseDTO> getAllSuplierResosource(UUID idSupplier);
     Void addSupplierId(UUID supplierId, List<Long> resourceIdList);
     Void updateSupplierId(UUID supplierId, List<Long> resourceIdList);
+    List<ResourceResponseDTO> getResourcesByStock(Integer stock);
 }

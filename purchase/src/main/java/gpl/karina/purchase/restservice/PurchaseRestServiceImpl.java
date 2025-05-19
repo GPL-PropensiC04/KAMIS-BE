@@ -2,6 +2,12 @@ package gpl.karina.purchase.restservice;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -37,18 +43,21 @@ import gpl.karina.purchase.repository.AssetTempRepository;
 import gpl.karina.purchase.repository.LogPurchaseRepository;
 import gpl.karina.purchase.repository.PurchaseRepository;
 import gpl.karina.purchase.repository.ResourceTempRepository;
+import gpl.karina.purchase.restdto.request.AddLapkeuDTO;
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
 import gpl.karina.purchase.restdto.request.AddPurchaseIdDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.ResourceTempDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseStatusDTO;
+import gpl.karina.purchase.restdto.response.ActivityLineDTO;
 import gpl.karina.purchase.restdto.response.AssetTempResponseDTO;
 import gpl.karina.purchase.restdto.response.BaseResponseDTO;
 import gpl.karina.purchase.restdto.response.LogPurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseListResponseDTO;
 import gpl.karina.purchase.restdto.response.PurchaseResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceResponseDTO;
+import gpl.karina.purchase.restdto.response.PurchaseSummaryResponseDTO;
 import gpl.karina.purchase.restdto.response.ResourceTempResponseDTO;
 import gpl.karina.purchase.security.jwt.JwtUtils;
 import jakarta.annotation.PostConstruct;
@@ -68,6 +77,9 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
     private String assetUrl;
     @Value("${purchase.app.profileUrl}")
     private String profileUrl;
+    @Value("${purchase.app.financeUrl}")
+    private String financeUrl;
+
     private final PurchaseRepository purchaseRepository;
     private final AssetTempRepository assetTempRepository;
     private final ResourceTempRepository resourceTempRepository;
@@ -293,27 +305,43 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
         Boolean purchaseType = purchase.isPurchaseType();
         if (purchaseType) {
+            // Resource
             purchaseResponseDTO.setPurchaseType("Resource");
 
             List<ResourceTemp> resourceTemps = purchase.getPurchaseResource();
             List<ResourceTempResponseDTO> resourceTempResponseDTOs = new ArrayList<>();
-            for (ResourceTemp resourceTemp : resourceTemps) {
-                resourceTempResponseDTOs.add(resourceTempToResourceTempResponseDTO(resourceTemp));
+            if (resourceTemps != null) {
+                for (ResourceTemp resourceTemp : resourceTemps) {
+                    resourceTempResponseDTOs.add(resourceTempToResourceTempResponseDTO(resourceTemp));
+                }
             }
             purchaseResponseDTO.setPurchaseResource(resourceTempResponseDTOs);
+            purchaseResponseDTO.setPurchaseAsset(null); // Pastikan null jika resource
         } else {
+            // Aset
             purchaseResponseDTO.setPurchaseType("Aset");
 
-            AssetTemp assetTemp = assetTempRepository.findById(purchase.getPurchaseAsset()).orElse(null);
-            purchaseResponseDTO.setPurchaseAsset(assetTempToAssetTempResponseDTO(assetTemp));
+            AssetTempResponseDTO assetDTO = null;
+            if (purchase.getPurchaseAsset() != null) {
+                AssetTemp assetTemp = assetTempRepository.findById(purchase.getPurchaseAsset()).orElse(null);
+                if (assetTemp != null) {
+                    assetDTO = assetTempToAssetTempResponseDTO(assetTemp);
+                }
+            }
+            purchaseResponseDTO.setPurchaseAsset(assetDTO);
+            purchaseResponseDTO.setPurchaseResource(null); // Pastikan null jika aset
         }
 
-        purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
-        
+        // Status sudah di-set di atas, baris ini bisa dihapus jika tidak perlu
+        // purchaseResponseDTO.setPurchaseStatus(purchase.getPurchaseStatus());
+
+        // Mapping logs
         List<LogPurchase> logs = purchase.getPurchaseLogs();
         List<LogPurchaseResponseDTO> logsDTO = new ArrayList<>();
-        for (LogPurchase log : logs) {
-            logsDTO.add(logPurchaseToLogPurchaseResponseDTO(log));
+        if (logs != null) {
+            for (LogPurchase log : logs) {
+                logsDTO.add(logPurchaseToLogPurchaseResponseDTO(log));
+            }
         }
         purchaseResponseDTO.setPurchaseLogs(logsDTO);
 
@@ -895,6 +923,41 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         purchase.setPurchasePaymentDate(new Date());
         purchase.setPurchaseUpdateDate(new Date());
 
+        try {
+            AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
+            lapkeuRequest.setId(purchase.getId());
+            lapkeuRequest.setActivityType(2); // PURCHASE
+            lapkeuRequest.setPemasukan(0L);
+            lapkeuRequest.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
+            String namaBarang = "";
+            if (!purchase.isPurchaseType()) {
+                // Tipe aset
+                if (purchase.getPurchaseAsset() != null) {
+                    AssetTemp assetTemp = assetTempRepository.findById(purchase.getPurchaseAsset()).orElse(null);
+                    if (assetTemp != null) {
+                        namaBarang = assetTemp.getAssetName();
+                    }
+                }
+            } else {
+                List<ResourceTemp> resources = purchase.getPurchaseResource();
+                if (resources != null && !resources.isEmpty()) {
+                    namaBarang = resources.get(0).getResourceName();
+                }
+            }
+            lapkeuRequest.setDescription("Pembelian - " + namaBarang);
+            lapkeuRequest.setPaymentDate(purchase.getPurchasePaymentDate());
+
+            webClientBuilder.build()
+                .post()
+                .uri(financeUrl + "/lapkeu/add") 
+                .bodyValue(lapkeuRequest)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+        } catch (Exception e) {
+            logger.error("Gagal insert ke Lapkeu: " + e.getMessage());
+        }
+
         LogPurchase newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
         purchase.getPurchaseLogs().add(newLog);
 
@@ -926,6 +989,329 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         System.out.println("Purchases: " + purchaseResponseDTOs);
         
         return purchaseResponseDTOs;
+    }
+
+    @Override
+    public List<ActivityLineDTO> getPurchaseActivityLine(String periodType, String range, String statusFilter) {
+        List<Object[]> rawData;
+        List<String> statuses;
+
+        // Tentukan status
+        switch (statusFilter.toUpperCase()) {
+            case "CANCELLED":
+                statuses = List.of("Ditolak", "Dibatalkan");
+                break;
+            case "DONE":
+                statuses = List.of("Selesai");
+                break;
+            case "ALL":
+                statuses = List.of("Ditolak", "Dibatalkan");
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid status filter");
+        }
+
+        // Default periodType jika tidak diisi
+        if (periodType == null || periodType.isBlank()) {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    periodType = "WEEKLY";
+                    break;
+                case "THIS_QUARTER":
+                    periodType = "MONTHLY";
+                    break;
+                case "THIS_YEAR":
+                default:
+                    periodType = "MONTHLY";
+                    break;
+            }
+        }
+
+        // Tentukan rentang waktu berdasarkan range
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                if (!periodType.equalsIgnoreCase("WEEKLY")) {
+                    throw new IllegalArgumentException("THIS_MONTH hanya mendukung periodType = WEEKLY");
+                }
+                start = now.withDayOfMonth(1);
+                break;
+            case "THIS_QUARTER":
+                if (!periodType.equalsIgnoreCase("MONTHLY")) {
+                    throw new IllegalArgumentException("THIS_QUARTER hanya mendukung periodType = MONTHLY");
+                }
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+            case "THIS_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("THIS_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = now.withDayOfYear(1);
+                break;
+            default:
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        Map<String, ActivityLineDTO> resultMap = new HashMap<>();
+        List<String> fullPeriods;
+
+        switch (periodType.toUpperCase()) {
+            case "MONTHLY":
+                rawData = "ALL".equalsIgnoreCase(statusFilter)
+                        ? purchaseRepository.getMonthlyPurchaseCountExcludeStatus(startDate, endDate, statuses)
+                        : purchaseRepository.getMonthlyPurchaseCountInStatus(startDate, endDate, statuses);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
+                fullPeriods = generateMonthPeriods(startDate, endDate);
+                break;
+
+            case "QUARTERLY":
+                rawData = "ALL".equalsIgnoreCase(statusFilter)
+                        ? purchaseRepository.getQuarterlyPurchaseCountExcludeStatus(startDate, endDate, statuses)
+                        : purchaseRepository.getQuarterlyPurchaseCountInStatus(startDate, endDate, statuses);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
+                fullPeriods = generateQuarterPeriods(startDate, endDate);
+                break;
+
+            case "YEARLY":
+                rawData = "ALL".equalsIgnoreCase(statusFilter)
+                        ? purchaseRepository.getYearlyPurchaseCountExcludeStatus(startDate, endDate, statuses)
+                        : purchaseRepository.getYearlyPurchaseCountInStatus(startDate, endDate, statuses);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
+                fullPeriods = generateYearPeriods(startDate, endDate);
+                break;
+
+            case "WEEKLY":
+                rawData = "ALL".equalsIgnoreCase(statusFilter)
+                        ? purchaseRepository.getDailyPurchaseCountExcludeStatus(startDate, endDate, statuses)
+                        : purchaseRepository.getDailyPurchaseCountInStatus(startDate, endDate, statuses);
+
+                int fixedMonth = start.getMonthValue();
+                int fixedYear = start.getYear();
+
+                for (Object[] row : rawData) {
+                    LocalDate date = ((Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    String period = getMonthWeekLabel(date, fixedMonth, fixedYear);
+
+                    resultMap.computeIfAbsent(period, p -> new ActivityLineDTO(p, 0L));
+                    ActivityLineDTO dto = resultMap.get(period);
+                    dto.setCount(dto.getCount() + (row[1] != null ? (Long) row[1] : 0L));
+                }
+
+                fullPeriods = generateMonthWeekPeriods(startDate, endDate);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid period type: " + periodType);
+        }
+
+        return fullPeriods.stream()
+                .map(p -> resultMap.getOrDefault(p, new ActivityLineDTO(p, 0L)))
+                .collect(Collectors.toList());
+    }
+
+    private String getMonthWeekLabel(LocalDate anyDateInWeek, int fixedMonth, int fixedYear) {
+        LocalDate firstDayOfMonth = LocalDate.of(fixedYear, fixedMonth, 1);
+        int weekOfMonth = (int) ChronoUnit.WEEKS.between(
+                firstDayOfMonth.with(DayOfWeek.MONDAY),
+                anyDateInWeek.with(DayOfWeek.MONDAY)
+        ) + 1;
+
+        return String.format("%04d-%02d-W%d", fixedYear, fixedMonth, weekOfMonth);
+    }
+
+    private List<String> generateMonthWeekPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate pointer = toLocalDate(startDate).with(DayOfWeek.MONDAY);
+        LocalDate end = toLocalDate(endDate);
+
+        int targetMonth = toLocalDate(startDate).getMonthValue();
+        int targetYear = toLocalDate(startDate).getYear();
+
+        while (!pointer.isAfter(end)) {
+            // Hanya tambahkan minggu yang mengandung hari dari bulan & tahun target
+            for (int i = 0; i < 7; i++) {
+                LocalDate day = pointer.plusDays(i);
+                if (day.getMonthValue() == targetMonth && day.getYear() == targetYear) {
+                    String label = getMonthWeekLabel(pointer, targetMonth, targetYear);
+                    if (!periods.contains(label)) {
+                        periods.add(label);
+                    }
+                    break;
+                }
+            }
+            pointer = pointer.plusWeeks(1);
+        }
+
+        return periods;
+    }
+
+    private List<String> generateMonthPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            periods.add(start.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateQuarterPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            int quarter = (start.getMonthValue() - 1) / 3 + 1;
+            String period = start.getYear() + "-Q" + quarter;
+            if (!periods.contains(period)) {
+                periods.add(period);
+            }
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateYearPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        int startYear = toLocalDate(startDate).getYear();
+        int endYear = toLocalDate(endDate).getYear();
+        for (int year = startYear; year <= endYear; year++) {
+            periods.add(String.valueOf(year));
+        }
+        return periods;
+    }
+
+    private LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    @Override
+    public List<PurchaseListResponseDTO> getPurchaseListByRange(String range) {
+        // Tentukan rentang waktu berdasarkan range
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                start = now.withDayOfMonth(1);
+                break;
+            case "THIS_QUARTER":
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+            case "THIS_YEAR":
+                start = now.withDayOfYear(1);
+                break;
+            default:
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        // Konversi ke java.util.Date
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        // Reuse existing logic: panggil getAllPurchase dengan parameter lain null/default
+        return getAllPurchase(
+                null, // startNominal
+                null, // endNominal
+                null, // highNominal
+                startDate,
+                endDate,
+                false, // newDate
+                "all", // type
+                null   // idSearch
+        );
+    }
+
+    @Override
+    public PurchaseSummaryResponseDTO getPurchaseSummaryByRange(String range) {
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+
+        Date startCurrent, endCurrent, startPrevious, endPrevious;
+
+        switch (range.toUpperCase()) {
+            case "THIS_YEAR":
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.YEAR, -1);
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_QUARTER":
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int quarterStartMonth = currentMonth / 3 * 3;
+
+                calendar.set(Calendar.MONTH, quarterStartMonth);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.add(Calendar.MONTH, 2);
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -3);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_MONTH":
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -1);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            default:
+                throw new IllegalArgumentException("Range tidak dikenali: " + range);
+        }
+
+        // Hitung jumlah pembelian berdasarkan submission date
+        int currentCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startCurrent, endCurrent);
+        int previousCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startPrevious, endPrevious);
+
+        double percentageChange = 0.0;
+        if (previousCount > 0) {
+            percentageChange = ((double) (currentCount - previousCount) / previousCount) * 100;
+        } else if (currentCount > 0) {
+            percentageChange = 100.0;
+        }
+
+        return new PurchaseSummaryResponseDTO(currentCount, percentageChange);
     }
 
 }

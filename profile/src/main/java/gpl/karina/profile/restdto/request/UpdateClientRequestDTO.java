@@ -1,6 +1,5 @@
 package gpl.karina.profile.restdto.request;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data

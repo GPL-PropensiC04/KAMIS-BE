@@ -72,6 +72,10 @@ public class Project {
     @Column(name = "total_pemasukkan")
     private Long projectTotalPemasukkan;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "tanggal_pembayaran")
+    private Date projectPaymentDate;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "project_id", nullable = false)
     List<LogProject> projectLogs;
