@@ -28,4 +28,5 @@ public interface ProjectService {
 
     List<ActivityLineDTO> getProjectActivityLine(String periodType, String range, String statusFilter, boolean isDistribusi);
     SellDistributionSummaryDTO getSellDistributionSummaryByRange(String range);
+    List<listProjectResponseDTO> getProjectListByRange(String range);
 }
