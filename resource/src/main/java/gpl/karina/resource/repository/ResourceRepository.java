@@ -21,4 +21,5 @@ public interface ResourceRepository extends JpaRepository<Resource, Long>{
     @Query("SELECT r FROM Resource r WHERE r.id = :id")
     Optional<Resource> findByIdWithPessimisticLock(@Param("id") Long id);
     
+    List<Resource> findByResourceStockLessThanEqual(Integer stock);
 }

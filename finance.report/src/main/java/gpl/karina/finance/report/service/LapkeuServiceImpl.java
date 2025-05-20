@@ -21,11 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
+import gpl.karina.finance.report.dto.response.LapkeuSummaryResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -243,7 +243,16 @@ public class LapkeuServiceImpl implements LapkeuService {
             int fixedYear = toLocalDate(startDate).getYear();
 
             for (Object[] row : rawData) {
-                LocalDate date = ((Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate date;
+                if (row[0] instanceof java.sql.Date) {
+                    date = ((java.sql.Date) row[0]).toLocalDate();
+                } else if (row[0] instanceof java.util.Date) {
+                    date = ((java.util.Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                } else if (row[0] instanceof String) {
+                    date = LocalDate.parse((String) row[0], DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                } else {
+                    throw new IllegalArgumentException("Unsupported date type: " + row[0].getClass());
+                }
                 String period = getMonthWeekLabel(date, fixedMonth, fixedYear);
 
                 resultMap.computeIfAbsent(period, p -> new IncomeExpenseLineResponseDTO(p, 0L, 0L));
@@ -344,4 +353,29 @@ public class LapkeuServiceImpl implements LapkeuService {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 
+    @Override
+    public LapkeuSummaryResponseDTO getLapkeuSummary(Date startDate, Date endDate, Integer activityType) {
+        List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
+        List<Lapkeu> filtered = lapkeuList.stream()
+            .filter(l -> {
+                if (startDate != null && l.getPaymentDate() != null && l.getPaymentDate().before(startDate)) {
+                    return false;
+                }
+                if (endDate != null && l.getPaymentDate() != null && l.getPaymentDate().after(endDate)) {
+                    return false;
+                }
+                if (activityType != null && !activityType.equals(l.getActivityType())) {
+                    return false;
+                }
+                return true;
+            })
+            .collect(Collectors.toList());
+
+        int totalTransaksi = filtered.size();
+        long totalPemasukan = filtered.stream().mapToLong(l -> l.getPemasukan() != null ? l.getPemasukan() : 0L).sum();
+        long totalPengeluaran = filtered.stream().mapToLong(l -> l.getPengeluaran() != null ? l.getPengeluaran() : 0L).sum();
+        long totalProfit = totalPemasukan - totalPengeluaran;
+
+        return new LapkeuSummaryResponseDTO(totalTransaksi, totalPemasukan, totalPengeluaran, totalProfit);
+    }
 }

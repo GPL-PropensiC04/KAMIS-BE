@@ -13,6 +13,7 @@ import gpl.karina.project.restdto.request.UpdateProjectRequestDTO;
 import gpl.karina.project.restdto.response.ActivityLineDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
+import gpl.karina.project.restdto.response.SellDistributionSummaryDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import gpl.karina.project.restdto.request.UpdateProjectStatusRequestDTO;
 
@@ -338,6 +339,76 @@ public class ProjectController {
         }
     }
 
+    @GetMapping("/summary")
+    public ResponseEntity<BaseResponseDTO<SellDistributionSummaryDTO>> getSellDistributionSummary(
+            @RequestParam(name = "range", defaultValue = "THIS_YEAR") String rangeParam) {
+
+        BaseResponseDTO<SellDistributionSummaryDTO> response = new BaseResponseDTO<>();
+
+        try {
+            SellDistributionSummaryDTO result = projectService.getSellDistributionSummaryByRange(rangeParam);
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan ringkasan proyek penjualan dan distribusi untuk range: " + rangeParam);
+            response.setTimestamp(new Date());
+            response.setData(result);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter range tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data ringkasan proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/range")
+    public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getProjectListByRange(
+            @RequestParam(name = "range", defaultValue = "THIS_YEAR") String rangeParam) {
+
+        BaseResponseDTO<List<listProjectResponseDTO>> response = new BaseResponseDTO<>();
+
+        try {
+            List<listProjectResponseDTO> result = projectService.getProjectListByRange(rangeParam);
+
+            if (result.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data proyek untuk range: " + rangeParam);
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan daftar proyek untuk range: " + rangeParam);
+            response.setTimestamp(new Date());
+            response.setData(result);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter range tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 
 }
