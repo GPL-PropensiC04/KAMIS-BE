@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
+import gpl.karina.finance.report.dto.response.IncomeExpenseBarResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuPageResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
@@ -161,6 +162,45 @@ public class LapkeuController {
 
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Berhasil mendapatkan daftar pemasukan dan pengeluaran per periode");
+            response.setTimestamp(new Date());
+            response.setData(data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/chart-total-pemasukan-pengeluaran")
+    public ResponseEntity<BaseResponseDTO<List<IncomeExpenseBarResponseDTO>>> getBarPemasukanPengeluaranPerPeriode(
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range,
+        @RequestParam(name = "periodType", required = false) String periodType
+    ) {
+        BaseResponseDTO<List<IncomeExpenseBarResponseDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<IncomeExpenseBarResponseDTO> data = lapkeuService.getIncomeExpenseBarChart(periodType, range);
+
+            if (data.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan data bar chart pemasukan dan pengeluaran per periode");
             response.setTimestamp(new Date());
             response.setData(data);
             return new ResponseEntity<>(response, HttpStatus.OK);

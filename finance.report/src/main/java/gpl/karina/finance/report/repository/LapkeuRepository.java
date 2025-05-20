@@ -93,7 +93,7 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
                                        @Param("startDate") Date startDate, 
                                        @Param("endDate") Date endDate);
 
-        // New query for total income from Sales (ActivityType 0 for Penjualan)
+    // New query for total income from Sales (ActivityType 0 for Penjualan)
     @Query("SELECT SUM(l.pemasukan) " +
            "FROM Lapkeu l " +
            "WHERE l.pemasukan IS NOT NULL " +
@@ -109,7 +109,7 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
            "AND l.paymentDate BETWEEN :startDate AND :endDate")
     Long getTotalDistributionIncomeBetweenDates(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-        // Query to get total income for DISTRIBUSI (activityType = 1)
+    // Query to get total income for DISTRIBUSI (activityType = 1)
     @Query("SELECT SUM(l.pemasukan) " +
            "FROM Lapkeu l " +
            "WHERE l.pemasukan IS NOT NULL " +
@@ -124,5 +124,15 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
            "AND l.activityType = 0 " +  // ActivityType 0 for PENJUALAN
            "AND l.paymentDate BETWEEN :startDate AND :endDate")
     Long getTotalIncomeFromPenjualan(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    @Query("SELECT SUM(l.pemasukan) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.activityType = :activityType " +
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Long getTotalIncomeByActivityType(@Param("activityType") int activityType,
+                                     @Param("startDate") Date startDate, 
+                                     @Param("endDate") Date endDate);
+
 
 }
