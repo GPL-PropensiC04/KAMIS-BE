@@ -40,3 +40,6 @@ out/
 .env
 
 logs/
+
+### Asset Images ###
+# asset-images/ temprary let into git

@@ -39,3 +39,6 @@ out/
 ### ENVIRONMENT ###
 .env
 logs/
+
+# Purchase Images
+# purchase-images/ temporary let into git

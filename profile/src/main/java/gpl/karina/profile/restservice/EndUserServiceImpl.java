@@ -19,6 +19,7 @@ import gpl.karina.profile.model.Finance;
 import gpl.karina.profile.model.Operasional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import gpl.karina.profile.restdto.request.LoginRequestDTO;
+import gpl.karina.profile.restdto.request.UpdateUserReqeuestDTO;
 import gpl.karina.profile.restdto.response.EndUserResponseDTO;
 import gpl.karina.profile.restdto.response.LoginResponseDTO;
 import gpl.karina.profile.security.service.UserDetailsServiceImpl;
@@ -166,5 +167,30 @@ public class EndUserServiceImpl implements EndUserService {
         return endUserRepository.findAll().stream()
             .map(this::endUserToEndUserResponseDTO)
             .collect(Collectors.toList());
+    }
+
+    
+    @Override
+    public EndUserResponseDTO updateUser(String email, UpdateUserReqeuestDTO addUserReqeuestDTO) {
+        Optional<EndUser> endUser = endUserRepository.findByEmail(email);
+        try {
+            if (endUser.isPresent()) {
+                EndUser endUserToUpdate = endUser.get();
+                if (addUserReqeuestDTO.getEmail() != null) {
+                    endUserToUpdate.setEmail(addUserReqeuestDTO.getEmail());
+                }
+                if (addUserReqeuestDTO.getPassword() != null) {
+                    endUserToUpdate.setPassword(hashPassword(addUserReqeuestDTO.getPassword()));
+                }
+                if (addUserReqeuestDTO.getUsername() != null) {
+                    endUserToUpdate.setUsername(addUserReqeuestDTO.getUsername());
+                }
+                endUserRepository.save(endUserToUpdate);
+                return (endUserToEndUserResponseDTO(endUserToUpdate));
+            }    
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to update user: " + e.getMessage());
+        }
+        throw new IllegalArgumentException("User not found");
     }
 }
