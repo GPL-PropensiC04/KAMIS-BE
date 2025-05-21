@@ -21,7 +21,7 @@ public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
 
-    @Autowired
+
     public MaintenanceController(MaintenanceService maintenanceService) {
         this.maintenanceService = maintenanceService;
     }
@@ -98,8 +98,8 @@ public class MaintenanceController {
     //     }
     // }
 
-    @GetMapping("{platNomor}")
-    public ResponseEntity<BaseResponseDTO<List<MaintenanceResponseDTO>>> getMaintenanceByAsset(@PathVariable String platNomor) {
+    @GetMapping("/{platNomor}")
+    public ResponseEntity<BaseResponseDTO<List<MaintenanceResponseDTO>>> getMaintenanceByAsset(@PathVariable(name = "platNomor") String platNomor) {
         BaseResponseDTO<List<MaintenanceResponseDTO>> response = new BaseResponseDTO<>();
         
         try {
