@@ -1701,4 +1701,50 @@ public class ProjectServiceImpl implements ProjectService {
         return ((double) (current - previous) / previous) * 100;
     }
 
+    @Override
+    public List<listProjectResponseDTO> getProjectListByRange(String range) {
+        // Tentukan rentang waktu berdasarkan range
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        try {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    start = now.withDayOfMonth(1);
+                    break;
+                case "THIS_QUARTER":
+                    int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                    Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                    start = LocalDate.of(now.getYear(), firstMonth, 1);
+                    break;
+                case "THIS_YEAR":
+                    start = now.withDayOfYear(1);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+            }
+
+            // Konversi ke java.util.Date
+            Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+            // Panggil getAllProject dengan filter rentang tanggal
+            return getAllProject(
+                    null, // idSearch
+                    null, // projectStatus
+                    null, // projectType
+                    null, // projectName
+                    null, // projectClientId
+                    startDate, // projectStartDate
+                    endDate, // projectEndDate
+                    null, // startNominal
+                    null  // endNominal
+            );
+        } catch (Exception e) {
+            // Handle the exception and log it, or rethrow a custom exception
+            throw new RuntimeException("Terjadi kesalahan saat mendapatkan daftar proyek: " + e.getMessage(), e);
+        }
+    }
+
 }

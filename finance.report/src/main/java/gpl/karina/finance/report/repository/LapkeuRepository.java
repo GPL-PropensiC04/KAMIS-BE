@@ -75,4 +75,64 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
            "ORDER BY period")
     List<Object[]> getIncomeExpenseYearlyFiltered(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
+
+    // Query to get total income for a specific date range
+    @Query("SELECT SUM(l.pemasukan) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Long getTotalIncomeBetweenDates(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    // Query to get total expenses by activity type for a specific date range
+    @Query("SELECT SUM(l.pengeluaran) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pengeluaran IS NOT NULL " +
+           "AND l.activityType = :activityType " +
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Long getTotalExpenseByActivityType(@Param("activityType") int activityType,
+                                       @Param("startDate") Date startDate, 
+                                       @Param("endDate") Date endDate);
+
+    // New query for total income from Sales (ActivityType 0 for Penjualan)
+    @Query("SELECT SUM(l.pemasukan) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.activityType = 0 " + // ActivityType 0 for PENJUALAN
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Long getTotalSalesIncomeBetweenDates(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    // New query for total income from Distribution (ActivityType 1 for DISTRIBUSI)
+    @Query("SELECT SUM(l.pemasukan) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.activityType = 1 " + // ActivityType 1 for DISTRIBUSI
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Long getTotalDistributionIncomeBetweenDates(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    // Query to get total income for DISTRIBUSI (activityType = 1)
+    @Query("SELECT SUM(l.pemasukan) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.activityType = 1 " +  // ActivityType 1 for DISTRIBUSI
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Long getTotalIncomeFromDistribusi(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    // Query to get total income for PENJUALAN (activityType = 0)
+    @Query("SELECT SUM(l.pemasukan) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.activityType = 0 " +  // ActivityType 0 for PENJUALAN
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Long getTotalIncomeFromPenjualan(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    @Query("SELECT SUM(l.pemasukan) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.activityType = :activityType " +
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Long getTotalIncomeByActivityType(@Param("activityType") int activityType,
+                                     @Param("startDate") Date startDate, 
+                                     @Param("endDate") Date endDate);
+
+
 }

@@ -55,6 +55,18 @@ public class EndUserServiceImpl implements EndUserService {
         EndUserResponseDTO endUserResponseDTO = new EndUserResponseDTO();
         endUserResponseDTO.setEmail(endUser.getEmail());
         endUserResponseDTO.setUsername(endUser.getUsername());
+        
+        // Tentukan role berdasarkan jenis class
+        if (endUser instanceof Admin) {
+            endUserResponseDTO.setRole("admin");
+        } else if (endUser instanceof Direksi) {
+            endUserResponseDTO.setRole("direksi");
+        } else if (endUser instanceof Finance) {
+            endUserResponseDTO.setRole("finance");
+        } else if (endUser instanceof Operasional) {
+            endUserResponseDTO.setRole("operasional");
+        }
+        
         return endUserResponseDTO;
     }
 
