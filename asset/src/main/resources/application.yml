@@ -23,6 +23,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 asset:
   app:
     jwtPublicKey: ${JWT_PUBLIC_KEY}
@@ -34,6 +38,10 @@ asset:
     purchaseUrl: ${PURCHASE_URL}
     resourceUrl: ${RESOURCE_URL}
     frontendUrl: ${FRONTEND_URL}
+file:
+  upload-dir: asset-images
+migration:
+  auto-execute: true
 logging:
   file:
     name: logs/asset-application.log

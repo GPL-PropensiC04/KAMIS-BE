@@ -171,22 +171,26 @@ public class EndUserServiceImpl implements EndUserService {
 
     
     @Override
-    public Optional<EndUserResponseDTO> updateUser(String email, UpdateUserReqeuestDTO addUserReqeuestDTO) {
+    public EndUserResponseDTO updateUser(String email, UpdateUserReqeuestDTO addUserReqeuestDTO) {
         Optional<EndUser> endUser = endUserRepository.findByEmail(email);
-        if (endUser.isPresent()) {
-            EndUser endUserToUpdate = endUser.get();
-            if (addUserReqeuestDTO.getEmail() != null) {
-                endUserToUpdate.setEmail(addUserReqeuestDTO.getEmail());
-            }
-            if (addUserReqeuestDTO.getPassword() != null) {
-                endUserToUpdate.setPassword(hashPassword(addUserReqeuestDTO.getPassword()));
-            }
-            if (addUserReqeuestDTO.getUsername() != null) {
-                endUserToUpdate.setUsername(addUserReqeuestDTO.getUsername());
-            }
-            endUserRepository.save(endUserToUpdate);
-            return Optional.of(endUserToEndUserResponseDTO(endUserToUpdate));
+        try {
+            if (endUser.isPresent()) {
+                EndUser endUserToUpdate = endUser.get();
+                if (addUserReqeuestDTO.getEmail() != null) {
+                    endUserToUpdate.setEmail(addUserReqeuestDTO.getEmail());
+                }
+                if (addUserReqeuestDTO.getPassword() != null) {
+                    endUserToUpdate.setPassword(hashPassword(addUserReqeuestDTO.getPassword()));
+                }
+                if (addUserReqeuestDTO.getUsername() != null) {
+                    endUserToUpdate.setUsername(addUserReqeuestDTO.getUsername());
+                }
+                endUserRepository.save(endUserToUpdate);
+                return (endUserToEndUserResponseDTO(endUserToUpdate));
+            }    
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to update user: " + e.getMessage());
         }
-        return Optional.empty();
+        throw new IllegalArgumentException("User not found");
     }
 }
