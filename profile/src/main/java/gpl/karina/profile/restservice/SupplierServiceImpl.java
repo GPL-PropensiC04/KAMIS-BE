@@ -430,7 +430,7 @@ public class SupplierServiceImpl implements SupplierService {
             throw new IllegalArgumentException("Supplier tidak ditemukan");
         }
 
-        String name = supplier.getNameSupplier();
+        String name = supplier.getCompanySupplier();
         return name;
     }
 
