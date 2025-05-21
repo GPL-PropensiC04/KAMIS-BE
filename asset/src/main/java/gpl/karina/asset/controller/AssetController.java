@@ -2,7 +2,8 @@ package gpl.karina.asset.controller;
 
 import java.util.Date;
 import java.util.List;
-import java.io.IOException;
+import java.util.UUID;
+import java.util.Optional;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -13,13 +14,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import gpl.karina.asset.model.Asset;
 import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.dto.request.AssetAddDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
+import gpl.karina.asset.dto.response.AssetListResponseDTO;
 import gpl.karina.asset.dto.response.BaseResponseDTO;
 import gpl.karina.asset.service.AssetService;
 import gpl.karina.asset.service.FileStorageService;
@@ -31,9 +32,9 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/asset")
 public class AssetController {
     private final AssetService assetService;
+    private final AssetDb assetDb;
     private final MaintenanceService maintenanceService;
     private final FileStorageService fileStorageService;
-    private final AssetDb assetDb;
 
     public AssetController(AssetService assetService, MaintenanceService maintenanceService,
             FileStorageService fileStorageService, AssetDb assetDb) {
@@ -45,8 +46,8 @@ public class AssetController {
 
     @GetMapping("/all")
     public ResponseEntity<?> listAsset() {
-        var baseResponseDTO = new BaseResponseDTO<List<AssetResponseDTO>>();
-        List<AssetResponseDTO> listAsset = assetService.getAllAsset();
+        var baseResponseDTO = new BaseResponseDTO<List<AssetListResponseDTO>>();
+        List<AssetListResponseDTO> listAsset = assetService.getAllAsset();
 
         baseResponseDTO.setStatus(HttpStatus.OK.value());
         baseResponseDTO.setData(listAsset);
@@ -116,7 +117,7 @@ public class AssetController {
         }
     }
 
-    @RequestMapping(value = "/addAsset", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/addAsset", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BaseResponseDTO<AssetResponseDTO>> addAsset(
             @Valid @ModelAttribute AssetAddDTO assetTempDTO, BindingResult bindingResult) {
         BaseResponseDTO<AssetResponseDTO> response = new BaseResponseDTO<>();
@@ -129,7 +130,6 @@ public class AssetController {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             response.setMessage(errorMessages.toString());
             response.setTimestamp(new Date());
-            System.out.println(errorMessages.toString());
             return new ResponseEntity<BaseResponseDTO<AssetResponseDTO>>(response, HttpStatus.BAD_REQUEST);
         }
         try {
@@ -192,6 +192,65 @@ public class AssetController {
             baseResponseDTO.setMessage(e.getMessage());
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/by-supplier/{supplierId}")
+    public ResponseEntity<?> getAssetsBySupplier(@PathVariable("supplierId") UUID supplierId) {
+        var baseResponseDTO = new BaseResponseDTO<List<AssetResponseDTO>>();
+        
+        try {
+            List<AssetResponseDTO> assets = assetService.getAssetsBySupplier(supplierId);
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setData(assets);
+            baseResponseDTO.setMessage("Daftar aset dari supplier berhasil ditemukan");
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+            baseResponseDTO.setMessage("Gagal mendapatkan daftar aset: " + e.getMessage());
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/{platNomor}/supplier")
+    public ResponseEntity<?> updateAssetSupplier(
+            @PathVariable("platNomor") String platNomor,
+            @RequestParam("supplierId") String supplierIdStr) {
+        
+        var baseResponseDTO = new BaseResponseDTO<AssetResponseDTO>();
+        
+        try {
+            UUID supplierId = UUID.fromString(supplierIdStr);
+            Optional<Asset> assetOpt = assetDb.findById(platNomor);
+            
+            if (assetOpt.isPresent()) {
+                Asset asset = assetOpt.get();
+                asset.setIdSupplier(supplierId);
+                Asset updatedAsset = assetDb.save(asset);
+                
+                baseResponseDTO.setStatus(HttpStatus.OK.value());
+                baseResponseDTO.setData(assetService.getAssetById(platNomor));
+                baseResponseDTO.setMessage("Supplier berhasil ditambahkan ke aset");
+                baseResponseDTO.setTimestamp(new Date());
+                return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+            } else {
+                baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
+                baseResponseDTO.setMessage("Asset dengan plat nomor " + platNomor + " tidak ditemukan");
+                baseResponseDTO.setTimestamp(new Date());
+                return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
+            }
+        } catch (IllegalArgumentException e) {
+            baseResponseDTO.setStatus(HttpStatus.BAD_REQUEST.value());
+            baseResponseDTO.setMessage("Format Supplier ID tidak valid");
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponseDTO.setMessage("Gagal memperbarui supplier: " + e.getMessage());
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -18,4 +18,5 @@ public interface MaintenanceService {
     
     // Add this method to fix the compilation error
     List<MaintenanceResponseDTO> getMaintenanceByAssetIdAndStatus(String platNomor, String status) throws Exception;
+    List<MaintenanceResponseDTO> getAssetsInMaintenance() throws Exception;
 }

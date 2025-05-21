@@ -5,18 +5,21 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Date;
 import java.text.ParseException;
+import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import gpl.karina.asset.dto.response.AssetListResponseDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
 import gpl.karina.asset.dto.request.AssetAddDTO;
 import gpl.karina.asset.dto.request.AssetUpdateRequestDTO;
 import gpl.karina.asset.repository.AssetDb;
+import gpl.karina.asset.repository.MaintenanceRepository;
 import gpl.karina.asset.model.Asset;
+import gpl.karina.asset.model.Maintenance;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,25 +27,39 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AssetServiceImpl implements AssetService {
 
-
-    // private JwtTokenHolder tokenHolder;
-
     private final AssetDb assetDb;
+    private final MaintenanceRepository maintenanceRepository;
+    private final WebClient.Builder webClientBuilder;
     private final FileStorageService fileStorageService;
 
-    public AssetServiceImpl(AssetDb assetDb, FileStorageService fileStorageService,
-            WebClient.Builder webClientBuilder) {
+    public AssetServiceImpl(AssetDb assetDb, WebClient.Builder webClientBuilder,
+            MaintenanceRepository maintenanceRepository, FileStorageService fileStorageService) {
         this.assetDb = assetDb;
+        this.maintenanceRepository = maintenanceRepository;
+        this.webClientBuilder = webClientBuilder;
         this.fileStorageService = fileStorageService;
     }
 
-    @Override
-    public List<AssetResponseDTO> getAllAsset() {
+    private AssetListResponseDTO listAssetToAssetResponseDTO(Asset asset) {
+        AssetListResponseDTO assetResponseDTO = new AssetListResponseDTO();
+        assetResponseDTO.setPlatNomor(asset.getPlatNomor());
+        assetResponseDTO.setNama(asset.getNama());
+        assetResponseDTO.setTipeAset(asset.getJenisAset());
+        assetResponseDTO.setStatus(asset.getStatus());
+        assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
+        assetResponseDTO.setSupplierId(asset.getIdSupplier());
+        assetResponseDTO.setTanggalPerolehan(asset.getTanggalPerolehan());
+        assetResponseDTO.setLastMaintenance(getLastMaintenanceDate(asset.getPlatNomor()));
 
+        return assetResponseDTO;
+    }
+
+    @Override
+    public List<AssetListResponseDTO> getAllAsset() {
         var listAsset = assetDb.findAllActive();
-        var listAssetResponseDTO = new ArrayList<AssetResponseDTO>();
+        var listAssetResponseDTO = new ArrayList<AssetListResponseDTO>();
         listAsset.forEach(asset -> {
-            var assetResponseDTO = assetToAssetResponseDTO(asset);
+            var assetResponseDTO = listAssetToAssetResponseDTO(asset);
             listAssetResponseDTO.add(assetResponseDTO);
         });
         return listAssetResponseDTO;
@@ -110,7 +127,7 @@ public class AssetServiceImpl implements AssetService {
 
             if (updateRequest.getFoto() != null && !updateRequest.getFoto().isEmpty()) {
                 // Delete old file if exists
-                if (exisitingAsset.getFotoFilename() != null) {
+                if (exisitingAsset.getFotoFilename() != null && !exisitingAsset.getFotoFilename().isEmpty()) {
                     fileStorageService.deleteFile(exisitingAsset.getFotoFilename());
                 }
 
@@ -136,19 +153,21 @@ public class AssetServiceImpl implements AssetService {
         assetResponseDTO.setDeskripsi(asset.getDeskripsi());
         assetResponseDTO.setTanggalPerolehan(asset.getTanggalPerolehan());
         assetResponseDTO.setNilaiPerolehan(asset.getNilaiPerolehan());
-        // assetResponseDTO.setAssetMaintenance(asset.getAssetMaintenance());
         assetResponseDTO.setFotoContentType(asset.getFotoContentType());
 
-        // Update the URL to use the new endpoint
+        // Set foto URL only if foto exists
         if (asset.getFotoFilename() != null && !asset.getFotoFilename().isEmpty()) {
             assetResponseDTO.setFotoUrl("/api/asset/" + asset.getPlatNomor() + "/foto");
         }
+
+        assetResponseDTO.setSupplierId(asset.getIdSupplier());
 
         return assetResponseDTO;
     }
 
     @Override
     public AssetResponseDTO addAsset(AssetAddDTO assetTempDTO) {
+        // Validate required fields
         if (assetTempDTO.getAssetName() == null) {
             throw new IllegalArgumentException("Nama Aset tidak boleh kosong");
         }
@@ -184,6 +203,7 @@ public class AssetServiceImpl implements AssetService {
         assetTemp.setStatus(assetTempDTO.getStatus());
         assetTemp.setIsDeleted(false);
 
+        // Handle file upload
         if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
             try {
                 // Store the file and save the file name
@@ -195,6 +215,16 @@ public class AssetServiceImpl implements AssetService {
             }
         }
 
+        // Handle supplier ID
+        if (assetTempDTO.getSupplierId() != null && !assetTempDTO.getSupplierId().isEmpty()) {
+            try {
+                UUID supplierId = UUID.fromString(assetTempDTO.getSupplierId());
+                assetTemp.setIdSupplier(supplierId);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Format Supplier ID tidak valid");
+            }
+        }
+
         Asset newAssetTemp = assetDb.save(assetTemp);
         return assetToAssetResponseDTO(newAssetTemp);
     }
@@ -202,5 +232,28 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public Asset getAssetFoto(String id) {
         return assetDb.findById(id).orElseThrow(() -> new RuntimeException("Asset not found"));
+    }
+
+    @Override
+    public List<AssetResponseDTO> getAssetsBySupplier(UUID supplierId) {
+        List<Asset> assets = assetDb.findByIdSupplierAndIsDeletedFalse(supplierId);
+        return assets.stream()
+                .map(this::assetToAssetResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private Date getLastMaintenanceDate(String platNomor) {
+        List<Maintenance> maintenances = maintenanceRepository
+                .findByAssetPlatNomorAndStatus(platNomor, "Selesai");
+
+        if (maintenances.isEmpty()) {
+            return null;
+        }
+
+        // Cari maintenance terakhir
+        return maintenances.stream()
+                .map(Maintenance::getTanggalMulaiMaintenance)
+                .max(Date::compareTo)
+                .orElse(null);
     }
 }

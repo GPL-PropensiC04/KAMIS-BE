@@ -1,5 +1,6 @@
 package gpl.karina.profile.restdto.request;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
@@ -17,7 +18,7 @@ public class AddSupplierRequestDTO {
     @NotNull(message = "Nomor Telepon tidak boleh kosong")
     private String noTelpSupplier;
 
-    @NotNull(message = "Email tidak boleh kosong")
+    @NotNull(message = "Alamat tidak boleh kosong")
     @Email(message = "Format email tidak valid")
     @NotBlank(message = "Email tidak boleh kosong")
     private String emailSupplier;

@@ -20,4 +20,6 @@ public interface ResourceRepository extends JpaRepository<Resource, Long>{
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM Resource r WHERE r.id = :id")
     Optional<Resource> findByIdWithPessimisticLock(@Param("id") Long id);
+    
+    List<Resource> findByResourceStockLessThanEqual(Integer stock);
 }

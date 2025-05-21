@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @Data
 public class ClientDetailDTO {
     private String id;
-    private String ClientName;
+    private String nameClient; // Corrected field name
 }

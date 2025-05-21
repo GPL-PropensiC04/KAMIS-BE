@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import gpl.karina.profile.restdto.request.AddUserReqeuestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
+import gpl.karina.profile.restdto.response.EndUserResponseDTO;
 
 import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 
 
 @RestController
@@ -59,6 +61,21 @@ public class ProfileRestController {
         }
     }
     
-
-    
+    @GetMapping("/all")
+    public ResponseEntity<BaseResponseDTO<List<EndUserResponseDTO>>> getAllUsers() {
+        BaseResponseDTO<List<EndUserResponseDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<EndUserResponseDTO> users = endUserService.getAllUsers();
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Success");
+            response.setData(users);
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage(e.getMessage());
+            response.setTimestamp(new Date());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

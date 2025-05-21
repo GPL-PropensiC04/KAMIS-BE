@@ -93,9 +93,9 @@ public class ClientServiceImpl implements ClientService {
         clientResponseDTO.setUpdatedDate(client.getUpdatedDate());
 
         if (client.isTypeClient()) {
-            clientResponseDTO.setTypeClient("Perusahaan");
+            clientResponseDTO.setTypeClient(true);
         } else {
-            clientResponseDTO.setTypeClient("Perorangan");
+            clientResponseDTO.setTypeClient(false);
         }
 
         return clientResponseDTO;
@@ -156,7 +156,7 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient) {
+    public List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient, Long minProfit, Long maxProfit) {
         List<Client> clients;
         
         if (nameClient != null && typeClient != null) {
@@ -171,6 +171,8 @@ public class ClientServiceImpl implements ClientService {
         
         return clients.stream()
             .map(this::listClientToClientResponseDTO)
+            .filter(dto -> (minProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() >= minProfit)))
+            .filter(dto -> (maxProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() <= maxProfit)))
             .toList();
     }
 
@@ -189,10 +191,11 @@ public class ClientServiceImpl implements ClientService {
         clientListResponseDTO.setId(client.getId());
         clientListResponseDTO.setNameClient(client.getNameClient());
         clientListResponseDTO.setCompanyClient(client.getCompanyClient());
-        clientListResponseDTO.setTypeClient(client.isTypeClient() ? "Perusahaan" : "Perorangan");
+        clientListResponseDTO.setTypeClient(client.isTypeClient());
         clientListResponseDTO.setProjectCount(projects != null ? projects.size() : 0);
         clientListResponseDTO.setTotalProfit(totalProfit);
 
         return clientListResponseDTO;
     }
+
 }

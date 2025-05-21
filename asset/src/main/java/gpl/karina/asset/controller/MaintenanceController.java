@@ -62,7 +62,7 @@ public class MaintenanceController {
         }
     }
 
-    @GetMapping
+    @GetMapping ("/all")
     public ResponseEntity<BaseResponseDTO<List<MaintenanceResponseDTO>>> getAllMaintenance() {
         BaseResponseDTO<List<MaintenanceResponseDTO>> response = new BaseResponseDTO<>();
         
@@ -141,4 +141,36 @@ public class MaintenanceController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
+
+    @GetMapping("/maintenance-in-progress")
+    public ResponseEntity<BaseResponseDTO<List<MaintenanceResponseDTO>>> getAssetsInMaintenance() {
+        BaseResponseDTO<List<MaintenanceResponseDTO>> response = new BaseResponseDTO<>();
+
+        try {
+            // Memanggil service untuk mendapatkan daftar aset yang sedang dimaintenance
+            List<MaintenanceResponseDTO> maintenanceList = maintenanceService.getAssetsInMaintenance();
+
+            if (maintenanceList.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada aset yang sedang dalam maintenance");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Daftar aset yang sedang dalam maintenance berhasil diambil");
+            response.setData(maintenanceList);
+            response.setTimestamp(new Date());
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data aset yang sedang dalam maintenance: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

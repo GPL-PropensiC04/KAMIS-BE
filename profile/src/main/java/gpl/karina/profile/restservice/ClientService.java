@@ -13,5 +13,5 @@ public interface ClientService {
     List<ClientListResponseDTO> getAllClient();
     ClientResponseDTO getClientById(UUID id) throws Exception;
     ClientResponseDTO updateClient(UUID id, UpdateClientRequestDTO updateClientRequestDTO);
-    List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient);
+    List<ClientListResponseDTO> filterClients(String nameClient, Boolean typeClient, Long minProfit, Long maxProfit);
 }

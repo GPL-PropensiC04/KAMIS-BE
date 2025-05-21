@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -43,9 +44,8 @@ public class Asset {
     @Column(name = "deskripsi", nullable = false)
     private String deskripsi;
 
-    // @NotNull
-    // @Column(name = "assetMaintenance", nullable = false)
-    // private String assetMaintenance;
+    @Column(name = "id_supplier")
+    private UUID idSupplier;
 
     @Column(name = "fotoFilename")
     private String fotoFilename;
@@ -59,6 +59,7 @@ public class Asset {
     @Column(name = "deletedAt")
     private Date deletedAt;
 
+        
     // @ManyToMany
     // @JoinTable(
     // name = "AssetMaintenance",

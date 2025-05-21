@@ -8,7 +8,7 @@ import lombok.Data;
 public class ClientListResponseDTO {
     private UUID id;
     private String nameClient;
-    private String typeClient;
+    private boolean typeClient;
     private String companyClient;
     private Integer projectCount;
     private Long totalProfit;

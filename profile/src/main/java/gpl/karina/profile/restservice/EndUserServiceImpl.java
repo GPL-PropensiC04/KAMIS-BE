@@ -1,6 +1,8 @@
 package gpl.karina.profile.restservice;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,18 @@ public class EndUserServiceImpl implements EndUserService {
         EndUserResponseDTO endUserResponseDTO = new EndUserResponseDTO();
         endUserResponseDTO.setEmail(endUser.getEmail());
         endUserResponseDTO.setUsername(endUser.getUsername());
+        
+        // Tentukan role berdasarkan jenis class
+        if (endUser instanceof Admin) {
+            endUserResponseDTO.setRole("admin");
+        } else if (endUser instanceof Direksi) {
+            endUserResponseDTO.setRole("direksi");
+        } else if (endUser instanceof Finance) {
+            endUserResponseDTO.setRole("finance");
+        } else if (endUser instanceof Operasional) {
+            endUserResponseDTO.setRole("operasional");
+        }
+        
         return endUserResponseDTO;
     }
 
@@ -145,5 +159,12 @@ public class EndUserServiceImpl implements EndUserService {
         endUser.setPassword(addUserReqeuestDTO.getPassword());
         endUser.setUsername(addUserReqeuestDTO.getUsername());
         operasionalRepository.save(endUser);
+    }
+
+    @Override
+    public List<EndUserResponseDTO> getAllUsers() {
+        return endUserRepository.findAll().stream()
+            .map(this::endUserToEndUserResponseDTO)
+            .collect(Collectors.toList());
     }
 }

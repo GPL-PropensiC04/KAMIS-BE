@@ -26,6 +26,8 @@ public class SellResponseDTO {
 
     private String projectClientId;
 
+    private String projectClientName;
+
     private String projectDeliveryAddress;
 
     List<ResourceUsageDTO> projectUseResource;
@@ -37,6 +39,8 @@ public class SellResponseDTO {
     private Date projectEndDate;
 
     private Long projectTotalPemasukkan;
+
+    private Date projectPaymentDate;
 
     private List<LogProjectResponseDTO> projectLogs;
 }

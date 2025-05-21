@@ -23,6 +23,8 @@ public class listProjectResponseDTO {
 
     private String projectClientId;
 
+    private String projectClientName;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone = "Asia/Jakarta")
     private Date projectStartDate;
 
@@ -31,4 +33,6 @@ public class listProjectResponseDTO {
 
     private Long projectTotalPemasukkan;
     private Long projectTotalPengeluaran;
+    private Long projectProfit;
+    private Date projectPaymentDate;
 }

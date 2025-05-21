@@ -1,5 +1,6 @@
 package gpl.karina.asset.service;
 
+import gpl.karina.asset.dto.request.AddLapkeuDTO;
 import gpl.karina.asset.dto.request.MaintenanceRequestDTO;
 import gpl.karina.asset.dto.response.MaintenanceResponseDTO;
 import gpl.karina.asset.model.Asset;
@@ -7,8 +8,10 @@ import gpl.karina.asset.model.Maintenance;
 import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.repository.MaintenanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Date;
 import java.util.List;
@@ -18,13 +21,17 @@ import java.util.stream.Collectors;
 @Service
 public class MaintenanceServiceImpl implements MaintenanceService {
 
+    @Value("${asset.app.financeUrl}")
+    private String financeUrl;
+
     private final MaintenanceRepository maintenanceRepository;
     private final AssetDb assetRepository;
+    private final WebClient.Builder webClientBuilder;
 
-    @Autowired
-    public MaintenanceServiceImpl(MaintenanceRepository maintenanceRepository, AssetDb assetRepository) {
+    public MaintenanceServiceImpl(MaintenanceRepository maintenanceRepository, WebClient.Builder webClientBuilder, AssetDb assetRepository) {
         this.maintenanceRepository = maintenanceRepository;
         this.assetRepository = assetRepository;
+        this.webClientBuilder = webClientBuilder;
     }
 
     @Override
@@ -61,6 +68,26 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         maintenance.setAsset(asset);
         
         Maintenance savedMaintenance = maintenanceRepository.save(maintenance);
+
+        try {
+            AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
+            lapkeuRequest.setId(savedMaintenance.getId().toString());
+            lapkeuRequest.setActivityType(3); // PURCHASE
+            lapkeuRequest.setPemasukan(0L);
+            lapkeuRequest.setPengeluaran(requestDTO.getBiaya() != null ? requestDTO.getBiaya().longValue() : 0L);
+            lapkeuRequest.setDescription("Maintenance - " + asset.getPlatNomor());
+            lapkeuRequest.setPaymentDate(savedMaintenance.getTanggalMulaiMaintenance());
+
+            webClientBuilder.build()
+                .post()
+                .uri(financeUrl + "/api/lapkeu/add") // ganti port sesuai service lapkeu
+                .bodyValue(lapkeuRequest)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+        } catch (Exception e) {
+            System.err.println("Gagal insert ke Lapkeu: " + e.getMessage());
+        }
         
         return convertToDTO(savedMaintenance);
     }
@@ -130,6 +157,21 @@ public class MaintenanceServiceImpl implements MaintenanceService {
                 .filter(m -> m.getAsset().getPlatNomor().equals(platNomor))
                 .collect(Collectors.toList());
         return maintenances.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MaintenanceResponseDTO> getAssetsInMaintenance() throws Exception {
+        // Ambil daftar maintenance yang sedang dalam status "Sedang Maintenance"
+        List<Maintenance> maintenances = maintenanceRepository.findByStatus("Sedang Maintenance");
+
+        if (maintenances == null || maintenances.isEmpty()) {
+            throw new Exception("Tidak ada aset yang sedang dalam maintenance");
+        }
+
+        // Mengonversi list Maintenance ke MaintenanceResponseDTO
+        return maintenances.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     private MaintenanceResponseDTO convertToDTO(Maintenance maintenance) {

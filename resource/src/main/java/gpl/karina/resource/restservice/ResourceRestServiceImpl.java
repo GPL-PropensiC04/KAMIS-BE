@@ -88,7 +88,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         }     
         resource.setResourceDescription(updateResourceDTO.getResourceDescription());
         resource.setResourcePrice(updateResourceDTO.getResourcePrice());
-        resource.setResourceStock(resource.getResourceStock() + updateResourceDTO.getResourceStock());
+        resource.setResourceStock(updateResourceDTO.getResourceStock());
         
         resourceRepository.save(resource);
         return resourceToResourceResponseDTO(resource);
@@ -175,4 +175,81 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         resources.forEach(resource -> responseDTOs.add(resourceToResourceResponseDTO(resource)));
         return responseDTOs;
     }
+
+    @Override
+    public Void addSupplierId(UUID supplierId, List<Long> resourceIdList) {
+        for (Long resourceId : resourceIdList) {
+            Resource resource = resourceRepository.findById(resourceId)
+                    .orElseThrow(() -> new IllegalArgumentException("Resource dengan ID " + resourceId + " tidak ditemukan."));
+    
+            List<UUID> supplierIds = resource.getSupplierId();
+            if (supplierIds == null) {
+                supplierIds = new ArrayList<>();
+                resource.setSupplierId(supplierIds);
+            }
+            
+            if (!supplierIds.contains(supplierId)) {
+                supplierIds.add(supplierId);
+                resourceRepository.save(resource);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void updateSupplierId(UUID supplierId, List<Long> resourceIdList) {
+        // Step 1: Resource yang sudah mengandung supplierId
+        List<Resource> existingResources = resourceRepository.findBySupplierId(supplierId);
+
+        // Step 2: Hapus supplierId dari resource yang tidak ada di resourceIdList
+        for (Resource resource : existingResources) {
+            if (!resourceIdList.contains(resource.getId())) {
+                List<UUID> supplierIds = resource.getSupplierId();
+                if (supplierIds != null && supplierIds.contains(supplierId)) {
+                    supplierIds.remove(supplierId);
+                    resourceRepository.save(resource);
+                }
+            }
+        }
+
+        // Step 3: Tambahkan supplierId ke resource yang baru
+        for (Long resourceId : resourceIdList) {
+            boolean alreadyAssociated = existingResources.stream()
+                    .anyMatch(resource -> resource.getId().equals(resourceId));
+
+            if (!alreadyAssociated) {
+                Resource resource = resourceRepository.findById(resourceId)
+                        .orElseThrow(() -> new IllegalArgumentException("Resource dengan ID " + resourceId + " tidak ditemukan."));
+
+                List<UUID> supplierIds = resource.getSupplierId();
+                if (supplierIds == null) {
+                    supplierIds = new ArrayList<>();
+                    resource.setSupplierId(supplierIds);
+                }
+
+                if (!supplierIds.contains(supplierId)) {
+                    supplierIds.add(supplierId);
+                    resourceRepository.save(resource);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<ResourceResponseDTO> getResourcesByStock(Integer stock) {
+        if (stock < 0) {
+            throw new IllegalArgumentException("Stock tidak boleh kurang dari 0");
+        }
+
+        List<Resource> resources = resourceRepository.findByResourceStockLessThanEqual(stock);
+        List<ResourceResponseDTO> responseDTOs = new ArrayList<>();
+        for (Resource resource : resources) {
+            responseDTOs.add(resourceToResourceResponseDTO(resource));
+        }
+        return responseDTOs;
+    }
+
+    
 }

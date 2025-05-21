@@ -1,6 +1,5 @@
 package gpl.karina.finance.report.security;
 
-// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,9 +27,8 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configure(http))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/test").permitAll()
-                        .requestMatchers("/api/resource/**")
-                        .hasAnyAuthority("admin", "direksi", "finance", "operasional")
+                        .requestMatchers("/api/lapkeu/**").permitAll()
+                        .requestMatchers("/api/finance-report/**").hasAnyAuthority("Admin", "Finance")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

@@ -2,8 +2,7 @@ package gpl.karina.asset.dto.response;
 import lombok.*;
 
 import java.util.Date;
-import java.util.List;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.UUID;
 
 @Data
 public class AssetResponseDTO {
@@ -17,4 +16,5 @@ public class AssetResponseDTO {
     private String assetMaintenance;
     private String fotoContentType;
     private String fotoUrl;
+    private UUID supplierId;
 }

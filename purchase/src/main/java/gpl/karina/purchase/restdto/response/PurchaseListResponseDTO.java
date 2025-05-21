@@ -17,4 +17,6 @@ public class PurchaseListResponseDTO {
     private String purchaseType;
     private String purchaseStatus;
     private Integer purchasePrice;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")
+    private Date purchasePaymentDate;
 }

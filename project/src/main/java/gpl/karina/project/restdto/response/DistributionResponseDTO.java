@@ -26,6 +26,8 @@ public class DistributionResponseDTO {
 
     private String projectClientId;
 
+    private String projectClientName;
+
     List<AssetUsageDTO> projectUseAsset;
 
     private String projectDeliveryAddress;
@@ -47,4 +49,5 @@ public class DistributionResponseDTO {
     private Long projectTotalPengeluaran;
 
     private List<LogProjectResponseDTO> projectLogs;
+    private Date projectPaymentDate;
 }
