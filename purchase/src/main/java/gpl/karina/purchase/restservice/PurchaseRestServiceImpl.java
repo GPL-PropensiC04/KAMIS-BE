@@ -1237,12 +1237,11 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                         "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
         }
 
-        // Konversi ke java.util.Date
+        // Konversi LocalDate ke java.util.Date
         Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
         // Reuse existing logic: panggil getAllPurchase dengan parameter lain
-        // null/default
         return getAllPurchase(
                 null, // startNominal
                 null, // endNominal
@@ -1257,66 +1256,46 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
     @Override
     public PurchaseSummaryResponseDTO getPurchaseSummaryByRange(String range) {
-        Date now = new Date();
-        Calendar calendar = Calendar.getInstance();
-
-        Date startCurrent, endCurrent, startPrevious, endPrevious;
+        LocalDate now = LocalDate.now();
+        LocalDate startCurrent, endCurrent, startPrevious, endPrevious;
 
         switch (range.toUpperCase()) {
             case "THIS_YEAR":
-                calendar.set(Calendar.MONTH, 0);
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startCurrent = calendar.getTime();
-                calendar.set(Calendar.MONTH, 11);
-                calendar.set(Calendar.DAY_OF_MONTH, 31);
-                endCurrent = calendar.getTime();
-
-                calendar.add(Calendar.YEAR, -1);
-                calendar.set(Calendar.MONTH, 0);
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startPrevious = calendar.getTime();
-                calendar.set(Calendar.MONTH, 11);
-                calendar.set(Calendar.DAY_OF_MONTH, 31);
-                endPrevious = calendar.getTime();
+                startCurrent = now.withDayOfYear(1);
+                endCurrent = now.withDayOfYear(now.lengthOfYear());
+                startPrevious = startCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1);
                 break;
 
             case "THIS_QUARTER":
-                int currentMonth = calendar.get(Calendar.MONTH);
-                int quarterStartMonth = currentMonth / 3 * 3;
-
-                calendar.set(Calendar.MONTH, quarterStartMonth);
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startCurrent = calendar.getTime();
-                calendar.add(Calendar.MONTH, 2);
-                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-                endCurrent = calendar.getTime();
-
-                calendar.add(Calendar.MONTH, -3);
-                startPrevious = calendar.getTime();
-                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-                endPrevious = calendar.getTime();
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                startCurrent = LocalDate.of(now.getYear(), firstMonth, 1);
+                endCurrent = startCurrent.plusMonths(3).minusDays(1);
+                startPrevious = startCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1);
                 break;
 
             case "THIS_MONTH":
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startCurrent = calendar.getTime();
-                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-                endCurrent = calendar.getTime();
-
-                calendar.add(Calendar.MONTH, -1);
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startPrevious = calendar.getTime();
-                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-                endPrevious = calendar.getTime();
+                startCurrent = now.withDayOfMonth(1);
+                endCurrent = now.withDayOfMonth(now.lengthOfMonth());
+                startPrevious = startCurrent.minusMonths(1);
+                endPrevious = endCurrent.minusMonths(1);
                 break;
 
             default:
                 throw new IllegalArgumentException("Range tidak dikenali: " + range);
         }
 
+        // Konversi LocalDate ke java.util.Date
+        Date startDateCurrent = Date.from(startCurrent.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDateCurrent = Date.from(endCurrent.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+        Date startDatePrevious = Date.from(startPrevious.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDatePrevious = Date.from(endPrevious.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
         // Hitung jumlah pembelian berdasarkan submission date
-        int currentCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startCurrent, endCurrent);
-        int previousCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startPrevious, endPrevious);
+        int currentCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startDateCurrent, endDateCurrent);
+        int previousCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startDatePrevious, endDatePrevious);
 
         double percentageChange = 0.0;
         if (previousCount > 0) {

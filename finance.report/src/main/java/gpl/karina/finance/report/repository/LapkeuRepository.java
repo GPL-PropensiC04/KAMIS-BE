@@ -125,8 +125,6 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
            "AND l.paymentDate BETWEEN :startDate AND :endDate")
     Long getTotalIncomeFromPenjualan(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
-<<<<<<< HEAD
-=======
     @Query("SELECT SUM(l.pemasukan) " +
            "FROM Lapkeu l " +
            "WHERE l.pemasukan IS NOT NULL " +
@@ -136,6 +134,4 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
                                      @Param("startDate") Date startDate, 
                                      @Param("endDate") Date endDate);
 
-
->>>>>>> b325606b5cd0338df728f87ff150797c3ac1ba47
 }
