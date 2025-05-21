@@ -148,7 +148,7 @@ public class AssetController {
     }
 
     @GetMapping("/{id}/foto")
-    public ResponseEntity<?> getAssetFoto(@PathVariable String id) {
+    public ResponseEntity<?> getAssetFoto(@PathVariable(name = "id") String id) {
         try {
             Asset asset = assetService.getAssetFoto(id);
 
