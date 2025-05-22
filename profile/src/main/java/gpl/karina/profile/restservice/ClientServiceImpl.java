@@ -20,6 +20,7 @@ import gpl.karina.profile.restdto.response.ProjectResponseDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
 import jakarta.transaction.Transactional;
+import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -32,8 +33,19 @@ public class ClientServiceImpl implements ClientService {
 
     private final WebClient webClientProject = WebClient.create();
 
-    public ClientServiceImpl(ClientRepository clientRepository) {
+    private final HttpServletRequest request;
+
+    public ClientServiceImpl(ClientRepository clientRepository, HttpServletRequest request) {
         this.clientRepository = clientRepository;
+        this.request = request;
+    }
+
+    public String getTokenFromRequest() {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     private List<ProjectResponseDTO> fetchProjectsByClientId(UUID clientId) {
@@ -43,6 +55,7 @@ public class ClientServiceImpl implements ClientService {
             return webClientProject
                 .get()
                 .uri(url)
+                .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> {
                     if (response.statusCode().equals(HttpStatus.NOT_FOUND)) {
