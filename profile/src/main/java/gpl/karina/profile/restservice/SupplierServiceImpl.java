@@ -119,6 +119,7 @@ public class SupplierServiceImpl implements SupplierService {
         }
     
         String url = resourceUrl + "/resource/viewall";
+        System.out.println("Fetching all resources from URL: " + url);
     
         try {
             BaseResponseDTO<List<ResourceResponseDTO>> response = webClient
@@ -143,6 +144,7 @@ public class SupplierServiceImpl implements SupplierService {
             if (response == null || response.getData() == null) {
                 return new ArrayList<>();
             }
+            System.out.println("Data resource: " + response.getData());
             return response.getData();
     
         } catch (Exception e) {
@@ -358,6 +360,8 @@ public class SupplierServiceImpl implements SupplierService {
                                             .toList();
     
             for (Long id : resourceIds) {
+                System.out.println("Validating resource ID: " + id);
+                System.out.println("Valid resource IDs: " + validResourceIds);
                 if (!validResourceIds.contains(id)) {
                     throw new IllegalArgumentException("Resource ID tidak valid: " + id);
                 }
