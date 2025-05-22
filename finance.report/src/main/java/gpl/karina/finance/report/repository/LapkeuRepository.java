@@ -134,5 +134,4 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
                                      @Param("startDate") Date startDate, 
                                      @Param("endDate") Date endDate);
 
-
 }
