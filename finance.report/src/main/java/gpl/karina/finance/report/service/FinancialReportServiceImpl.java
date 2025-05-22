@@ -77,17 +77,17 @@ public class FinancialReportServiceImpl implements FinancialReportService {
     }
 
     // Helper methods to fetch total income and expenses for a range
-    private long getTotalIncomeFromDistribusi(Date startDate, Date endDate) {
+    private long getTotalIncomeFromDistribusi(java.sql.Date startDate, java.sql.Date endDate) {
         Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(startDate, endDate);
         return incomeFromDistribusi != null ? incomeFromDistribusi : 0L;
     }
 
-    private long getTotalIncomeFromPenjualan(Date startDate, Date endDate) {
+    private long getTotalIncomeFromPenjualan(java.sql.Date startDate, java.sql.Date endDate) {
         Long incomeFromPenjualan = lapkeuRepository.getTotalIncomeFromPenjualan(startDate, endDate);
         return incomeFromPenjualan != null ? incomeFromPenjualan : 0L;
     }
 
-    private long getTotalExpenseByActivityType(int activityType, Date startDate, Date endDate) {
+    private long getTotalExpenseByActivityType(int activityType, java.sql.Date startDate, java.sql.Date endDate) {
         Long expense = lapkeuRepository.getTotalExpenseByActivityType(activityType, startDate, endDate);
         return expense != null ? expense : 0L;
     }
