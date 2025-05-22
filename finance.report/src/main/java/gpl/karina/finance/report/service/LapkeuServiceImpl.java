@@ -1,7 +1,17 @@
 package gpl.karina.finance.report.service;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +21,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import gpl.karina.finance.report.dto.response.AssetTempResponseDTO;
 import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
+import gpl.karina.finance.report.dto.response.IncomeExpenseBarResponseDTO;
+import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
+import gpl.karina.finance.report.dto.response.LapkeuSummaryResponseDTO;
 import gpl.karina.finance.report.model.Lapkeu;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -116,18 +128,444 @@ public class LapkeuServiceImpl implements LapkeuService {
     }
 
     @Override
-    public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(Date startDate, Date endDate) {
-        List<Object[]> rawData;
+    public List<ChartPengeluaranResponseDTO> getPengeluaranChartData(String range) {
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
 
-        if (startDate != null && endDate != null) {
-            rawData = lapkeuRepository.getTotalPengeluaranPerActivityTypeBetweenDates(startDate, endDate);
-        } else {
-            rawData = lapkeuRepository.getTotalPengeluaranPerActivityType();
+        // Tentukan rentang tanggal berdasarkan range
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                start = now.withDayOfMonth(1);
+                break;
+
+            case "THIS_QUARTER":
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+
+            case "THIS_YEAR":
+            default:
+                start = now.withDayOfYear(1);
+                break;
         }
+
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        List<Object[]> rawData = lapkeuRepository.getTotalPengeluaranPerActivityTypeBetweenDates(startDate, endDate);
 
         return rawData.stream()
-            .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
-            .collect(Collectors.toList());
+                .map(obj -> new ChartPengeluaranResponseDTO((Integer) obj[0], (Long) obj[1]))
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<IncomeExpenseLineResponseDTO> getIncomeExpenseLineChart(String periodType, String range) {
+        List<Object[]> rawData;
+        Map<String, IncomeExpenseLineResponseDTO> resultMap = new HashMap<>();
+
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        // Tetapkan default periodType berdasarkan range
+        if (periodType == null || periodType.isBlank()) {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    periodType = "WEEKLY";
+                    break;
+                case "THIS_QUARTER":
+                    periodType = "MONTHLY";
+                    break;
+                case "THIS_YEAR":
+                default:
+                    periodType = "MONTHLY";
+                    break;
+            }
         }
 
+        // Tentukan start & end date berdasarkan range
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                if (!periodType.equalsIgnoreCase("WEEKLY")) {
+                    throw new IllegalArgumentException("THIS_MONTH hanya mendukung periodType = WEEKLY");
+                }
+                start = now.withDayOfMonth(1);
+                break;
+
+            case "THIS_QUARTER":
+                if (!periodType.equalsIgnoreCase("MONTHLY")) {
+                    throw new IllegalArgumentException("THIS_QUARTER hanya mendukung periodType = MONTHLY");
+                }
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+
+            case "THIS_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("THIS_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = now.withDayOfYear(1);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        List<String> fullPeriods;
+
+        switch (periodType.toUpperCase()) {
+            case "MONTHLY":
+                rawData = lapkeuRepository.getIncomeExpenseMonthlyFiltered(startDate, endDate);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new IncomeExpenseLineResponseDTO((String) row[0], (Long) row[1], (Long) row[2]));
+                }
+                fullPeriods = generateMonthPeriods(startDate, endDate);
+                break;
+
+            case "QUARTERLY":
+                rawData = lapkeuRepository.getIncomeExpenseQuarterlyFiltered(startDate, endDate);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new IncomeExpenseLineResponseDTO((String) row[0], (Long) row[1], (Long) row[2]));
+                }
+                fullPeriods = generateQuarterPeriods(startDate, endDate);
+                break;
+
+            case "WEEKLY":
+            rawData = lapkeuRepository.getIncomeExpenseRawByDay(startDate, endDate);
+            int fixedMonth = toLocalDate(startDate).getMonthValue();
+            int fixedYear = toLocalDate(startDate).getYear();
+
+            for (Object[] row : rawData) {
+                LocalDate date;
+                if (row[0] instanceof java.sql.Date) {
+                    date = ((java.sql.Date) row[0]).toLocalDate();
+                } else if (row[0] instanceof java.util.Date) {
+                    date = ((java.util.Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                } else if (row[0] instanceof String) {
+                    date = LocalDate.parse((String) row[0], DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                } else {
+                    throw new IllegalArgumentException("Unsupported date type: " + row[0].getClass());
+                }
+                String period = getMonthWeekLabel(date, fixedMonth, fixedYear);
+
+                resultMap.computeIfAbsent(period, p -> new IncomeExpenseLineResponseDTO(p, 0L, 0L));
+                IncomeExpenseLineResponseDTO dto = resultMap.get(period);
+                dto.setTotalPemasukan(dto.getTotalPemasukan() + (row[1] != null ? (Long) row[1] : 0L));
+                dto.setTotalPengeluaran(dto.getTotalPengeluaran() + (row[2] != null ? (Long) row[2] : 0L));
+            }
+
+            fullPeriods = generateMonthWeekPeriods(startDate, endDate);
+            break;
+
+
+            default:
+                throw new IllegalArgumentException("Period type tidak dikenali: " + periodType);
+        }
+
+        return fullPeriods.stream()
+                .map(period -> resultMap.getOrDefault(period, new IncomeExpenseLineResponseDTO(period, 0L, 0L)))
+                .collect(Collectors.toList());
     }
+
+    private String getMonthWeekLabel(LocalDate anyDateInWeek, int fixedMonth, int fixedYear) {
+        LocalDate firstDayOfMonth = LocalDate.of(fixedYear, fixedMonth, 1);
+        int weekOfMonth = (int) ChronoUnit.WEEKS.between(
+                firstDayOfMonth.with(DayOfWeek.MONDAY),
+                anyDateInWeek.with(DayOfWeek.MONDAY)
+        ) + 1;
+
+        return String.format("%04d-%02d-W%d", fixedYear, fixedMonth, weekOfMonth);
+    }
+
+
+    private List<String> generateMonthWeekPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate pointer = toLocalDate(startDate).with(DayOfWeek.MONDAY);
+        LocalDate end = toLocalDate(endDate);
+
+        int targetMonth = toLocalDate(startDate).getMonthValue();
+        int targetYear = toLocalDate(startDate).getYear();
+
+        while (!pointer.isAfter(end)) {
+            // Hanya tambahkan minggu yang mengandung hari dari bulan & tahun target
+            for (int i = 0; i < 7; i++) {
+                LocalDate day = pointer.plusDays(i);
+                if (day.getMonthValue() == targetMonth && day.getYear() == targetYear) {
+                    String label = getMonthWeekLabel(pointer, targetMonth, targetYear);
+                    if (!periods.contains(label)) {
+                        periods.add(label);
+                    }
+                    break;
+                }
+            }
+            pointer = pointer.plusWeeks(1);
+        }
+
+        return periods;
+    }
+    
+    private List<String> generateMonthPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            periods.add(start.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateQuarterPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            int quarter = (start.getMonthValue() - 1) / 3 + 1;
+            String period = start.getYear() + "-Q" + quarter;
+            if (!periods.contains(period)) {
+                periods.add(period);
+            }
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    // private List<String> generateYearPeriods(Date startDate, Date endDate) {
+    //     List<String> periods = new ArrayList<>();
+    //     int startYear = toLocalDate(startDate).getYear();
+    //     int endYear = toLocalDate(endDate).getYear();
+    //     for (int year = startYear; year <= endYear; year++) {
+    //         periods.add(String.valueOf(year));
+    //     }
+    //     return periods;
+    // }
+
+    private LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    @Override
+    public LapkeuSummaryResponseDTO getLapkeuSummary(Date startDate, Date endDate, Integer activityType) {
+        List<Lapkeu> lapkeuList = lapkeuRepository.findAll();
+        List<Lapkeu> filtered = lapkeuList.stream()
+            .filter(l -> {
+                if (startDate != null && l.getPaymentDate() != null && l.getPaymentDate().before(startDate)) {
+                    return false;
+                }
+                if (endDate != null && l.getPaymentDate() != null && l.getPaymentDate().after(endDate)) {
+                    return false;
+                }
+                if (activityType != null && !activityType.equals(l.getActivityType())) {
+                    return false;
+                }
+                return true;
+            })
+            .collect(Collectors.toList());
+
+        int totalTransaksi = filtered.size();
+        long totalPemasukan = filtered.stream().mapToLong(l -> l.getPemasukan() != null ? l.getPemasukan() : 0L).sum();
+        long totalPengeluaran = filtered.stream().mapToLong(l -> l.getPengeluaran() != null ? l.getPengeluaran() : 0L).sum();
+        long totalProfit = totalPemasukan - totalPengeluaran;
+
+        return new LapkeuSummaryResponseDTO(totalTransaksi, totalPemasukan, totalPengeluaran, totalProfit);
+    }
+
+    @Override
+    public List<IncomeExpenseBarResponseDTO> getIncomeExpenseBarChart(String periodType, String range) {
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        // Set default periodType if not provided
+        if (periodType == null || periodType.isBlank()) {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    periodType = "WEEKLY";
+                    break;
+                case "THIS_QUARTER":
+                    periodType = "MONTHLY";
+                    break;
+                case "THIS_YEAR":
+                default:
+                    periodType = "MONTHLY";
+                    break;
+            }
+        }
+
+        // Determine date range based on range parameter
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                if (!periodType.equalsIgnoreCase("WEEKLY")) {
+                    throw new IllegalArgumentException("THIS_MONTH hanya mendukung periodType = WEEKLY");
+                }
+                start = now.withDayOfMonth(1);
+                break;
+
+            case "THIS_QUARTER":
+                if (!periodType.equalsIgnoreCase("MONTHLY")) {
+                    throw new IllegalArgumentException("THIS_QUARTER hanya mendukung periodType = MONTHLY");
+                }
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+
+            case "THIS_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("THIS_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = now.withDayOfYear(1);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        // Convert to java.util.Date
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        List<IncomeExpenseBarResponseDTO> result = new ArrayList<>();
+
+        // Handle different period types
+        if (periodType.equalsIgnoreCase("MONTHLY")) {
+            // Get monthly data
+            for (int i = 0; i < 12; i++) {
+                LocalDate periodStart = start.plusMonths(i);
+                if (periodStart.isAfter(end)) break;
+                
+                LocalDate periodEnd = periodStart.plusMonths(1).minusDays(1);
+                if (periodEnd.isAfter(end)) periodEnd = end;
+                
+                Date pStart = Date.from(periodStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                Date pEnd = Date.from(periodEnd.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+                
+                // Generate data for this month
+                String periodName = periodStart.getMonth().toString().substring(0, 3) + " " + 
+                                   periodStart.getYear();
+                
+                // Calculate total income (from distribution and sales)
+                Long totalPemasukan = 0L;
+                Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(pStart, pEnd);
+                Long incomeFromPenjualan = lapkeuRepository.getTotalIncomeFromPenjualan(pStart, pEnd);
+                
+                if (incomeFromDistribusi != null) totalPemasukan += incomeFromDistribusi;
+                if (incomeFromPenjualan != null) totalPemasukan += incomeFromPenjualan;
+                
+                // Calculate total expenses (from distribution, maintenance, and purchases)
+                Long totalPengeluaran = 0L;
+                Long expenseFromDistribusi = lapkeuRepository.getTotalExpenseByActivityType(1, pStart, pEnd); // ActivityType 1 for DISTRIBUSI
+                Long expenseFromMaintenance = lapkeuRepository.getTotalExpenseByActivityType(3, pStart, pEnd); // ActivityType 3 for MAINTENANCE
+                Long expenseFromPurchase = lapkeuRepository.getTotalExpenseByActivityType(2, pStart, pEnd); // ActivityType 2 for PURCHASE
+                Long expenseFromPenjualan = lapkeuRepository.getTotalExpenseByActivityType(0, pStart, pEnd); // ActivityType 0 for PENJUALAN
+                
+                if (expenseFromDistribusi != null) totalPengeluaran += expenseFromDistribusi;
+                if (expenseFromMaintenance != null) totalPengeluaran += expenseFromMaintenance;
+                if (expenseFromPurchase != null) totalPengeluaran += expenseFromPurchase;
+                if (expenseFromPenjualan != null) totalPengeluaran += expenseFromPenjualan;
+                
+                // Add to result if there's data
+                if (totalPemasukan > 0 || totalPengeluaran > 0) {
+                    result.add(new IncomeExpenseBarResponseDTO(periodName, totalPemasukan, totalPengeluaran));
+                }
+            }
+        } else if (periodType.equalsIgnoreCase("WEEKLY")) {
+            // Get weekly data
+            LocalDate currentWeekStart = start;
+            while (!currentWeekStart.isAfter(end)) {
+                LocalDate weekEnd = currentWeekStart.plusDays(6);
+                if (weekEnd.isAfter(end)) weekEnd = end;
+                
+                Date pStart = Date.from(currentWeekStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                Date pEnd = Date.from(weekEnd.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+                
+                // Format: "Week 1 (1-7 Jan)"
+                String periodName = "Week " + ((currentWeekStart.getDayOfMonth() - 1) / 7 + 1) +
+                                   " (" + currentWeekStart.getDayOfMonth() + "-" + weekEnd.getDayOfMonth() + " " +
+                                   currentWeekStart.getMonth().toString().substring(0, 3) + ")";
+                
+                // Calculate total income (from distribution and sales)
+                Long totalPemasukan = 0L;
+                Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(pStart, pEnd);
+                Long incomeFromPenjualan = lapkeuRepository.getTotalIncomeFromPenjualan(pStart, pEnd);
+                
+                if (incomeFromDistribusi != null) totalPemasukan += incomeFromDistribusi;
+                if (incomeFromPenjualan != null) totalPemasukan += incomeFromPenjualan;
+                
+                // Calculate total expenses (from distribution, maintenance, and purchases)
+                Long totalPengeluaran = 0L;
+                Long expenseFromDistribusi = lapkeuRepository.getTotalExpenseByActivityType(1, pStart, pEnd);
+                Long expenseFromMaintenance = lapkeuRepository.getTotalExpenseByActivityType(3, pStart, pEnd);
+                Long expenseFromPurchase = lapkeuRepository.getTotalExpenseByActivityType(2, pStart, pEnd);
+                Long expenseFromPenjualan = lapkeuRepository.getTotalExpenseByActivityType(0, pStart, pEnd);
+                
+                if (expenseFromDistribusi != null) totalPengeluaran += expenseFromDistribusi;
+                if (expenseFromMaintenance != null) totalPengeluaran += expenseFromMaintenance;
+                if (expenseFromPurchase != null) totalPengeluaran += expenseFromPurchase;
+                if (expenseFromPenjualan != null) totalPengeluaran += expenseFromPenjualan;
+                
+                // Add to result if there's data
+                if (totalPemasukan > 0 || totalPengeluaran > 0) {
+                    result.add(new IncomeExpenseBarResponseDTO(periodName, totalPemasukan, totalPengeluaran));
+                }
+                
+                currentWeekStart = weekEnd.plusDays(1);
+            }
+        } else if (periodType.equalsIgnoreCase("QUARTERLY")) {
+            // Get quarterly data
+            for (int i = 0; i < 4; i++) {
+                LocalDate quarterStart = LocalDate.of(start.getYear(), Month.of(i * 3 + 1), 1);
+                if (quarterStart.isBefore(start)) quarterStart = start;
+                if (quarterStart.isAfter(end)) break;
+                
+                LocalDate quarterEnd = quarterStart.plusMonths(3).minusDays(1);
+                if (quarterEnd.isAfter(end)) quarterEnd = end;
+                
+                Date pStart = Date.from(quarterStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                Date pEnd = Date.from(quarterEnd.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+                
+                // Format: "Q1 2023"
+                String periodName = "Q" + (i + 1) + " " + quarterStart.getYear();
+                
+                // Calculate total income (from distribution and sales)
+                Long totalPemasukan = 0L;
+                Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(pStart, pEnd);
+                Long incomeFromPenjualan = lapkeuRepository.getTotalIncomeFromPenjualan(pStart, pEnd);
+                
+                if (incomeFromDistribusi != null) totalPemasukan += incomeFromDistribusi;
+                if (incomeFromPenjualan != null) totalPemasukan += incomeFromPenjualan;
+                
+                // Calculate total expenses (from distribution, maintenance, and purchases)
+                Long totalPengeluaran = 0L;
+                Long expenseFromDistribusi = lapkeuRepository.getTotalExpenseByActivityType(1, pStart, pEnd);
+                Long expenseFromMaintenance = lapkeuRepository.getTotalExpenseByActivityType(3, pStart, pEnd);
+                Long expenseFromPurchase = lapkeuRepository.getTotalExpenseByActivityType(2, pStart, pEnd);
+                Long expenseFromPenjualan = lapkeuRepository.getTotalExpenseByActivityType(0, pStart, pEnd);
+                
+                if (expenseFromDistribusi != null) totalPengeluaran += expenseFromDistribusi;
+                if (expenseFromMaintenance != null) totalPengeluaran += expenseFromMaintenance;
+                if (expenseFromPurchase != null) totalPengeluaran += expenseFromPurchase;
+                if (expenseFromPenjualan != null) totalPengeluaran += expenseFromPenjualan;
+                
+                // Add to result if there's data
+                if (totalPemasukan > 0 || totalPengeluaran > 0) {
+                    result.add(new IncomeExpenseBarResponseDTO(periodName, totalPemasukan, totalPengeluaran));
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("PeriodType tidak valid. Gunakan WEEKLY, MONTHLY, atau QUARTERLY.");
+        }
+
+        return result;
+    }
+}

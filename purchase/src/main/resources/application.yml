@@ -1,5 +1,5 @@
 server:
-    port: 8084
+  port: 8084
 spring:
   application:
     name: purchase
@@ -25,8 +25,8 @@ spring:
       ddl-auto: update
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: 10MB
+      max-request-size: 10MB
 purchase:
   app:
     jwtPublicKey: ${JWT_PUBLIC_KEY}
@@ -38,6 +38,8 @@ purchase:
     purchaseUrl: ${PURCHASE_URL}
     resourceUrl: ${RESOURCE_URL}
     frontendUrl: ${FRONTEND_URL}
+file:
+  upload-dir: purchase-images
 logging:
   file:
     name: logs/purchase-application.log

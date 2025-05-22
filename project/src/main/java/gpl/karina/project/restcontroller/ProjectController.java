@@ -10,8 +10,10 @@ import jakarta.validation.Valid;
 import gpl.karina.project.restdto.request.AddProjectRequestDTO;
 import gpl.karina.project.restdto.request.UpdateProjectPaymentRequestDTO;
 import gpl.karina.project.restdto.request.UpdateProjectRequestDTO;
+import gpl.karina.project.restdto.response.ActivityLineDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
+import gpl.karina.project.restdto.response.SellDistributionSummaryDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import gpl.karina.project.restdto.request.UpdateProjectStatusRequestDTO;
 
@@ -255,4 +257,158 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/chart/penjualan-activity")
+    public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getPenjualanActivityLineChart(
+        @RequestParam(name = "periodType", required = false) String periodType,
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range,
+        @RequestParam(name = "status", defaultValue = "ALL") String status
+    ) {
+        BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<ActivityLineDTO> data = projectService.getProjectActivityLine(periodType, range, status, false); // false = penjualan
+
+            if (data.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data aktivitas penjualan yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan data aktivitas penjualan per periode");
+            response.setTimestamp(new Date());
+            response.setData(data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data aktivitas penjualan: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @GetMapping("/chart/distribusi-activity")
+    public ResponseEntity<BaseResponseDTO<List<ActivityLineDTO>>> getDistribusiActivityLineChart(
+        @RequestParam(name = "periodType", required = false) String periodType,
+        @RequestParam(name = "range", defaultValue = "THIS_YEAR") String range,
+        @RequestParam(name = "status", defaultValue = "ALL") String status
+    ) {
+        BaseResponseDTO<List<ActivityLineDTO>> response = new BaseResponseDTO<>();
+        try {
+            List<ActivityLineDTO> data = projectService.getProjectActivityLine(periodType, range, status, true); // true = distribusi
+
+            if (data.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data aktivitas distribusi yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan data aktivitas distribusi per periode");
+            response.setTimestamp(new Date());
+            response.setData(data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data aktivitas distribusi: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<BaseResponseDTO<SellDistributionSummaryDTO>> getSellDistributionSummary(
+            @RequestParam(name = "range", defaultValue = "THIS_YEAR") String rangeParam) {
+
+        BaseResponseDTO<SellDistributionSummaryDTO> response = new BaseResponseDTO<>();
+
+        try {
+            SellDistributionSummaryDTO result = projectService.getSellDistributionSummaryByRange(rangeParam);
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan ringkasan proyek penjualan dan distribusi untuk range: " + rangeParam);
+            response.setTimestamp(new Date());
+            response.setData(result);
+
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter range tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data ringkasan proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/range")
+    public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getProjectListByRange(
+            @RequestParam(name = "range", defaultValue = "THIS_YEAR") String rangeParam) {
+
+        BaseResponseDTO<List<listProjectResponseDTO>> response = new BaseResponseDTO<>();
+
+        try {
+            List<listProjectResponseDTO> result = projectService.getProjectListByRange(rangeParam);
+
+            if (result.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data proyek untuk range: " + rangeParam);
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan daftar proyek untuk range: " + rangeParam);
+            response.setTimestamp(new Date());
+            response.setData(result);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter range tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 }

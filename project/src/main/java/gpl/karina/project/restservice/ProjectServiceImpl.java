@@ -2,13 +2,19 @@ package gpl.karina.project.restservice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,12 +42,15 @@ import gpl.karina.project.restdto.ResourceUsageDTO;
 import gpl.karina.project.restdto.fetch.AssetDetailDTO;
 import gpl.karina.project.restdto.fetch.ClientDetailDTO;
 import gpl.karina.project.restdto.fetch.ResourceDetailDTO;
+import gpl.karina.project.restdto.request.AddLapkeuDTO;
 import gpl.karina.project.restdto.request.AddProjectRequestDTO;
 import gpl.karina.project.restdto.request.UpdateProjectRequestDTO;
+import gpl.karina.project.restdto.response.ActivityLineDTO;
 import gpl.karina.project.restdto.response.BaseResponseDTO;
 import gpl.karina.project.restdto.response.DistributionResponseDTO;
 import gpl.karina.project.restdto.response.LogProjectResponseDTO;
 import gpl.karina.project.restdto.response.ProjectResponseWrapperDTO;
+import gpl.karina.project.restdto.response.SellDistributionSummaryDTO;
 import gpl.karina.project.restdto.response.SellResponseDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import gpl.karina.project.security.jwt.JwtUtils;
@@ -63,11 +72,12 @@ public class ProjectServiceImpl implements ProjectService {
     private String resourceUrl;
     @Value("${project.app.assetUrl}")
     private String assetUrl;
+    @Value("${project.app.financeUrl}")
+    private String financeUrl;
+
     private WebClient webClientResource;
     private WebClient webClientAsset;
     private WebClient webClientProfile;
-
-    private final HttpServletRequest request;
 
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
@@ -76,6 +86,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final WebClient.Builder webClientBuilder;
     private final JwtUtils jwtUtils;
     private final AssetReservationClient assetReservationClient;
+    private final HttpServletRequest request;
 
     public ProjectServiceImpl(ProjectRepository projectRepository, WebClient.Builder webClientBuilder,
             HttpServletRequest request, JwtUtils jwtUtils, LogProjectRepository logProjectRepository,
@@ -126,6 +137,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (response == null || response.getData() == null) {
             throw new IllegalArgumentException("Client not found with id: " + id);
         }
+        System.out.println(response);
         ClientDetailDTO clientDetailDTO = response.getData();
         return clientDetailDTO;
     }
@@ -376,20 +388,46 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private Date adjustedStartDate(Date startDate) {
+        if (startDate == null)
+            return null;
+
+        // Extract date components without timezone conversion
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
+
+        // Set time to noon (12:00) to avoid timezone conversion issues
+        // Using noon instead of 00:00 or 23:59 prevents day shifting in most timezone
+        // conversions
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+
+        calendar.clear();
+        calendar.set(year, month, day, 12, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
     private Date adjustedEndDate(Date endDate) {
+        if (endDate == null)
+            return null;
+
+        // Extract date components without timezone conversion
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(endDate);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
+
+        // Set time to noon (12:00) to avoid timezone conversion issues
+        // Using noon instead of 00:00 or 23:59 prevents day shifting in most timezone
+        // conversions
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+
+        calendar.clear();
+        calendar.set(year, month, day, 12, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
         return calendar.getTime();
     }
 
@@ -412,6 +450,17 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
         projectResponseDTO.setProjectStatus(project.getProjectStatus());
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
+
+        // Fetch client name
+        try {
+            ClientDetailDTO clientDetail = fetchClientById(project.getProjectClientId());
+            projectResponseDTO.setProjectClientName(clientDetail.getNameClient());
+            System.out.println(clientDetail.getNameClient());
+        } catch (Exception e) {
+            logger.error("Error fetching client name: {}", e.getMessage());
+            projectResponseDTO.setProjectClientName("Unknown Client");
+        }
+
         projectResponseDTO.setProjectDescription(project.getProjectDescription());
         projectResponseDTO.setProjectTotalPemasukkan(project.getProjectTotalPemasukkan());
         projectResponseDTO.setProjectPaymentDate(project.getProjectPaymentDate());
@@ -445,6 +494,16 @@ public class ProjectServiceImpl implements ProjectService {
                 dto.setProjectStatus(distributionProject.getProjectStatus());
                 dto.setProjectName(distributionProject.getProjectName());
                 dto.setProjectClientId(distributionProject.getProjectClientId());
+
+                // Fetch client name
+                try {
+                    ClientDetailDTO clientDetail = fetchClientById(distributionProject.getProjectClientId());
+                    dto.setProjectClientName(clientDetail.getNameClient());
+                } catch (Exception e) {
+                    logger.error("Error fetching client name: {}", e.getMessage());
+                    dto.setProjectClientName("Unknown Client");
+                }
+
                 dto.setProjectDescription(distributionProject.getProjectDescription());
                 dto.setProjectDeliveryAddress(distributionProject.getProjectDeliveryAddress());
 
@@ -498,6 +557,16 @@ public class ProjectServiceImpl implements ProjectService {
                 dto.setProjectName(sellProject.getProjectName());
                 dto.setProjectDescription(sellProject.getProjectDescription());
                 dto.setProjectClientId(sellProject.getProjectClientId());
+
+                // Fetch client name
+                try {
+                    ClientDetailDTO clientDetail = fetchClientById(sellProject.getProjectClientId());
+                    dto.setProjectClientName(clientDetail.getNameClient());
+                } catch (Exception e) {
+                    logger.error("Error fetching client name: {}", e.getMessage());
+                    dto.setProjectClientName("Unknown Client");
+                }
+
                 dto.setProjectDeliveryAddress(sellProject.getProjectDeliveryAddress());
                 dto.setProjectTotalPemasukkan(sellProject.getProjectTotalPemasukkan());
                 dto.setProjectStartDate(sellProject.getProjectStartDate());
@@ -970,11 +1039,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         if (updateProjectRequestDTO.getProjectStartDate() != null) {
-            project.setProjectStartDate(updateProjectRequestDTO.getProjectStartDate());
+            project.setProjectStartDate(adjustedStartDate(updateProjectRequestDTO.getProjectStartDate()));
         }
 
         if (updateProjectRequestDTO.getProjectEndDate() != null) {
-            project.setProjectEndDate(updateProjectRequestDTO.getProjectEndDate());
+            project.setProjectEndDate(adjustedEndDate(updateProjectRequestDTO.getProjectEndDate()));
         }
 
         LogProject newLog = addLog(logBuilder.toString());
@@ -1229,10 +1298,10 @@ public class ProjectServiceImpl implements ProjectService {
             statusText = "Dilaksanakan";
         } else if (newStatus == 2) {
             statusText = "Selesai";
-            project.setProjectEndDate(new Date());
+            project.setProjectEndDate(adjustedEndDate(new Date()));
         } else if (newStatus == 3) {
             statusText = "Batal";
-            project.setProjectEndDate(new Date());
+            project.setProjectEndDate(adjustedEndDate(new Date()));
         }
 
         LogProject newLog = addLog("Mengubah Status menjadi " + statusText);
@@ -1281,14 +1350,401 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         project.setProjectPaymentStatus(projectPaymentStatus);
-        
-        ZonedDateTime jakartaNow = ZonedDateTime.now(ZoneId.of("Asia/Jakarta"));
-        project.setProjectPaymentDate(Date.from(jakartaNow.toInstant()));
+        project.setProjectPaymentDate(new Date());
 
         LogProject newLog = addLog("Mengkonfirmasi status pembayaran telah selesai");
         project.getProjectLogs().add(newLog);
 
         Project updatedProject = projectRepository.save(project);
+
+        if (projectPaymentStatus == 1) {
+            try {
+                AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
+                lapkeuRequest.setId(project.getId());
+                lapkeuRequest.setActivityType(Boolean.TRUE.equals(project.getProjectType()) ? 1 : 0); // 1: Distribusi,
+                                                                                                      // 0: Penjualan
+                lapkeuRequest.setPemasukan(project.getProjectTotalPemasukkan());
+                lapkeuRequest.setPengeluaran(
+                        project instanceof Distribution ? ((Distribution) project).getProjectTotalPengeluaran() : 0L);
+                if (project instanceof Sell) {
+                    lapkeuRequest.setDescription("Penjualan - " + project.getProjectName());
+                } else {
+                    lapkeuRequest.setDescription("Distribusi - " + project.getProjectName());
+                }
+                lapkeuRequest.setPaymentDate(project.getProjectPaymentDate());
+
+                webClientBuilder.build()
+                        .post()
+                        .uri(financeUrl + "/lapkeu/add")
+                        .bodyValue(lapkeuRequest)
+                        .retrieve()
+                        .bodyToMono(Void.class)
+                        .block();
+            } catch (Exception e) {
+                logger.error("Gagal insert ke Lapkeu: " + e.getMessage());
+            }
+        } else if (projectPaymentStatus == 2) {
+            try {
+                webClientBuilder.build()
+                        .delete()
+                        .uri(financeUrl + "/lapkeu/" + project.getId())
+                        .retrieve()
+                        .bodyToMono(Void.class)
+                        .block();
+            } catch (Exception e) {
+                logger.error("Gagal hapus data Lapkeu: " + e.getMessage());
+            }
+        }
         return projectToProjectResponseDetailDTO(updatedProject);
     }
+
+    @Override
+    public List<ActivityLineDTO> getProjectActivityLine(
+            String periodType, String range, String statusFilter, boolean isDistribusi) {
+
+        List<Object[]> rawData;
+        Boolean projectType = isDistribusi;
+
+        List<Integer> statusList;
+        boolean excludeMode;
+
+        switch (statusFilter.toUpperCase()) {
+            case "CANCELLED":
+                statusList = List.of(3); // Batal
+                excludeMode = false;
+                break;
+            case "DONE":
+                statusList = List.of(2); // Selesai
+                excludeMode = false;
+                break;
+            case "ALL":
+            default:
+                statusList = List.of(3); // exclude Batal
+                excludeMode = true;
+                break;
+        }
+
+        // Tentukan default periodType berdasarkan range
+        if (periodType == null || periodType.isBlank()) {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    periodType = "WEEKLY";
+                    break;
+                case "THIS_QUARTER":
+                    periodType = "MONTHLY";
+                    break;
+                case "THIS_YEAR":
+                default:
+                    periodType = "MONTHLY";
+                    break;
+            }
+        }
+
+        // Tentukan tanggal berdasarkan range
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                if (!periodType.equalsIgnoreCase("WEEKLY")) {
+                    throw new IllegalArgumentException("THIS_MONTH hanya mendukung periodType = WEEKLY");
+                }
+                start = now.withDayOfMonth(1);
+                break;
+            case "THIS_QUARTER":
+                if (!periodType.equalsIgnoreCase("MONTHLY")) {
+                    throw new IllegalArgumentException("THIS_QUARTER hanya mendukung periodType = MONTHLY");
+                }
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+            case "THIS_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("THIS_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = now.withDayOfYear(1);
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+        }
+
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        Map<String, ActivityLineDTO> resultMap = new HashMap<>();
+        List<String> fullPeriods;
+
+        switch (periodType.toUpperCase()) {
+            case "MONTHLY":
+                rawData = excludeMode
+                        ? projectRepository.getMonthlyProjectCountExcludeStatus(startDate, endDate, statusList,
+                                projectType)
+                        : projectRepository.getMonthlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
+                fullPeriods = generateMonthPeriods(startDate, endDate);
+                break;
+
+            case "QUARTERLY":
+                rawData = excludeMode
+                        ? projectRepository.getQuarterlyProjectCountExcludeStatus(startDate, endDate, statusList,
+                                projectType)
+                        : projectRepository.getQuarterlyProjectCountInStatus(startDate, endDate, statusList,
+                                projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
+                fullPeriods = generateQuarterPeriods(startDate, endDate);
+                break;
+
+            case "YEARLY":
+                rawData = excludeMode
+                        ? projectRepository.getYearlyProjectCountExcludeStatus(startDate, endDate, statusList,
+                                projectType)
+                        : projectRepository.getYearlyProjectCountInStatus(startDate, endDate, statusList, projectType);
+                for (Object[] row : rawData) {
+                    resultMap.put((String) row[0], new ActivityLineDTO((String) row[0], (Long) row[1]));
+                }
+                fullPeriods = generateYearPeriods(startDate, endDate);
+                break;
+
+            case "WEEKLY":
+                rawData = excludeMode
+                        ? projectRepository.getDailyProjectCountExcludeStatus(startDate, endDate, statusList,
+                                projectType)
+                        : projectRepository.getDailyProjectCountInStatus(startDate, endDate, statusList, projectType);
+
+                int fixedMonth = start.getMonthValue();
+                int fixedYear = start.getYear();
+
+                for (Object[] row : rawData) {
+                    LocalDate date = ((Date) row[0]).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    String period = getMonthWeekLabel(date, fixedMonth, fixedYear);
+
+                    resultMap.computeIfAbsent(period, p -> new ActivityLineDTO(p, 0L));
+                    ActivityLineDTO dto = resultMap.get(period);
+                    dto.setCount(dto.getCount() + (row[1] != null ? (Long) row[1] : 0L));
+                }
+
+                fullPeriods = generateMonthWeekPeriods(startDate, endDate);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid period type: " + periodType);
+        }
+
+        return fullPeriods.stream()
+                .map(p -> resultMap.getOrDefault(p, new ActivityLineDTO(p, 0L)))
+                .collect(Collectors.toList());
+    }
+
+    private String getMonthWeekLabel(LocalDate anyDateInWeek, int fixedMonth, int fixedYear) {
+        LocalDate firstDayOfMonth = LocalDate.of(fixedYear, fixedMonth, 1);
+        int weekOfMonth = (int) ChronoUnit.WEEKS.between(
+                firstDayOfMonth.with(DayOfWeek.MONDAY),
+                anyDateInWeek.with(DayOfWeek.MONDAY)) + 1;
+
+        return String.format("%04d-%02d-W%d", fixedYear, fixedMonth, weekOfMonth);
+    }
+
+    private List<String> generateMonthWeekPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate pointer = toLocalDate(startDate).with(DayOfWeek.MONDAY);
+        LocalDate end = toLocalDate(endDate);
+
+        int targetMonth = toLocalDate(startDate).getMonthValue();
+        int targetYear = toLocalDate(startDate).getYear();
+
+        while (!pointer.isAfter(end)) {
+            // Hanya tambahkan minggu yang mengandung hari dari bulan & tahun target
+            for (int i = 0; i < 7; i++) {
+                LocalDate day = pointer.plusDays(i);
+                if (day.getMonthValue() == targetMonth && day.getYear() == targetYear) {
+                    String label = getMonthWeekLabel(pointer, targetMonth, targetYear);
+                    if (!periods.contains(label)) {
+                        periods.add(label);
+                    }
+                    break;
+                }
+            }
+            pointer = pointer.plusWeeks(1);
+        }
+
+        return periods;
+    }
+
+    private List<String> generateMonthPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            periods.add(start.format(DateTimeFormatter.ofPattern("yyyy-MM")));
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateQuarterPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        LocalDate start = toLocalDate(startDate).withDayOfMonth(1);
+        LocalDate end = toLocalDate(endDate).withDayOfMonth(1);
+
+        while (!start.isAfter(end)) {
+            int quarter = (start.getMonthValue() - 1) / 3 + 1;
+            String period = start.getYear() + "-Q" + quarter;
+            if (!periods.contains(period)) {
+                periods.add(period);
+            }
+            start = start.plusMonths(1);
+        }
+        return periods;
+    }
+
+    private List<String> generateYearPeriods(Date startDate, Date endDate) {
+        List<String> periods = new ArrayList<>();
+        int startYear = toLocalDate(startDate).getYear();
+        int endYear = toLocalDate(endDate).getYear();
+        for (int year = startYear; year <= endYear; year++) {
+            periods.add(String.valueOf(year));
+        }
+        return periods;
+    }
+
+    private LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    @Override
+    public SellDistributionSummaryDTO getSellDistributionSummaryByRange(String range) {
+        Calendar calendar = Calendar.getInstance();
+        Date startCurrent, endCurrent, startPrevious, endPrevious;
+
+        switch (range.toUpperCase()) {
+            case "THIS_YEAR":
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.YEAR, -1);
+                calendar.set(Calendar.MONTH, 0);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.MONTH, 11);
+                calendar.set(Calendar.DAY_OF_MONTH, 31);
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_QUARTER":
+                int currentMonth = calendar.get(Calendar.MONTH);
+                int quarterStartMonth = currentMonth / 3 * 3;
+
+                calendar.set(Calendar.MONTH, quarterStartMonth);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.add(Calendar.MONTH, 2);
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -3);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            case "THIS_MONTH":
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startCurrent = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endCurrent = calendar.getTime();
+
+                calendar.add(Calendar.MONTH, -1);
+                calendar.set(Calendar.DAY_OF_MONTH, 1);
+                startPrevious = calendar.getTime();
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+                endPrevious = calendar.getTime();
+                break;
+
+            default:
+                throw new IllegalArgumentException("Range tidak dikenali: " + range);
+        }
+
+        List<Integer> allStatuses = List.of(0, 1, 2, 3); // Semua status proyek
+
+        Long currentSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startCurrent,
+                endCurrent, false, allStatuses);
+        Long previousSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startPrevious,
+                endPrevious, false, allStatuses);
+
+        Long currentDistribution = projectRepository
+                .countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startCurrent, endCurrent, true, allStatuses);
+        Long previousDistribution = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(
+                startPrevious, endPrevious, true, allStatuses);
+
+        Double sellPercentage = calculatePercentageChange(currentSell, previousSell);
+        Double distributionPercentage = calculatePercentageChange(currentDistribution, previousDistribution);
+
+        return new SellDistributionSummaryDTO(currentSell, sellPercentage, currentDistribution, distributionPercentage);
+    }
+
+    private Double calculatePercentageChange(Long current, Long previous) {
+        if (previous == 0) {
+            return current > 0 ? 100.0 : 0.0;
+        }
+        return ((double) (current - previous) / previous) * 100;
+    }
+
+    @Override
+    public List<listProjectResponseDTO> getProjectListByRange(String range) {
+        // Tentukan rentang waktu berdasarkan range
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        try {
+            switch (range.toUpperCase()) {
+                case "THIS_MONTH":
+                    start = now.withDayOfMonth(1);
+                    break;
+                case "THIS_QUARTER":
+                    int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                    Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                    start = LocalDate.of(now.getYear(), firstMonth, 1);
+                    break;
+                case "THIS_YEAR":
+                    start = now.withDayOfYear(1);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+            }
+
+            // Konversi ke java.util.Date
+            Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+            // Panggil getAllProject dengan filter rentang tanggal
+            return getAllProject(
+                    null, // idSearch
+                    null, // projectStatus
+                    null, // projectType
+                    null, // projectName
+                    null, // projectClientId
+                    startDate, // projectStartDate
+                    endDate, // projectEndDate
+                    null, // startNominal
+                    null  // endNominal
+            );
+        } catch (Exception e) {
+            // Handle the exception and log it, or rethrow a custom exception
+            throw new RuntimeException("Terjadi kesalahan saat mendapatkan daftar proyek: " + e.getMessage(), e);
+        }
+    }
+
 }
