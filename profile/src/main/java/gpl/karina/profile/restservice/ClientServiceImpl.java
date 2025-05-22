@@ -48,6 +48,7 @@ public class ClientServiceImpl implements ClientService {
         return null;
     }
 
+    
     private List<ProjectResponseDTO> fetchProjectsByClientId(UUID clientId) {
         String url = projectUrl + "api/project/all?clientProject=" + clientId;
         
