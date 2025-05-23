@@ -226,6 +226,7 @@ public class ClientServiceImpl implements ClientService {
         ClientListResponseDTO clientListResponseDTO = new ClientListResponseDTO();
         clientListResponseDTO.setId(client.getId());
         clientListResponseDTO.setNameClient(client.getNameClient());
+        clientListResponseDTO.setNoTelpClient(client.getNoTelpClient()); // Set the phone number
         clientListResponseDTO.setCompanyClient(client.getCompanyClient());
         clientListResponseDTO.setTypeClient(client.isTypeClient());
         clientListResponseDTO.setProjectCount(projects != null ? projects.size() : 0);
