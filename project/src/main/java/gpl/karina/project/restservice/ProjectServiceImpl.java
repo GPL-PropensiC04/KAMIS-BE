@@ -137,7 +137,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (response == null || response.getData() == null) {
             throw new IllegalArgumentException("Client not found with id: " + id);
         }
-        System.out.println(response);
+        
         ClientDetailDTO clientDetailDTO = response.getData();
         return clientDetailDTO;
     }
@@ -302,7 +302,7 @@ public class ProjectServiceImpl implements ProjectService {
                     .block();
 
             if (response == null || response.getData() == null) {
-                System.out.println(response);
+                
                 throw new IllegalArgumentException("ERR BEGO");
             }
 
@@ -450,12 +450,13 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
         projectResponseDTO.setProjectStatus(project.getProjectStatus());
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
+        projectResponseDTO.setProjectClientName(project.getProjectClientName());
 
         // Fetch client name
         try {
-            ClientDetailDTO clientDetail = fetchClientById(project.getProjectClientId());
-            projectResponseDTO.setProjectClientName(clientDetail.getNameClient());
-            System.out.println(clientDetail.getNameClient());
+            // ClientDetailDTO clientDetail = fetchClientById(project.getProjectClientId());
+            // projectResponseDTO.setProjectClientName(clientDetail.getNameClient());
+            
         } catch (Exception e) {
             logger.error("Error fetching client name: {}", e.getMessage());
             projectResponseDTO.setProjectClientName("Unknown Client");
@@ -641,9 +642,13 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectResponseWrapperDTO addProject(AddProjectRequestDTO projectRequestDTO) throws Exception {
         // Validate client
-        if (fetchClientById(projectRequestDTO.getProjectClientId()).getId() == null) {
+        ClientDetailDTO clientDetail = null;
+        try {
+            clientDetail = fetchClientById(projectRequestDTO.getProjectClientId());
+        } catch (Exception e) {
             throw new IllegalArgumentException("Pastikan ID Klien sudah terdaftar dalam sistem");
         }
+        
 
         if (projectRequestDTO.getProjectEndDate().before(projectRequestDTO.getProjectStartDate())) {
             throw new IllegalArgumentException("Tanggal akhir proyek tidak boleh sebelum tanggal mulai proyek");
@@ -750,6 +755,7 @@ public class ProjectServiceImpl implements ProjectService {
         project.setProjectPaymentStatus(0);
         project.setProjectDescription(projectRequestDTO.getProjectDescription());
         project.setProjectClientId(projectRequestDTO.getProjectClientId());
+        project.setProjectClientName(clientDetail.getNameClient()); // Set to null, will be fetched later
         project.setProjectType(projectRequestDTO.getProjectType());
         project.setProjectDeliveryAddress(projectRequestDTO.getProjectDeliveryAddress());
         project.setProjectStartDate(projectRequestDTO.getProjectStartDate());
@@ -1173,70 +1179,59 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<listProjectResponseDTO> getAllProject(
-            String idSearch, String projectStatus, String projectType,
-            String projectName, String projectClientId, Date projectStartDate,
-            Date projectEndDate, Long startNominal, Long endNominal) throws Exception {
+        String idSearch, String projectStatus, Boolean projectType,
+        String projectName, String projectClientId, Date projectStartDate,
+        Date projectEndDate, Long startNominal, Long endNominal) throws Exception {
 
-        final Date adjustedStartDateFinal;
-        if (projectStartDate != null) {
-            adjustedStartDateFinal = adjustedStartDate(projectStartDate);
+        List<Project> filteredProjects;
+        
+        // Check if all database-level filters are empty/null
+        boolean noFiltersSet = (idSearch == null || idSearch.isEmpty()) && 
+                  (projectStatus == null || projectStatus.isEmpty()) &&
+                  (projectType == null ) &&
+                  (projectName == null || projectName.isEmpty()) &&
+                  (projectClientId == null || projectClientId.isEmpty()) &&
+                  projectStartDate == null &&
+                  projectEndDate == null;
+        
+        if (noFiltersSet && startNominal == null && endNominal == null) {
+        // No filters set, fetch all projects
+        filteredProjects = projectRepository.findAll();
         } else {
-            adjustedStartDateFinal = null;
+        // Adjust dates for filtering
+        final Date adjustedStartDateFinal = projectStartDate != null ? adjustedStartDate(projectStartDate) : null;
+        final Date adjustedEndDateFinal = projectEndDate != null ? adjustedEndDate(projectEndDate) : null;
+        
+        // Use the database-level filtering
+        System.out.println("Project Clinet ID "+ projectClientId);
+        filteredProjects = projectRepository.findProjectsWithFilters(
+            idSearch, 
+            projectName,
+            projectStatus,
+            projectType,
+            projectClientId,
+            adjustedStartDateFinal,
+            adjustedEndDateFinal,
+            startNominal,
+            endNominal);
         }
 
-        final Date adjustedEndDateFinal;
-        if (projectEndDate != null) {
-            adjustedEndDateFinal = adjustedEndDate(projectEndDate);
-        } else {
-            adjustedEndDateFinal = null;
+        // For profit filtering, we still need to do it in memory since it's a calculated field
+        if (startNominal != null || endNominal != null) {
+        filteredProjects = filteredProjects.stream()
+            .filter(project -> {
+            Long profit = calculateProjectProfit(project);
+            return (startNominal == null || profit >= startNominal) &&
+                (endNominal == null || profit <= endNominal);
+            })
+            .collect(Collectors.toList());
         }
 
-        // Handle combined search for ID or name
-        final String searchTerm = idSearch != null ? idSearch.toLowerCase() : null;
-        final String nameSearch = projectName != null ? projectName.toLowerCase() : null;
-
-        List<Project> projects = projectRepository.findAll();
-
-        List<Project> filteredProjects = projects.stream()
-                // If search term is provided, check if it matches either ID or Name
-                .filter(project -> {
-                    if (searchTerm == null && nameSearch == null) {
-                        return true; // No search term provided, include all
-                    }
-
-                    boolean matchesId = searchTerm != null &&
-                            project.getId().toLowerCase().contains(searchTerm);
-                    boolean matchesName = nameSearch != null &&
-                            project.getProjectName().toLowerCase().contains(nameSearch);
-                    boolean searchMatch = searchTerm != null &&
-                            (project.getId().toLowerCase().contains(searchTerm) ||
-                                    project.getProjectName().toLowerCase().contains(searchTerm));
-
-                    return matchesId || matchesName || searchMatch;
-                })
-                .filter(project -> projectStatus == null
-                        || String.valueOf(project.getProjectStatus()).equalsIgnoreCase(projectStatus))
-                .filter(project -> projectType == null
-                        || project.getProjectType().toString().equalsIgnoreCase(projectType))
-                .filter(project -> projectClientId == null
-                        || project.getProjectClientId().toLowerCase().contains(projectClientId.toLowerCase()))
-                .filter(project -> adjustedStartDateFinal == null
-                        || !project.getProjectStartDate().before(adjustedStartDateFinal))
-                .filter(project -> adjustedEndDateFinal == null
-                        || !project.getProjectEndDate().after(adjustedEndDateFinal))
-                .filter(project -> {
-                    // Calculate profit for filtering
-                    Long profit = calculateProjectProfit(project);
-                    return (startNominal == null || profit >= startNominal) &&
-                            (endNominal == null || profit <= endNominal);
-                })
-                .collect(Collectors.toList());
-
+        // Convert to DTOs
         return filteredProjects.stream()
-                .map(this::projectToProjectResponseAllDTO)
-                .collect(Collectors.toList());
+            .map(this::projectToProjectResponseAllDTO)
+            .collect(Collectors.toList());
     }
-
     /**
      * Helper method to calculate project profit
      */
