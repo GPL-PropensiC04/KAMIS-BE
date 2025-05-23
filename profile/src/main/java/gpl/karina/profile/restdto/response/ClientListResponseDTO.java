@@ -8,6 +8,7 @@ import lombok.Data;
 public class ClientListResponseDTO {
     private UUID id;
     private String nameClient;
+    private String noTelpClient; // Add this field for phone number
     private boolean typeClient;
     private String companyClient;
     private Integer projectCount;
