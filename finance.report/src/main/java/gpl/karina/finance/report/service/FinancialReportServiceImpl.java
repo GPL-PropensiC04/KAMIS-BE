@@ -4,6 +4,9 @@ import gpl.karina.finance.report.dto.response.FinancialSummaryResponseDTO;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Service
@@ -17,36 +20,50 @@ public class FinancialReportServiceImpl implements FinancialReportService {
 
     @Override
     public FinancialSummaryResponseDTO getFinancialSummary(String range) throws Exception {
-        // Tentukan rentang tanggal berdasarkan range
-        Date startDate;
-        Date endDate = new Date();
+        LocalDate now = LocalDate.now();
+        LocalDate startDate;
+        LocalDate endDate;
 
         switch (range.toUpperCase()) {
-            case "THIS_MONTH":
-                startDate = getStartOfMonth();
-                break;
-            case "THIS_QUARTER":
-                startDate = getStartOfQuarter();
-                break;
             case "THIS_YEAR":
-                startDate = getStartOfYear();
+                startDate = now.withDayOfYear(1);
+                endDate = now.withDayOfYear(now.lengthOfYear());
                 break;
+
+            case "THIS_QUARTER":
+                int currentMonthValue = now.getMonthValue();
+                int quarter = (currentMonthValue - 1) / 3 + 1;
+                Month firstMonthOfQuarter = Month.of((quarter - 1) * 3 + 1);
+                
+                startDate = LocalDate.of(now.getYear(), firstMonthOfQuarter, 1);
+                endDate = startDate.plusMonths(3).minusDays(1); // Konsisten dengan metode pertama
+                break;
+
+            case "THIS_MONTH":
+                startDate = now.withDayOfMonth(1);
+                endDate = now.withDayOfMonth(now.lengthOfMonth());
+                break;
+
             default:
-                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH. Diterima: " + range);
         }
 
-        // Fetch total income and expenses based on range
-        long totalIncomeFromDistribusi = getTotalIncomeFromDistribusi(startDate, endDate);
-        long totalIncomeFromPenjualan = getTotalIncomeFromPenjualan(startDate, endDate);
-        long totalIncome = totalIncomeFromDistribusi + totalIncomeFromPenjualan;  // Total income = from Distribusi + Penjualan
+        // Konversi LocalDate ke java.util.Date
+        Date startDateForQuery = Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDateForQuery = Date.from(endDate.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
-        long totalPurchase = getTotalExpenseByActivityType(2, startDate, endDate); // ActivityType 2 for PURCHASE
-        long totalMaintenanceExpense = getTotalExpenseByActivityType(3, startDate, endDate); // ActivityType 3 for MAINTENANCE
-        long totalProjectExpense = getTotalExpenseByActivityType(1, startDate, endDate); // ActivityType 1 for DISTRIBUSI
+        // Fetch total income and expenses based on range
+        // PENTING: Metode helper di bawah ini sekarang harus menerima java.util.Date
+        long totalIncomeFromDistribusi = getTotalIncomeFromDistribusi(startDateForQuery, endDateForQuery);
+        long totalIncomeFromPenjualan = getTotalIncomeFromPenjualan(startDateForQuery, endDateForQuery);
+        long totalIncome = totalIncomeFromDistribusi + totalIncomeFromPenjualan;
+
+        long totalPurchase = getTotalExpenseByActivityType(2, startDateForQuery, endDateForQuery); // ActivityType 2 for PURCHASE
+        long totalMaintenanceExpense = getTotalExpenseByActivityType(3, startDateForQuery, endDateForQuery); // ActivityType 3 for MAINTENANCE
+        long totalProjectExpense = getTotalExpenseByActivityType(1, startDateForQuery, endDateForQuery); // ActivityType 1 for DISTRIBUSI/PROJECT
 
         long totalProfit = totalIncome - totalPurchase - totalMaintenanceExpense - totalProjectExpense;
 
-        // Create the DTO with all the information
         FinancialSummaryResponseDTO summary = new FinancialSummaryResponseDTO();
         summary.setTotalIncome(totalIncome);
         summary.setTotalIncomeFromDistribusi(totalIncomeFromDistribusi);
@@ -57,21 +74,6 @@ public class FinancialReportServiceImpl implements FinancialReportService {
         summary.setTotalProfit(totalProfit);
 
         return summary;
-    }
-
-    // Helper methods to calculate the start of the month, quarter, and year
-    private Date getStartOfMonth() {
-        return java.sql.Date.valueOf(java.time.LocalDate.now().withDayOfMonth(1));
-    }
-
-    private Date getStartOfQuarter() {
-        int quarter = (java.time.LocalDate.now().getMonthValue() - 1) / 3 + 1;
-        java.time.Month firstMonth = java.time.Month.of((quarter - 1) * 3 + 1);
-        return java.sql.Date.valueOf(java.time.LocalDate.of(java.time.LocalDate.now().getYear(), firstMonth, 1));
-    }
-
-    private Date getStartOfYear() {
-        return java.sql.Date.valueOf(java.time.LocalDate.now().withDayOfYear(1));
     }
 
     // Helper methods to fetch total income and expenses for a range
@@ -89,4 +91,5 @@ public class FinancialReportServiceImpl implements FinancialReportService {
         Long expense = lapkeuRepository.getTotalExpenseByActivityType(activityType, startDate, endDate);
         return expense != null ? expense : 0L;
     }
+
 }
