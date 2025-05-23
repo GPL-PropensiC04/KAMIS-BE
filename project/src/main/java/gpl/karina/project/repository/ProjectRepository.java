@@ -25,23 +25,22 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
             "d.alamat_pengambilan, d.jumlah_phl_yang_dipekerjakan, d.biaya_phl, d.total_pengeluaran " +
             "FROM project p " +
             "LEFT JOIN distribusi d ON p.id = d.id " +
-            "WHERE (:idSearch IS NULL OR LOWER(p.id::text) LIKE LOWER(CONCAT('%', :idSearch, '%'))) OR " +
-            "(:projectName IS NULL OR LOWER(p.nama_proyek) LIKE LOWER(CONCAT('%', :projectName, '%'))) AND " +
-            "(:projectStatus IS NULL OR p.status_proyek::text = :projectStatus) AND " + // Assuming projectStatus is
-                                                                                        // String
-            "(:projectTypeBoolean IS NULL OR p.tipe_proyek = :projectTypeBoolean) AND " + // Filtering on the BOOLEAN
-                                                                                          // column
-            "(:projectClientId IS NULL OR LOWER(p.id_klien::text) LIKE LOWER(CONCAT('%', :projectClientId, '%'))) AND "
-            +
-            "(CAST(:startDate AS TIMESTAMP) IS NULL OR p.tanggal_mulai_proyek >= CAST(:startDate AS TIMESTAMP)) AND " +
-            "(CAST(:endDate AS TIMESTAMP) IS NULL OR p.tanggal_selesai_proyek <= CAST(:endDate AS TIMESTAMP)) AND " +
-            "(CAST(:startNominal AS BIGINT) IS NULL OR p.total_pemasukkan >= CAST(:startNominal AS BIGINT)) AND " +
-            "(CAST(:endNominal AS BIGINT) IS NULL OR p.total_pemasukkan <= CAST(:endNominal AS BIGINT))", nativeQuery = true)
+            // Corrected WHERE clause with proper grouping for idSearch and projectName
+            "WHERE ( (:idSearch IS NULL OR LOWER(p.id::text) LIKE LOWER(CONCAT('%', :idSearch, '%'))) OR " +
+            "        (:projectName IS NULL OR LOWER(p.nama_proyek) LIKE LOWER(CONCAT('%', :projectName, '%'))) ) AND " +
+            // All subsequent conditions are ANDed
+            "      (:projectStatus IS NULL OR p.status_proyek::text = :projectStatus) AND " +
+            "      (:projectTypeBoolean IS NULL OR p.tipe_proyek = :projectTypeBoolean) AND " +
+            "      (:projectClientId IS NULL OR LOWER(p.id_klien::text) LIKE LOWER(CONCAT('%', :projectClientId, '%'))) AND " +
+            "      (CAST(:startDate AS TIMESTAMP) IS NULL OR p.tanggal_mulai_proyek >= CAST(:startDate AS TIMESTAMP)) AND " +
+            "      (CAST(:endDate AS TIMESTAMP) IS NULL OR p.tanggal_selesai_proyek <= CAST(:endDate AS TIMESTAMP)) AND " +
+            "      (CAST(:startNominal AS BIGINT) IS NULL OR p.total_pemasukkan >= CAST(:startNominal AS BIGINT)) AND " +
+            "      (CAST(:endNominal AS BIGINT) IS NULL OR p.total_pemasukkan <= CAST(:endNominal AS BIGINT))", nativeQuery = true)
     List<Project> findProjectsWithFilters(
             @Param("idSearch") String idSearch,
             @Param("projectName") String projectName,
             @Param("projectStatus") String projectStatus,
-            @Param("projectTypeBoolean") Boolean projectTypeBoolean, // Changed parameter name and type
+            @Param("projectTypeBoolean") Boolean projectTypeBoolean,
             @Param("projectClientId") String projectClientId,
             @Param("startDate") Date startDate,
             @Param("endDate") Date endDate,

@@ -450,6 +450,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDTO.setProjectPaymentStatus(project.getProjectPaymentStatus());
         projectResponseDTO.setProjectStatus(project.getProjectStatus());
         projectResponseDTO.setProjectClientId(project.getProjectClientId());
+        projectResponseDTO.setProjectClientName(project.getProjectClientName());
 
         // Fetch client name
         try {
@@ -1202,6 +1203,7 @@ public class ProjectServiceImpl implements ProjectService {
         final Date adjustedEndDateFinal = projectEndDate != null ? adjustedEndDate(projectEndDate) : null;
         
         // Use the database-level filtering
+        System.out.println("Project Clinet ID "+ projectClientId);
         filteredProjects = projectRepository.findProjectsWithFilters(
             idSearch, 
             projectName,
