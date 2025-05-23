@@ -1,8 +1,11 @@
 package gpl.karina.profile.restservice;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -32,12 +35,11 @@ public class ClientServiceImpl implements ClientService {
     private String projectUrl;
 
     private final WebClient webClientProject = WebClient.create();
-
     private final HttpServletRequest request;
 
     public ClientServiceImpl(ClientRepository clientRepository, HttpServletRequest request) {
-        this.clientRepository = clientRepository;
         this.request = request;
+        this.clientRepository = clientRepository;
     }
 
     public String getTokenFromRequest() {
@@ -48,9 +50,8 @@ public class ClientServiceImpl implements ClientService {
         return null;
     }
 
-    
-    private List<ProjectResponseDTO> fetchProjectsByClientId(UUID clientId) {
-        String url = projectUrl + "api/project/all?clientProject=" + clientId;
+ private CompletableFuture<List<ProjectResponseDTO>> fetchProjectsByClientId(UUID clientId) {
+        String url = projectUrl + "/project/all?clientProject=" + clientId;
         
         try {
             return webClientProject
@@ -82,15 +83,16 @@ public class ClientServiceImpl implements ClientService {
                     projects.forEach(ProjectResponseDTO::calculateProfit);
                     return projects;
                 })
+                .timeout(Duration.ofSeconds(5)) // Set a timeout for the request
                 .onErrorResume(e -> {
                     System.err.println("Error fetching projects for client " + clientId + ": " + e.getMessage());
                     // Return empty list on error
                     return Mono.just(new ArrayList<>());
                 })
-                .block();
+                .toFuture();
         } catch (Exception e) {
             System.err.println("Exception when fetching projects for client " + clientId + ": " + e.getMessage());
-            return new ArrayList<>();
+            return CompletableFuture.completedFuture(new ArrayList<>());
         }
     }
 
@@ -102,7 +104,17 @@ public class ClientServiceImpl implements ClientService {
         clientResponseDTO.setEmailClient(client.getEmailClient());
         clientResponseDTO.setCompanyClient(client.getCompanyClient());
         clientResponseDTO.setAddressClient(client.getAddressClient());
-        clientResponseDTO.setProjects(fetchProjectsByClientId(client.getId()));
+        
+        // Get projects asynchronously with timeout
+        try {
+            clientResponseDTO.setProjects(fetchProjectsByClientId(client.getId())
+                .completeOnTimeout(new ArrayList<>(), 5, TimeUnit.SECONDS)
+                .get());
+        } catch (Exception e) {
+            System.err.println("Error getting projects for client " + client.getId() + ": " + e.getMessage());
+            clientResponseDTO.setProjects(new ArrayList<>());
+        }
+        
         clientResponseDTO.setCreatedDate(client.getCreatedDate());
         clientResponseDTO.setUpdatedDate(client.getUpdatedDate());
 
@@ -191,7 +203,17 @@ public class ClientServiceImpl implements ClientService {
     }
 
     private ClientListResponseDTO listClientToClientResponseDTO(Client client) {
-        List<ProjectResponseDTO> projects = fetchProjectsByClientId(client.getId());
+        List<ProjectResponseDTO> projects;
+        
+        try {
+            projects = fetchProjectsByClientId(client.getId())
+                .completeOnTimeout(new ArrayList<>(), 5, TimeUnit.SECONDS)
+                .get();
+        } catch (Exception e) {
+            System.err.println("Error getting projects for client list " + client.getId() + ": " + e.getMessage());
+            projects = new ArrayList<>();
+        }
+        
         long totalProfit = 0L;
         if (projects != null) {
             for (ProjectResponseDTO p : projects) {
