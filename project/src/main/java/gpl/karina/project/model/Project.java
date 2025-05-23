@@ -54,6 +54,8 @@ public class Project {
     @Column(nullable = false, name = "id_klien")
     private String projectClientId;
 
+    @Column(nullable = false, name = "nama_klien")
+    private String projectClientName;
     @Column(nullable = false, name = "alamat_pengiriman")
     private String projectDeliveryAddress;
 

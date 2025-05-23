@@ -13,6 +13,6 @@ public interface EndUserService {
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO);
     public void addUser(AddUserReqeuestDTO addUserReqeuestDTO);
     public Optional<EndUserResponseDTO> findByEmail(String email);
-    public Optional<EndUserResponseDTO> updateUser(String email, UpdateUserReqeuestDTO addUserReqeuestDTO);
+    public EndUserResponseDTO updateUser(String email, UpdateUserReqeuestDTO addUserReqeuestDTO);
     public List<EndUserResponseDTO> getAllUsers();
 }

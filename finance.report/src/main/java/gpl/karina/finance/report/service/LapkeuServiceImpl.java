@@ -388,183 +388,50 @@ public class LapkeuServiceImpl implements LapkeuService {
 
         // Set default periodType if not provided
         if (periodType == null || periodType.isBlank()) {
-            switch (range.toUpperCase()) {
-                case "THIS_MONTH":
-                    periodType = "WEEKLY";
-                    break;
-                case "THIS_QUARTER":
-                    periodType = "MONTHLY";
-                    break;
-                case "THIS_YEAR":
-                default:
-                    periodType = "MONTHLY";
-                    break;
-            }
+            periodType = "MONTHLY";
         }
 
         // Determine date range based on range parameter
         switch (range.toUpperCase()) {
             case "THIS_MONTH":
-                if (!periodType.equalsIgnoreCase("WEEKLY")) {
-                    throw new IllegalArgumentException("THIS_MONTH hanya mendukung periodType = WEEKLY");
-                }
-                start = now.withDayOfMonth(1);
-                break;
-
+            start = now.withDayOfMonth(1);
+            break;
             case "THIS_QUARTER":
-                if (!periodType.equalsIgnoreCase("MONTHLY")) {
-                    throw new IllegalArgumentException("THIS_QUARTER hanya mendukung periodType = MONTHLY");
-                }
-                int quarter = (now.getMonthValue() - 1) / 3 + 1;
-                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
-                start = LocalDate.of(now.getYear(), firstMonth, 1);
-                break;
-
+            int quarter = (now.getMonthValue() - 1) / 3 + 1;
+            Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+            start = LocalDate.of(now.getYear(), firstMonth, 1);
+            break;
             case "THIS_YEAR":
-                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
-                    throw new IllegalArgumentException("THIS_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
-                }
-                start = now.withDayOfYear(1);
-                break;
-
+            start = now.withDayOfYear(1);
+            break;
             default:
-                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+            start = now.minusMonths(6); // Default to last 6 months
+            break;
         }
 
         // Convert to java.util.Date
         Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
-        List<IncomeExpenseBarResponseDTO> result = new ArrayList<>();
+        // Get all lapkeu data within the date range
+        List<Lapkeu> lapkeuList = lapkeuRepository.findAll().stream()
+            .filter(l -> l.getPaymentDate() != null && 
+                        !l.getPaymentDate().before(startDate) && 
+                        !l.getPaymentDate().after(endDate))
+            .collect(Collectors.toList());
+        
+        // Aggregate data - simplifying the approach
+        Long totalPemasukan = lapkeuList.stream()
+            .mapToLong(l -> l.getPemasukan() != null ? l.getPemasukan() : 0)
+            .sum();
+            
+        Long totalPengeluaran = lapkeuList.stream()
+            .mapToLong(l -> l.getPengeluaran() != null ? l.getPengeluaran() : 0)
+            .sum();
 
-        // Handle different period types
-        if (periodType.equalsIgnoreCase("MONTHLY")) {
-            // Get monthly data
-            for (int i = 0; i < 12; i++) {
-                LocalDate periodStart = start.plusMonths(i);
-                if (periodStart.isAfter(end)) break;
-                
-                LocalDate periodEnd = periodStart.plusMonths(1).minusDays(1);
-                if (periodEnd.isAfter(end)) periodEnd = end;
-                
-                Date pStart = Date.from(periodStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
-                Date pEnd = Date.from(periodEnd.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
-                
-                // Generate data for this month
-                String periodName = periodStart.getMonth().toString().substring(0, 3) + " " + 
-                                   periodStart.getYear();
-                
-                // Calculate total income (from distribution and sales)
-                Long totalPemasukan = 0L;
-                Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(pStart, pEnd);
-                Long incomeFromPenjualan = lapkeuRepository.getTotalIncomeFromPenjualan(pStart, pEnd);
-                
-                if (incomeFromDistribusi != null) totalPemasukan += incomeFromDistribusi;
-                if (incomeFromPenjualan != null) totalPemasukan += incomeFromPenjualan;
-                
-                // Calculate total expenses (from distribution, maintenance, and purchases)
-                Long totalPengeluaran = 0L;
-                Long expenseFromDistribusi = lapkeuRepository.getTotalExpenseByActivityType(1, pStart, pEnd); // ActivityType 1 for DISTRIBUSI
-                Long expenseFromMaintenance = lapkeuRepository.getTotalExpenseByActivityType(3, pStart, pEnd); // ActivityType 3 for MAINTENANCE
-                Long expenseFromPurchase = lapkeuRepository.getTotalExpenseByActivityType(2, pStart, pEnd); // ActivityType 2 for PURCHASE
-                Long expenseFromPenjualan = lapkeuRepository.getTotalExpenseByActivityType(0, pStart, pEnd); // ActivityType 0 for PENJUALAN
-                
-                if (expenseFromDistribusi != null) totalPengeluaran += expenseFromDistribusi;
-                if (expenseFromMaintenance != null) totalPengeluaran += expenseFromMaintenance;
-                if (expenseFromPurchase != null) totalPengeluaran += expenseFromPurchase;
-                if (expenseFromPenjualan != null) totalPengeluaran += expenseFromPenjualan;
-                
-                // Add to result if there's data
-                if (totalPemasukan > 0 || totalPengeluaran > 0) {
-                    result.add(new IncomeExpenseBarResponseDTO(periodName, totalPemasukan, totalPengeluaran));
-                }
-            }
-        } else if (periodType.equalsIgnoreCase("WEEKLY")) {
-            // Get weekly data
-            LocalDate currentWeekStart = start;
-            while (!currentWeekStart.isAfter(end)) {
-                LocalDate weekEnd = currentWeekStart.plusDays(6);
-                if (weekEnd.isAfter(end)) weekEnd = end;
-                
-                Date pStart = Date.from(currentWeekStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
-                Date pEnd = Date.from(weekEnd.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
-                
-                // Format: "Week 1 (1-7 Jan)"
-                String periodName = "Week " + ((currentWeekStart.getDayOfMonth() - 1) / 7 + 1) +
-                                   " (" + currentWeekStart.getDayOfMonth() + "-" + weekEnd.getDayOfMonth() + " " +
-                                   currentWeekStart.getMonth().toString().substring(0, 3) + ")";
-                
-                // Calculate total income (from distribution and sales)
-                Long totalPemasukan = 0L;
-                Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(pStart, pEnd);
-                Long incomeFromPenjualan = lapkeuRepository.getTotalIncomeFromPenjualan(pStart, pEnd);
-                
-                if (incomeFromDistribusi != null) totalPemasukan += incomeFromDistribusi;
-                if (incomeFromPenjualan != null) totalPemasukan += incomeFromPenjualan;
-                
-                // Calculate total expenses (from distribution, maintenance, and purchases)
-                Long totalPengeluaran = 0L;
-                Long expenseFromDistribusi = lapkeuRepository.getTotalExpenseByActivityType(1, pStart, pEnd);
-                Long expenseFromMaintenance = lapkeuRepository.getTotalExpenseByActivityType(3, pStart, pEnd);
-                Long expenseFromPurchase = lapkeuRepository.getTotalExpenseByActivityType(2, pStart, pEnd);
-                Long expenseFromPenjualan = lapkeuRepository.getTotalExpenseByActivityType(0, pStart, pEnd);
-                
-                if (expenseFromDistribusi != null) totalPengeluaran += expenseFromDistribusi;
-                if (expenseFromMaintenance != null) totalPengeluaran += expenseFromMaintenance;
-                if (expenseFromPurchase != null) totalPengeluaran += expenseFromPurchase;
-                if (expenseFromPenjualan != null) totalPengeluaran += expenseFromPenjualan;
-                
-                // Add to result if there's data
-                if (totalPemasukan > 0 || totalPengeluaran > 0) {
-                    result.add(new IncomeExpenseBarResponseDTO(periodName, totalPemasukan, totalPengeluaran));
-                }
-                
-                currentWeekStart = weekEnd.plusDays(1);
-            }
-        } else if (periodType.equalsIgnoreCase("QUARTERLY")) {
-            // Get quarterly data
-            for (int i = 0; i < 4; i++) {
-                LocalDate quarterStart = LocalDate.of(start.getYear(), Month.of(i * 3 + 1), 1);
-                if (quarterStart.isBefore(start)) quarterStart = start;
-                if (quarterStart.isAfter(end)) break;
-                
-                LocalDate quarterEnd = quarterStart.plusMonths(3).minusDays(1);
-                if (quarterEnd.isAfter(end)) quarterEnd = end;
-                
-                Date pStart = Date.from(quarterStart.atStartOfDay(ZoneId.systemDefault()).toInstant());
-                Date pEnd = Date.from(quarterEnd.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
-                
-                // Format: "Q1 2023"
-                String periodName = "Q" + (i + 1) + " " + quarterStart.getYear();
-                
-                // Calculate total income (from distribution and sales)
-                Long totalPemasukan = 0L;
-                Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(pStart, pEnd);
-                Long incomeFromPenjualan = lapkeuRepository.getTotalIncomeFromPenjualan(pStart, pEnd);
-                
-                if (incomeFromDistribusi != null) totalPemasukan += incomeFromDistribusi;
-                if (incomeFromPenjualan != null) totalPemasukan += incomeFromPenjualan;
-                
-                // Calculate total expenses (from distribution, maintenance, and purchases)
-                Long totalPengeluaran = 0L;
-                Long expenseFromDistribusi = lapkeuRepository.getTotalExpenseByActivityType(1, pStart, pEnd);
-                Long expenseFromMaintenance = lapkeuRepository.getTotalExpenseByActivityType(3, pStart, pEnd);
-                Long expenseFromPurchase = lapkeuRepository.getTotalExpenseByActivityType(2, pStart, pEnd);
-                Long expenseFromPenjualan = lapkeuRepository.getTotalExpenseByActivityType(0, pStart, pEnd);
-                
-                if (expenseFromDistribusi != null) totalPengeluaran += expenseFromDistribusi;
-                if (expenseFromMaintenance != null) totalPengeluaran += expenseFromMaintenance;
-                if (expenseFromPurchase != null) totalPengeluaran += expenseFromPurchase;
-                if (expenseFromPenjualan != null) totalPengeluaran += expenseFromPenjualan;
-                
-                // Add to result if there's data
-                if (totalPemasukan > 0 || totalPengeluaran > 0) {
-                    result.add(new IncomeExpenseBarResponseDTO(periodName, totalPemasukan, totalPengeluaran));
-                }
-            }
-        } else {
-            throw new IllegalArgumentException("PeriodType tidak valid. Gunakan WEEKLY, MONTHLY, atau QUARTERLY.");
-        }
+        // Create a single bar chart data point
+        List<IncomeExpenseBarResponseDTO> result = new ArrayList<>();
+        result.add(new IncomeExpenseBarResponseDTO("Total", totalPemasukan, totalPengeluaran));
 
         return result;
     }

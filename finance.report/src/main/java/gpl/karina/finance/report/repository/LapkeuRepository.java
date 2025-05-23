@@ -134,5 +134,40 @@ public interface LapkeuRepository extends JpaRepository<Lapkeu, String> {
                                      @Param("startDate") Date startDate, 
                                      @Param("endDate") Date endDate);
 
+       /**
+     * Menghitung jumlah transaksi pemasukan dari Penjualan (ActivityType 0) 
+     * dalam rentang tanggal tertentu.
+     */
+    @Query("SELECT COUNT(l.id) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.activityType = 0 " + // ActivityType 0 for PENJUALAN
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Integer countIncomeFromPenjualan(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    /**
+     * Menghitung jumlah transaksi pemasukan dari Distribusi (ActivityType 1)
+     * dalam rentang tanggal tertentu.
+     */
+    @Query("SELECT COUNT(l.id) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pemasukan IS NOT NULL " +
+           "AND l.activityType = 1 " + // ActivityType 1 for DISTRIBUSI
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Integer countIncomeFromDistribusi(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    /**
+     * Menghitung jumlah transaksi pengeluaran berdasarkan activityType tertentu
+     * dalam rentang tanggal tertentu.
+     * Misal: activityType 2 untuk PURCHASE, 3 untuk MAINTENANCE.
+     */
+    @Query("SELECT COUNT(l.id) " +
+           "FROM Lapkeu l " +
+           "WHERE l.pengeluaran IS NOT NULL " +
+           "AND l.activityType = :activityType " +
+           "AND l.paymentDate BETWEEN :startDate AND :endDate")
+    Integer countExpenseByActivityType(@Param("activityType") int activityType,
+                                       @Param("startDate") Date startDate, 
+                                       @Param("endDate") Date endDate);
 
 }

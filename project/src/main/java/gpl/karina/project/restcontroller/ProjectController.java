@@ -165,7 +165,7 @@ public class ProjectController {
     public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getListProject(
             @RequestParam(name = "idProject", required = false) String idSearch,
             @RequestParam(name = "statusProject", required = false) String projectStatus,
-            @RequestParam(name = "tipeProject", required = false) String projectType,
+            @RequestParam(name = "tipeProject", required = false) Boolean projectType,
             @RequestParam(name = "namaProject", required = false) String projectName,
             @RequestParam(name = "clientProject", required = false) String projectClientId,
             @RequestParam(name = "tanggalMulai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectStartDate,

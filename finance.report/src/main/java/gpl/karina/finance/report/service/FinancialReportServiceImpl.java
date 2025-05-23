@@ -4,6 +4,9 @@ import gpl.karina.finance.report.dto.response.FinancialSummaryResponseDTO;
 import gpl.karina.finance.report.repository.LapkeuRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Service
@@ -17,64 +20,123 @@ public class FinancialReportServiceImpl implements FinancialReportService {
 
     @Override
     public FinancialSummaryResponseDTO getFinancialSummary(String range) throws Exception {
-        // Tentukan rentang tanggal berdasarkan range
-        Date startDate;
-        Date endDate = new Date();
+        LocalDate now = LocalDate.now();
+        LocalDate startCurrent, endCurrent, startPrevious, endPrevious;
 
         switch (range.toUpperCase()) {
-            case "THIS_MONTH":
-                startDate = getStartOfMonth();
-                break;
-            case "THIS_QUARTER":
-                startDate = getStartOfQuarter();
-                break;
             case "THIS_YEAR":
-                startDate = getStartOfYear();
+                startCurrent = now.withDayOfYear(1);
+                endCurrent = now.withDayOfYear(now.lengthOfYear());
+                startPrevious = startCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1);
                 break;
+
+            case "THIS_QUARTER":
+                int currentMonthValue = now.getMonthValue();
+                int quarter = (currentMonthValue - 1) / 3 + 1;
+                Month firstMonthOfQuarter = Month.of((quarter - 1) * 3 + 1);
+                
+                startCurrent = LocalDate.of(now.getYear(), firstMonthOfQuarter, 1);
+                endCurrent = startCurrent.plusMonths(3).minusDays(1);
+                
+                startPrevious = startCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1);
+                break;
+
+            case "THIS_MONTH":
+                startCurrent = now.withDayOfMonth(1);
+                endCurrent = now.withDayOfMonth(now.lengthOfMonth());
+                startPrevious = startCurrent.minusMonths(1);
+                endPrevious = startPrevious.withDayOfMonth(startPrevious.lengthOfMonth());
+                // Alternatif
+                // endPrevious = endCurrent.minusMonths(1);
+                break;
+
             default:
-                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH. Diterima: " + range);
         }
 
-        // Fetch total income and expenses based on range
-        long totalIncomeFromDistribusi = getTotalIncomeFromDistribusi(startDate, endDate);
-        long totalIncomeFromPenjualan = getTotalIncomeFromPenjualan(startDate, endDate);
-        long totalIncome = totalIncomeFromDistribusi + totalIncomeFromPenjualan;  // Total income = from Distribusi + Penjualan
+        // Konversi LocalDate ke java.util.Date untuk query
+        Date startDateCurrent = Date.from(startCurrent.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDateCurrent = Date.from(endCurrent.atTime(23, 59, 59, 999999999).atZone(ZoneId.systemDefault()).toInstant());
+        Date startDatePrevious = Date.from(startPrevious.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDatePrevious = Date.from(endPrevious.atTime(23, 59, 59, 999999999).atZone(ZoneId.systemDefault()).toInstant());
 
-        long totalPurchase = getTotalExpenseByActivityType(2, startDate, endDate); // ActivityType 2 for PURCHASE
-        long totalMaintenanceExpense = getTotalExpenseByActivityType(3, startDate, endDate); // ActivityType 3 for MAINTENANCE
-        long totalProjectExpense = getTotalExpenseByActivityType(1, startDate, endDate); // ActivityType 1 for DISTRIBUSI
+        // --- Data Periode Saat Ini ---
+        long totalIncomeFromDistribusiCurrent = getTotalIncomeFromDistribusi(startDateCurrent, endDateCurrent);
+        long totalIncomeFromPenjualanCurrent = getTotalIncomeFromPenjualan(startDateCurrent, endDateCurrent);
+        long totalIncomeCurrent = totalIncomeFromDistribusiCurrent + totalIncomeFromPenjualanCurrent;
 
-        long totalProfit = totalIncome - totalPurchase - totalMaintenanceExpense - totalProjectExpense;
+        long totalPurchaseCurrent = getTotalExpenseByActivityType(2, startDateCurrent, endDateCurrent); // ActivityType 2 for PURCHASE
+        long totalMaintenanceExpenseCurrent = getTotalExpenseByActivityType(3, startDateCurrent, endDateCurrent); // ActivityType 3 for MAINTENANCE
+        long totalProjectExpenseCurrent = getTotalExpenseByActivityType(1, startDateCurrent, endDateCurrent); // ActivityType 1 for DISTRIBUSI/PROJECT
 
-        // Create the DTO with all the information
+        long totalProfitCurrent = totalIncomeCurrent - totalPurchaseCurrent - totalMaintenanceExpenseCurrent - totalProjectExpenseCurrent;
+
+        int countDistribusiCurrent = countIncomeFromDistribusi(startDateCurrent, endDateCurrent);
+        int countPenjualanCurrent = countIncomeFromPenjualan(startDateCurrent, endDateCurrent);
+        int countPurchaseCurrent = countExpenseByActivityType(2, startDateCurrent, endDateCurrent); 
+        int countMaintenanceCurrent = countExpenseByActivityType(3, startDateCurrent, endDateCurrent); 
+        
+        int totalTransactionsCurrent = countDistribusiCurrent + countPenjualanCurrent + countPurchaseCurrent + countMaintenanceCurrent;
+
+        // --- Data Periode Sebelumnya ---
+        long totalIncomeFromDistribusiPrevious = getTotalIncomeFromDistribusi(startDatePrevious, endDatePrevious);
+        long totalIncomeFromPenjualanPrevious = getTotalIncomeFromPenjualan(startDatePrevious, endDatePrevious);
+        long totalIncomePrevious = totalIncomeFromDistribusiPrevious + totalIncomeFromPenjualanPrevious;
+
+        long totalPurchasePrevious = getTotalExpenseByActivityType(2, startDatePrevious, endDatePrevious);
+        long totalMaintenanceExpensePrevious = getTotalExpenseByActivityType(3, startDatePrevious, endDatePrevious);
+        long totalProjectExpensePrevious = getTotalExpenseByActivityType(1, startDatePrevious, endDatePrevious);
+        
+        long totalProfitPrevious = totalIncomePrevious - totalPurchasePrevious - totalMaintenanceExpensePrevious - totalProjectExpensePrevious;
+
+        int countDistribusiPrevious = countIncomeFromDistribusi(startDatePrevious, endDatePrevious);
+        int countPenjualanPrevious = countIncomeFromPenjualan(startDatePrevious, endDatePrevious);
+        int countPurchasePrevious = countExpenseByActivityType(2, startDatePrevious, endDatePrevious);
+        int countMaintenancePrevious = countExpenseByActivityType(3, startDatePrevious, endDatePrevious);
+
+        int totalTransactionsPrevious = countDistribusiPrevious + countPenjualanPrevious + countPurchasePrevious + countMaintenancePrevious;
+
+        // --- Hitung Perubahan Persentase ---
+        double transactionPercentageChange = calculatePercentageChange(totalTransactionsCurrent, totalTransactionsPrevious);
+        double profitPercentageChange = calculatePercentageChange(totalProfitCurrent, totalProfitPrevious);
+
+        // --- Set DTO ---
         FinancialSummaryResponseDTO summary = new FinancialSummaryResponseDTO();
-        summary.setTotalIncome(totalIncome);
-        summary.setTotalIncomeFromDistribusi(totalIncomeFromDistribusi);
-        summary.setTotalIncomeFromPenjualan(totalIncomeFromPenjualan);
-        summary.setTotalPurchase(totalPurchase);
-        summary.setTotalMaintenanceExpense(totalMaintenanceExpense);
-        summary.setTotalProjectExpense(totalProjectExpense);
-        summary.setTotalProfit(totalProfit);
+        summary.setTotalIncome(totalIncomeCurrent);
+        summary.setTotalIncomeFromDistribusi(totalIncomeFromDistribusiCurrent);
+        summary.setTotalIncomeFromPenjualan(totalIncomeFromPenjualanCurrent);
+        summary.setTotalPurchase(totalPurchaseCurrent);
+        summary.setTotalMaintenanceExpense(totalMaintenanceExpenseCurrent);
+        summary.setTotalProjectExpense(totalProjectExpenseCurrent);
+        summary.setTotalProfit(totalProfitCurrent);
+
+        summary.setTotalTransactions(totalTransactionsCurrent);
+        summary.setTransactionPercentageChange(transactionPercentageChange);
+        summary.setProfitPercentageChange(profitPercentageChange);
 
         return summary;
     }
 
-    // Helper methods to calculate the start of the month, quarter, and year
-    private Date getStartOfMonth() {
-        return java.sql.Date.valueOf(java.time.LocalDate.now().withDayOfMonth(1));
+    // Helper method untuk menghitung perubahan persentase
+    private double calculatePercentageChange(long currentValue, long previousValue) {
+        if (previousValue == 0) {
+            return currentValue > 0 ? 100.0 : (currentValue == 0 ? 0.0 : -100.0); // Penyesuaian jika currentValue negatif dan previous 0
+        }
+        return ((double) (currentValue - previousValue) / previousValue) * 100.0;
     }
 
-    private Date getStartOfQuarter() {
-        int quarter = (java.time.LocalDate.now().getMonthValue() - 1) / 3 + 1;
-        java.time.Month firstMonth = java.time.Month.of((quarter - 1) * 3 + 1);
-        return java.sql.Date.valueOf(java.time.LocalDate.of(java.time.LocalDate.now().getYear(), firstMonth, 1));
+    // Overload untuk tipe int jika currentValue dan previousValue adalah int
+    private double calculatePercentageChange(int currentValue, int previousValue) {
+        if (previousValue == 0) {
+            return currentValue > 0 ? 100.0 : (currentValue == 0 ? 0.0 : -100.0); // Penyesuaian jika currentValue negatif dan previous 0
+        }
+        return ((double) (currentValue - previousValue) / previousValue) * 100.0;
     }
 
-    private Date getStartOfYear() {
-        return java.sql.Date.valueOf(java.time.LocalDate.now().withDayOfYear(1));
-    }
 
-    // Helper methods to fetch total income and expenses for a range
+    // Helper methods untuk mengambil data dari repository
     private long getTotalIncomeFromDistribusi(Date startDate, Date endDate) {
         Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(startDate, endDate);
         return incomeFromDistribusi != null ? incomeFromDistribusi : 0L;
@@ -89,4 +151,20 @@ public class FinancialReportServiceImpl implements FinancialReportService {
         Long expense = lapkeuRepository.getTotalExpenseByActivityType(activityType, startDate, endDate);
         return expense != null ? expense : 0L;
     }
+
+    private int countIncomeFromDistribusi(Date startDate, Date endDate) {
+        Integer count = lapkeuRepository.countIncomeFromDistribusi(startDate, endDate);
+        return count != null ? count : 0;
+    }
+
+    private int countIncomeFromPenjualan(Date startDate, Date endDate) {
+        Integer count = lapkeuRepository.countIncomeFromPenjualan(startDate, endDate);
+        return count != null ? count : 0;
+    }
+
+    private int countExpenseByActivityType(int activityType, Date startDate, Date endDate) {
+        Integer count = lapkeuRepository.countExpenseByActivityType(activityType, startDate, endDate);
+        return count != null ? count : 0;
+    }
+
 }
