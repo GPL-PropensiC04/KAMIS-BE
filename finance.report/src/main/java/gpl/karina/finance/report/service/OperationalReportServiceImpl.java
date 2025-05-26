@@ -66,7 +66,7 @@ public class OperationalReportServiceImpl implements OperationalReportService {
         var response = webClientPurchase
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("purchase/chart/purchase-activity")
+                        .path("/purchase/chart/purchase-activity")
                         .queryParam("range", range)
                         .queryParamIfPresent("periodType", Optional.ofNullable(periodType))
                         .queryParam("status", status)
@@ -83,7 +83,7 @@ public class OperationalReportServiceImpl implements OperationalReportService {
     }
 
     public List<ActivityLineDTO> fetchProjectActivity(boolean isDistribusi, String range, String periodType, String status) {
-        String path = isDistribusi ? "project/chart/distribusi-activity" : "project/chart/penjualan-activity";
+        String path = isDistribusi ? "/project/chart/distribusi-activity" : "/project/chart/penjualan-activity";
 
         var response = webClientProject
                 .get()
