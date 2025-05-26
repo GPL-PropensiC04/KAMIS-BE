@@ -15,7 +15,7 @@ public interface ProjectService {
     public ProjectResponseWrapperDTO updateProject(UpdateProjectRequestDTO UpdateProjectRequestDTO) throws Exception;
 
     public List<listProjectResponseDTO> getAllProject(
-            String idSearch, String projectStatus, String projectType,
+            String idSearch, String projectStatus, Boolean projectType,
             String projectName, String projectClientId, Date projectStartDate,
             Date projectEndDate, Long startNominal, Long endNominal) throws Exception;
 
@@ -28,4 +28,5 @@ public interface ProjectService {
 
     List<ActivityLineDTO> getProjectActivityLine(String periodType, String range, String statusFilter, boolean isDistribusi);
     SellDistributionSummaryDTO getSellDistributionSummaryByRange(String range);
+    List<listProjectResponseDTO> getProjectListByRange(String range);
 }

@@ -18,7 +18,7 @@ stages:
   - clean
 
 variables:
-  GCP_PROJECT_ID: "propensi-451504"
+  GCP_PROJECT_ID: "nimble-acrobat-461000-v3"
   IMAGE_REPO: "gcr.io/$GCP_PROJECT_ID"
   IMAGE_DOCKER_DIND: docker:27.3.1-alpine3.20
   IMAGE_OPENJDK_GRADLE: gradle:8.11.1-jdk21-alpine
