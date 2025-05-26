@@ -159,6 +159,21 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         return maintenances.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public List<MaintenanceResponseDTO> getAssetsInMaintenance() throws Exception {
+        // Ambil daftar maintenance yang sedang dalam status "Sedang Maintenance"
+        List<Maintenance> maintenances = maintenanceRepository.findByStatus("Sedang Maintenance");
+
+        if (maintenances == null || maintenances.isEmpty()) {
+            throw new Exception("Tidak ada aset yang sedang dalam maintenance");
+        }
+
+        // Mengonversi list Maintenance ke MaintenanceResponseDTO
+        return maintenances.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     private MaintenanceResponseDTO convertToDTO(Maintenance maintenance) {
         MaintenanceResponseDTO dto = new MaintenanceResponseDTO();
         dto.setId(maintenance.getId());

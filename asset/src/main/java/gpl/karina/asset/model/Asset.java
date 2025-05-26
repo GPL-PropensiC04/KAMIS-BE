@@ -19,7 +19,7 @@ public class Asset {
     @Id
     @NotNull
     @Column(name = "platNomor", nullable = false, updatable = false)
-    private String platNomor; 
+    private String platNomor;
 
     @NotNull
     @Column(name = "nama", nullable = false)
@@ -47,24 +47,24 @@ public class Asset {
     @Column(name = "id_supplier")
     private UUID idSupplier;
 
-    @Column(name = "fotoAset", columnDefinition = "BYTEA")
-    private byte[] foto;
+    @Column(name = "fotoFilename")
+    private String fotoFilename;
 
     @Column(name = "foto_content_type")
     private String fotoContentType;
 
     @Column(name = "isDeleted", nullable = false)
     private Boolean isDeleted = false;
-    
+
     @Column(name = "deletedAt")
     private Date deletedAt;
 
         
     // @ManyToMany
     // @JoinTable(
-    //     name = "AssetMaintenance",
-    //     joinColumns = @JoinColumn(name = "asset_id"),
-    //     inverseJoinColumns = @JoinColumn(name = "maintenance_id")
+    // name = "AssetMaintenance",
+    // joinColumns = @JoinColumn(name = "asset_id"),
+    // inverseJoinColumns = @JoinColumn(name = "maintenance_id")
     // )
     // private List<Maintenance> historiMaintenance;
 }

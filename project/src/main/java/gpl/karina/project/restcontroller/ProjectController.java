@@ -165,7 +165,7 @@ public class ProjectController {
     public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getListProject(
             @RequestParam(name = "idProject", required = false) String idSearch,
             @RequestParam(name = "statusProject", required = false) String projectStatus,
-            @RequestParam(name = "tipeProject", required = false) String projectType,
+            @RequestParam(name = "tipeProject", required = false) Boolean projectType,
             @RequestParam(name = "namaProject", required = false) String projectName,
             @RequestParam(name = "clientProject", required = false) String projectClientId,
             @RequestParam(name = "tanggalMulai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectStartDate,
@@ -370,5 +370,45 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/range")
+    public ResponseEntity<BaseResponseDTO<List<listProjectResponseDTO>>> getProjectListByRange(
+            @RequestParam(name = "range", defaultValue = "THIS_YEAR") String rangeParam) {
+
+        BaseResponseDTO<List<listProjectResponseDTO>> response = new BaseResponseDTO<>();
+
+        try {
+            List<listProjectResponseDTO> result = projectService.getProjectListByRange(rangeParam);
+
+            if (result.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada data proyek untuk range: " + rangeParam);
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan daftar proyek untuk range: " + rangeParam);
+            response.setTimestamp(new Date());
+            response.setData(result);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setMessage("Parameter range tidak valid: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Terjadi kesalahan saat mengambil data proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }

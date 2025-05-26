@@ -2,8 +2,8 @@ version: "3.8"
 
 services:
   asset:
-    image: gcr.io/propensi-451504/asset:latest
-    container_name: asset-service 
+    image: gcr.io/nimble-acrobat-461000-v3/asset:latest
+    container_name: asset-service
     restart: always
     ports:
       - "8081:8081"
@@ -19,11 +19,14 @@ services:
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
       - FRONTEND_URL=https://www.sikamis.com
+      - FILE_STORAGE_PATH=/app/uploads
+    volumes:
+      - /microservices/data/asset-uploads:/app/uploads
     networks:
       - kamis-network
 
   finance:
-    image: gcr.io/propensi-451504/finance:latest
+    image: gcr.io/nimble-acrobat-461000-v3/finance:latest
     container_name: finance-service
     restart: always
     ports:
@@ -45,7 +48,7 @@ services:
       - kamis-network
 
   profile:
-    image: gcr.io/propensi-451504/profile:latest
+    image: gcr.io/nimble-acrobat-461000-v3/profile:latest
     container_name: profile-service
     restart: always
     ports:
@@ -68,7 +71,7 @@ services:
       - kamis-network
 
   project:
-    image: gcr.io/propensi-451504/project:latest
+    image: gcr.io/nimble-acrobat-461000-v3/project:latest
     container_name: project-service
     restart: always
     ports:
@@ -90,7 +93,7 @@ services:
       - kamis-network
 
   purchase:
-    image: gcr.io/propensi-451504/purchase:latest
+    image: gcr.io/nimble-acrobat-461000-v3/purchase:latest
     container_name: purchase-service
     restart: always
     ports:
@@ -108,11 +111,14 @@ services:
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
       - FRONTEND_URL=https://www.sikamis.com
+      - FILE_STORAGE_PATH=/app/uploads
+    volumes:
+      - /microservices/data/purchase-uploads:/app/uploads
     networks:
       - kamis-network
 
   resource:
-    image: gcr.io/propensi-451504/resource:latest
+    image: gcr.io/nimble-acrobat-461000-v3/resource:latest
     container_name: resource-service
     restart: always
     ports:
@@ -137,6 +143,6 @@ networks:
   kamis-network:
     external: true
     driver: bridge
-    name: kamis-network 
+    name: kamis-network
   default:
     driver: bridge

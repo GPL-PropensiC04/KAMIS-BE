@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -87,6 +88,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
     private final WebClient.Builder webClientBuilder;
     private final HttpServletRequest request;
     private final JwtUtils jwtUtils;
+    private final FileStorageService fileStorageService;
 
     private static final Logger logger = LoggerFactory.getLogger(PurchaseRestServiceImpl.class);
 
@@ -96,7 +98,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
     public PurchaseRestServiceImpl(PurchaseRepository purchaseRepository, AssetTempRepository assetTempRepository,
             ResourceTempRepository resourceTempRepository, WebClient.Builder webClientBuilder,
-            HttpServletRequest request, JwtUtils jwtUtils, LogPurchaseRepository logPurchaseRepository) {
+            HttpServletRequest request, JwtUtils jwtUtils, LogPurchaseRepository logPurchaseRepository,
+            FileStorageService fileStorageService) {
         this.purchaseRepository = purchaseRepository;
         this.assetTempRepository = assetTempRepository;
         this.resourceTempRepository = resourceTempRepository;
@@ -104,6 +107,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         this.request = request;
         this.jwtUtils = jwtUtils;
         this.logPurchaseRepository = logPurchaseRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @PostConstruct
@@ -118,7 +122,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         this.webClientAsset = webClientBuilder
                 .baseUrl(assetUrl)
                 .build();
-        
+
         this.webClientProfile = webClientBuilder
                 .baseUrl(profileUrl)
                 .build();
@@ -193,8 +197,6 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
     }
 
     public AssetTempResponseDTO addAssetToAssetDatabase(Map<String, Object> assetRequest) {
-
-
         try {
             MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
             formData.add("platNomor", assetRequest.get("platNomor"));
@@ -203,49 +205,45 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
             formData.add("assetType", assetRequest.get("assetType"));
             formData.add("assetPrice", assetRequest.get("assetPrice"));
             formData.add("tanggalPerolehan", assetRequest.get("tanggalPerolehan"));
-            formData.add("supplierId", assetRequest.get("supplierId"));
-            formData.add("status", assetRequest.get("status"));
-
-            // Untuk foto (byte[]), bungkus ke ByteArrayResource agar dianggap file di
-            // form-data
-            byte[] fotoBytes = (byte[]) assetRequest.get("foto");
-            if (fotoBytes != null) {
-                ByteArrayResource fotoResource = new ByteArrayResource(fotoBytes) {
-                    @Override
-                    public String getFilename() {
-                        return "foto.jpg"; // Optional, biar backend baca sebagai file
-                    }
-                };
-                formData.add("foto", fotoResource);
+            
+            // Add supplier ID if present
+            if (assetRequest.get("supplierId") != null) {
+                formData.add("supplierId", assetRequest.get("supplierId"));
             }
-
-            // Kalau fotoContentType mau dipisah / dikirim, bisa juga
+            
+            // Add status if present
+            if (assetRequest.get("status") != null) {
+                formData.add("status", assetRequest.get("status"));
+            }
+    
+            // Handle the photo file - use fotoFilename instead of foto
+            String fotoFilename = (String) assetRequest.get("fotoFilename");
+            if (fotoFilename != null && !fotoFilename.isEmpty()) {
+                try {
+                    Resource resource = fileStorageService.loadFileAsResource(fotoFilename);
+                    formData.add("foto", resource);
+                    logger.info("Added photo file resource to form data: {}", fotoFilename);
+                } catch (Exception e) {
+                    logger.error("Failed to load photo file {}: {}", fotoFilename, e.getMessage());
+                    // Continue without the photo
+                }
+            }
+            
+            // Add content type if available
             if (assetRequest.get("fotoContentType") != null) {
                 formData.add("fotoContentType", assetRequest.get("fotoContentType"));
             }
-
+    
+            logger.info("Sending request to asset service");
             var response = webClientAsset.post()
                     .uri("/asset/addAsset")
-                    .headers(headers -> {
-                        headers.setBearerAuth(getTokenFromRequest());
-                    })
+                    .headers(headers -> headers.setBearerAuth(getTokenFromRequest()))
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(BodyInserters.fromMultipartData(formData))
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetTempResponseDTO>>() {
-                    })
-                    .doOnError(error -> {
-                        logger.error("Error during asset service call: {}", error.getMessage());
-                        error.printStackTrace();
-                    })
+                    .bodyToMono(new ParameterizedTypeReference<BaseResponseDTO<AssetTempResponseDTO>>() {})
                     .block();
-
-            if (response == null) {
-                logger.error("Received null response from asset service");
-                return null;
-            }
-
-            logger.info("Successfully received response from asset service");
+    
             return response.getData();
         } catch (Exception e) {
             logger.error("Exception in addAssetToAssetDatabase: {}", e.getMessage());
@@ -272,6 +270,10 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
     }
 
     private AssetTempResponseDTO assetTempToAssetTempResponseDTO(AssetTemp assetTemp) {
+        if (assetTemp == null) {
+            return null;
+        }
+
         AssetTempResponseDTO assetTempResponseDTO = new AssetTempResponseDTO();
         assetTempResponseDTO.setId(assetTemp.getId());
         assetTempResponseDTO.setAssetNameString(assetTemp.getAssetName());
@@ -279,7 +281,12 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         assetTempResponseDTO.setAssetType(assetTemp.getAssetType());
         assetTempResponseDTO.setAssetPrice(assetTemp.getAssetPrice());
         assetTempResponseDTO.setFotoContentType(assetTemp.getFotoContentType());
-        assetTempResponseDTO.setFotoUrl("/purchase/asset/" + assetTemp.getId() + "/foto"); // Tambahkan ini
+
+        // Set the URL only if the file exists
+        if (assetTemp.getFotoFilename() != null && !assetTemp.getFotoFilename().isEmpty()) {
+            assetTempResponseDTO.setFotoUrl("/api/purchase/asset/" + assetTemp.getId() + "/foto");
+        }
+
         return assetTempResponseDTO;
     }
 
@@ -378,7 +385,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
         log.setUsername(username);
         log.setAction(action);
-        
+
         Date now = new Date();
         log.setActionDate(now);
 
@@ -584,7 +591,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
         // Cek perubahan note
         if (!Objects.equals(purchase.getPurchaseNote(), updatePurchaseDTO.getPurchaseNote())) {
-            logBuilder.append("  - Mengubah catatan menjadi '").append(updatePurchaseDTO.getPurchaseNote()).append("'\n");
+            logBuilder.append("  - Mengubah catatan menjadi '").append(updatePurchaseDTO.getPurchaseNote())
+                    .append("'\n");
             hasChange = true;
         }
 
@@ -676,7 +684,6 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
             }
         }
 
-
         Purchase updatedPurchase = purchaseRepository.save(purchase);
 
         return purchaseToPurchaseResponseDTO(updatedPurchase);
@@ -705,10 +712,13 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
 
         if (assetTempDTO.getFoto() != null && !assetTempDTO.getFoto().isEmpty()) {
             try {
-                assetTemp.setFoto(assetTempDTO.getFoto().getBytes());
+                // Store the file and save the file name
+                String filename = fileStorageService.storeFile(assetTempDTO.getFoto(),
+                        "asset_" + UUID.randomUUID().toString());
+                assetTemp.setFotoFilename(filename);
                 assetTemp.setFotoContentType(assetTempDTO.getFoto().getContentType());
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Gagal mengupload foto");
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Gagal mengupload foto: " + e.getMessage());
             }
         }
 
@@ -792,7 +802,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                 assetRequest.put("assetPrice", assetTemp.getAssetPrice());
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 assetRequest.put("tanggalPerolehan", sdf.format(new Date()));
-                assetRequest.put("foto", assetTemp.getFoto());
+                // In updatePurchaseStatusToNext method:
+                assetRequest.put("fotoFilename", assetTemp.getFotoFilename());
                 assetRequest.put("fotoContentType", assetTemp.getFotoContentType());
                 assetRequest.put("supplierId", purchase.getPurchaseSupplier().toString());
                 assetRequest.put("status", "Tersedia");
@@ -928,7 +939,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
             lapkeuRequest.setId(purchase.getId());
             lapkeuRequest.setActivityType(2); // PURCHASE
             lapkeuRequest.setPemasukan(0L);
-            lapkeuRequest.setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
+            lapkeuRequest
+                    .setPengeluaran(purchase.getPurchasePrice() != null ? purchase.getPurchasePrice().longValue() : 0L);
             String namaBarang = "";
             if (!purchase.isPurchaseType()) {
                 // Tipe aset
@@ -948,12 +960,12 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
             lapkeuRequest.setPaymentDate(purchase.getPurchasePaymentDate());
 
             webClientBuilder.build()
-                .post()
-                .uri(financeUrl + "/lapkeu/add") 
-                .bodyValue(lapkeuRequest)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .block();
+                    .post()
+                    .uri(financeUrl + "/lapkeu/add")
+                    .bodyValue(lapkeuRequest)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
         } catch (Exception e) {
             logger.error("Gagal insert ke Lapkeu: " + e.getMessage());
         }
@@ -975,19 +987,19 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         // Contoh dummy fetch dari repository
         List<Purchase> purchases = purchaseRepository.findAllByPurchaseSupplier(supplierId);
         ;
-        
+
         if (purchases.isEmpty()) {
             throw new DataNotFound("No purchases found for supplier with ID: " + supplierId);
         }
-        
+
         // Mapping entity ke DTO
         List<PurchaseResponseDTO> purchaseResponseDTOs = purchases.stream()
-            .map(this::purchaseToPurchaseResponseDTO)
-            .collect(Collectors.toList());
+                .map(this::purchaseToPurchaseResponseDTO)
+                .collect(Collectors.toList());
 
         System.out.println("Purchases found: " + purchaseResponseDTOs.size());
         System.out.println("Purchases: " + purchaseResponseDTOs);
-        
+
         return purchaseResponseDTOs;
     }
 
@@ -1054,7 +1066,8 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                 start = now.withDayOfYear(1);
                 break;
             default:
-                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                throw new IllegalArgumentException(
+                        "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
         }
 
         Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -1127,8 +1140,7 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         LocalDate firstDayOfMonth = LocalDate.of(fixedYear, fixedMonth, 1);
         int weekOfMonth = (int) ChronoUnit.WEEKS.between(
                 firstDayOfMonth.with(DayOfWeek.MONDAY),
-                anyDateInWeek.with(DayOfWeek.MONDAY)
-        ) + 1;
+                anyDateInWeek.with(DayOfWeek.MONDAY)) + 1;
 
         return String.format("%04d-%02d-W%d", fixedYear, fixedMonth, weekOfMonth);
     }
@@ -1221,14 +1233,15 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                 start = now.withDayOfYear(1);
                 break;
             default:
-                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                throw new IllegalArgumentException(
+                        "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
         }
 
-        // Konversi ke java.util.Date
+        // Konversi LocalDate ke java.util.Date
         Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
         Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
-        // Reuse existing logic: panggil getAllPurchase dengan parameter lain null/default
+        // Reuse existing logic: panggil getAllPurchase dengan parameter lain
         return getAllPurchase(
                 null, // startNominal
                 null, // endNominal
@@ -1237,72 +1250,52 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                 endDate,
                 false, // newDate
                 "all", // type
-                null   // idSearch
+                null // idSearch
         );
     }
 
     @Override
     public PurchaseSummaryResponseDTO getPurchaseSummaryByRange(String range) {
-        Date now = new Date();
-        Calendar calendar = Calendar.getInstance();
-
-        Date startCurrent, endCurrent, startPrevious, endPrevious;
+        LocalDate now = LocalDate.now();
+        LocalDate startCurrent, endCurrent, startPrevious, endPrevious;
 
         switch (range.toUpperCase()) {
             case "THIS_YEAR":
-                calendar.set(Calendar.MONTH, 0);
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startCurrent = calendar.getTime();
-                calendar.set(Calendar.MONTH, 11);
-                calendar.set(Calendar.DAY_OF_MONTH, 31);
-                endCurrent = calendar.getTime();
-
-                calendar.add(Calendar.YEAR, -1);
-                calendar.set(Calendar.MONTH, 0);
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startPrevious = calendar.getTime();
-                calendar.set(Calendar.MONTH, 11);
-                calendar.set(Calendar.DAY_OF_MONTH, 31);
-                endPrevious = calendar.getTime();
+                startCurrent = now.withDayOfYear(1);
+                endCurrent = now.withDayOfYear(now.lengthOfYear());
+                startPrevious = startCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1);
                 break;
 
             case "THIS_QUARTER":
-                int currentMonth = calendar.get(Calendar.MONTH);
-                int quarterStartMonth = currentMonth / 3 * 3;
-
-                calendar.set(Calendar.MONTH, quarterStartMonth);
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startCurrent = calendar.getTime();
-                calendar.add(Calendar.MONTH, 2);
-                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-                endCurrent = calendar.getTime();
-
-                calendar.add(Calendar.MONTH, -3);
-                startPrevious = calendar.getTime();
-                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-                endPrevious = calendar.getTime();
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                startCurrent = LocalDate.of(now.getYear(), firstMonth, 1);
+                endCurrent = startCurrent.plusMonths(3).minusDays(1);
+                startPrevious = startCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1);
                 break;
 
             case "THIS_MONTH":
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startCurrent = calendar.getTime();
-                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-                endCurrent = calendar.getTime();
-
-                calendar.add(Calendar.MONTH, -1);
-                calendar.set(Calendar.DAY_OF_MONTH, 1);
-                startPrevious = calendar.getTime();
-                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-                endPrevious = calendar.getTime();
+                startCurrent = now.withDayOfMonth(1);
+                endCurrent = now.withDayOfMonth(now.lengthOfMonth());
+                startPrevious = startCurrent.minusMonths(1);
+                endPrevious = endCurrent.minusMonths(1);
                 break;
 
             default:
                 throw new IllegalArgumentException("Range tidak dikenali: " + range);
         }
 
+        // Konversi LocalDate ke java.util.Date
+        Date startDateCurrent = Date.from(startCurrent.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDateCurrent = Date.from(endCurrent.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+        Date startDatePrevious = Date.from(startPrevious.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDatePrevious = Date.from(endPrevious.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
         // Hitung jumlah pembelian berdasarkan submission date
-        int currentCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startCurrent, endCurrent);
-        int previousCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startPrevious, endPrevious);
+        int currentCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startDateCurrent, endDateCurrent);
+        int previousCount = purchaseRepository.countByPurchaseSubmissionDateBetween(startDatePrevious, endDatePrevious);
 
         double percentageChange = 0.0;
         if (previousCount > 0) {
