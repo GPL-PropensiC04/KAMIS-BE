@@ -51,8 +51,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang dalam maintenance");
         }
 
-        if ("Dalam Proyek".equals(asset.getStatus())) {
-            throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang digunakan dalam proyek");
+        else if ("Dalam Aktivitas".equals(asset.getStatus())) {
+            throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang digunakan dalam aktivitas");
         }
                 
         // Ubah status asset menjadi sedang maintenance
