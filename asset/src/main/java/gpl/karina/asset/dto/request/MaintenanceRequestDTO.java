@@ -1,5 +1,7 @@
 package gpl.karina.asset.dto.request;
 
+import java.util.Date;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -21,4 +23,7 @@ public class MaintenanceRequestDTO {
     @NotNull(message = "Biaya tidak boleh kosong")
     @Positive(message = "Biaya harus bernilai positif")
     private Float biaya;
+    
+    @NotNull(message = "Tanggal mulai tidak boleh kosong")
+    private Date tanggalMulaiMaintenance;
 }

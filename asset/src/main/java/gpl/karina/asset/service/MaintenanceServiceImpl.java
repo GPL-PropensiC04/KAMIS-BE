@@ -51,8 +51,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang dalam maintenance");
         }
 
-        if ("Dalam Proyek".equals(asset.getStatus())) {
-            throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang digunakan dalam proyek");
+        else if ("Dalam Aktivitas".equals(asset.getStatus())) {
+            throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang digunakan dalam aktivitas");
         }
                 
         // Ubah status asset menjadi sedang maintenance
@@ -63,7 +63,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         Maintenance maintenance = new Maintenance();
         maintenance.setDeskripsiPekerjaan(requestDTO.getDeskripsiPekerjaan());
         maintenance.setBiaya(requestDTO.getBiaya());
-        maintenance.setTanggalMulaiMaintenance(new Date()); // Tanggal hari ini
+        maintenance.setTanggalMulaiMaintenance(requestDTO.getTanggalMulaiMaintenance());
         maintenance.setStatus("Sedang Maintenance");
         maintenance.setAsset(asset);
         
@@ -80,7 +80,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
             webClientBuilder.build()
                 .post()
-                .uri(financeUrl + "/lapkeu/add") // ganti port sesuai service lapkeu
+                .uri(financeUrl + "/api/lapkeu/add") // ganti port sesuai service lapkeu
                 .bodyValue(lapkeuRequest)
                 .retrieve()
                 .bodyToMono(Void.class)
