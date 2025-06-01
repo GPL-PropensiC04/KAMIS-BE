@@ -209,6 +209,13 @@ public class AssetReservationServiceImpl implements AssetReservationService {
             throw new IllegalArgumentException("Asset with plate number " + platNomor + " not found");
         }
 
+        // Check if asset is under maintenance
+        if ("Sedang Maintenance".equals(asset.getStatus())) {
+            logger.info("Asset {} is currently under maintenance and cannot be reserved.", platNomor);
+            return false;
+        }
+        
+
         // Check for any overlapping reservations in the given time period
         List<AssetReservation> overlappingReservations = assetReservationRepository
                 .findOverlappingReservations(platNomor, startDate, endDate);
@@ -224,6 +231,13 @@ public class AssetReservationServiceImpl implements AssetReservationService {
         if (asset == null) {
             throw new IllegalArgumentException("Asset with plate number " + platNomor + " not found");
         }
+
+        // Check if asset is under maintenance
+        if ("Sedang Maintenance".equals(asset.getStatus())) {
+            logger.info("Asset {} is currently under maintenance and cannot be reserved.", platNomor);
+            return false;
+        }
+        
 
         // Check for any overlapping reservations in the given time period, excluding
         // the specified project's reservations
