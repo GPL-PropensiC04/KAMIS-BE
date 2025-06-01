@@ -63,7 +63,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         Maintenance maintenance = new Maintenance();
         maintenance.setDeskripsiPekerjaan(requestDTO.getDeskripsiPekerjaan());
         maintenance.setBiaya(requestDTO.getBiaya());
-        maintenance.setTanggalMulaiMaintenance(new Date()); // Tanggal hari ini
+        // Use the startDate from requestDTO instead of new Date()
+        maintenance.setTanggalMulaiMaintenance(requestDTO.getTanggalMulaiMaintenance());
         maintenance.setStatus("Sedang Maintenance");
         maintenance.setAsset(asset);
         

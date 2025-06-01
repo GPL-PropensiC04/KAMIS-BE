@@ -45,6 +45,7 @@ public class MaintenanceController {
         }
         
         try {
+            // The requestDTO now contains startDate provided by the client
             MaintenanceResponseDTO result = maintenanceService.createMaintenance(requestDTO);
             
             response.setStatus(HttpStatus.CREATED.value());
