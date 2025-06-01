@@ -63,7 +63,6 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         Maintenance maintenance = new Maintenance();
         maintenance.setDeskripsiPekerjaan(requestDTO.getDeskripsiPekerjaan());
         maintenance.setBiaya(requestDTO.getBiaya());
-        // Use the startDate from requestDTO instead of new Date()
         maintenance.setTanggalMulaiMaintenance(requestDTO.getTanggalMulaiMaintenance());
         maintenance.setStatus("Sedang Maintenance");
         maintenance.setAsset(asset);
@@ -81,7 +80,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
             webClientBuilder.build()
                 .post()
-                .uri(financeUrl + "/lapkeu/add") // ganti port sesuai service lapkeu
+                .uri(financeUrl + "/api/lapkeu/add") // ganti port sesuai service lapkeu
                 .bodyValue(lapkeuRequest)
                 .retrieve()
                 .bodyToMono(Void.class)

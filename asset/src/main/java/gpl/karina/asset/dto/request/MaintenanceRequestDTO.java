@@ -25,5 +25,5 @@ public class MaintenanceRequestDTO {
     private Float biaya;
     
     @NotNull(message = "Tanggal mulai tidak boleh kosong")
-    private Date startDate;
+    private Date tanggalMulaiMaintenance;
 }
