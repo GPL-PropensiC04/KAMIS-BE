@@ -146,6 +146,12 @@ public class LapkeuServiceImpl implements LapkeuService {
                 break;
 
             case "THIS_YEAR":
+                start = now.withDayOfYear(1);
+                break;
+            case "LAST_YEAR":
+                start = LocalDate.of(now.getYear() - 1, 1, 1);
+                end = LocalDate.of(now.getYear() - 1, 12, 31);
+                break;
             default:
                 start = now.withDayOfYear(1);
                 break;
@@ -211,9 +217,17 @@ public class LapkeuServiceImpl implements LapkeuService {
                 }
                 start = now.withDayOfYear(1);
                 break;
-
+            
+            case "LAST_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("LAST_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = LocalDate.of(now.getYear() - 1, 1, 1);
+                end = LocalDate.of(now.getYear() - 1, 12, 31);
+                break;
+            
             default:
-                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                throw new IllegalArgumentException("Range tidak valid. Gunakan LAST_YEAR, THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
         }
 
         Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -403,6 +417,10 @@ public class LapkeuServiceImpl implements LapkeuService {
             break;
             case "THIS_YEAR":
             start = now.withDayOfYear(1);
+            break;
+            case "LAST_YEAR":
+            start = LocalDate.of(now.getYear() - 1, 1, 1);
+            end = LocalDate.of(now.getYear() - 1, 12, 31);
             break;
             default:
             start = now.minusMonths(6); // Default to last 6 months
