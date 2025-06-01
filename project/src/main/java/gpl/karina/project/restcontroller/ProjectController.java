@@ -380,13 +380,13 @@ public class ProjectController {
         try {
             List<listProjectResponseDTO> result = projectService.getProjectListByRange(rangeParam);
 
-            if (result.isEmpty()) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Tidak ada data proyek untuk range: " + rangeParam);
-                response.setTimestamp(new Date());
-                response.setData(null);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+            // if (result.isEmpty()) {
+            //     response.setStatus(HttpStatus.NOT_FOUND.value());
+            //     response.setMessage("Tidak ada data proyek untuk range: " + rangeParam);
+            //     response.setTimestamp(new Date());
+            //     response.setData(null);
+            //     return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            // }
 
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Berhasil mendapatkan daftar proyek untuk range: " + rangeParam);
