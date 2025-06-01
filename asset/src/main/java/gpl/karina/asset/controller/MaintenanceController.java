@@ -16,7 +16,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/maintenance")
+@RequestMapping("/api/maintenance/")
 public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
@@ -122,7 +122,7 @@ public class MaintenanceController {
     }
 
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<BaseResponseDTO<MaintenanceResponseDTO>> completeMaintenance(@PathVariable Long id) {
+    public ResponseEntity<BaseResponseDTO<MaintenanceResponseDTO>> completeMaintenance(@PathVariable(name = "id") Long id) {
         BaseResponseDTO<MaintenanceResponseDTO> response = new BaseResponseDTO<>();
         
         try {

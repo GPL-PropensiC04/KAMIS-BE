@@ -230,7 +230,7 @@ public class ProjectController {
 
     @PutMapping("/update-payment/{id}")
     public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProjectPayment(
-            @PathVariable String id,
+            @PathVariable(name = "id") String id,
             @RequestBody UpdateProjectPaymentRequestDTO updateProjectPaymentDTO) {
         BaseResponseDTO<ProjectResponseWrapperDTO> response = new BaseResponseDTO<>();
         try {

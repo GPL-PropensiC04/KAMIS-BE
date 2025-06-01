@@ -1065,9 +1065,16 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                 }
                 start = now.withDayOfYear(1);
                 break;
+            case "LAST_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("LAST_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = LocalDate.of(now.getYear() - 1, 1, 1);
+                end = LocalDate.of(now.getYear() - 1, 12, 31);
+                break;
             default:
                 throw new IllegalArgumentException(
-                        "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                        "Range tidak valid. Gunakan LAST_YEAR, THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
         }
 
         Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());

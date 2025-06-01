@@ -81,7 +81,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
             webClientBuilder.build()
                 .post()
-                .uri(financeUrl + "/api/lapkeu/add") // ganti port sesuai service lapkeu
+                .uri(financeUrl + "/lapkeu/add") // ganti port sesuai service lapkeu
                 .bodyValue(lapkeuRequest)
                 .retrieve()
                 .bodyToMono(Void.class)
