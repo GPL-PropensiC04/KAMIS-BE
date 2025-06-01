@@ -9,7 +9,7 @@ on:
 
 # global env → replace with your GitHub Variables (non-sensitive)
 env:
-  GCP_PROJECT_ID: propensi-451504
+  GCP_PROJECT_ID: nimble-acrobat-461000-v3
   IMAGE_REPO: ${{ vars.REGISTRY_SERVER}}/${{ secrets.GCP_PROJECT_ID }}
 
 jobs:
