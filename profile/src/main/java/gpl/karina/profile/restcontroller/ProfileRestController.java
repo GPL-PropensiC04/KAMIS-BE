@@ -4,8 +4,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
-
 import gpl.karina.profile.restservice.EndUserService;
 import jakarta.validation.Valid;
 
@@ -23,7 +21,6 @@ import gpl.karina.profile.restdto.response.EndUserResponseDTO;
 
 import java.util.Date;
 import java.util.List;
-
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -94,14 +91,27 @@ public class ProfileRestController {
     @GetMapping("/all/paginated")
     public ResponseEntity<BaseResponseDTO<Page<EndUserResponseDTO>>> getAllUsersPaginated(
             @RequestParam(defaultValue = "0", name = "page") int page,
-            @RequestParam(defaultValue = "10", name = "size") int size) {
+            @RequestParam(defaultValue = "10", name = "size") int size,
+            @RequestParam(name = "username", required = false) String name,
+            @RequestParam(name = "email", required = false) String email,
+            @RequestParam(name = "userType", required = false) String userType) {
         var baseResponseDTO = new BaseResponseDTO<Page<EndUserResponseDTO>>();
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<EndUserResponseDTO> usersPage = endUserService.getAllUsersPaginated(pageable);
+            Page<EndUserResponseDTO> usersPage;
+            String message;
+
+            if (name != null || email != null || userType != null) {
+                // If filters present, return filtered paginated users
+                usersPage = endUserService.getAllUsersPaginated(pageable, email, name, userType);
+                message = "List Users berhasil difilter";
+            } else {
+                usersPage = endUserService.getAllUsersPaginated(pageable, null, null, null);
+                message = "List Users berhasil ditemukan";
+            }
 
             baseResponseDTO.setStatus(HttpStatus.OK.value());
-            baseResponseDTO.setMessage("Success");
+            baseResponseDTO.setMessage(message);
             baseResponseDTO.setData(usersPage);
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);

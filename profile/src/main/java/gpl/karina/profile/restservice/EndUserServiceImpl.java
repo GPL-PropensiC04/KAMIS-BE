@@ -175,8 +175,60 @@ public class EndUserServiceImpl implements EndUserService {
     }
 
     @Override
-    public Page<EndUserResponseDTO> getAllUsersPaginated(Pageable pageable) {
-        return endUserRepository.findAll(pageable).map(this::endUserToEndUserResponseDTO);
+    public Page<EndUserResponseDTO> getAllUsersPaginated(Pageable pageable, String email, String username, String userType) {
+        Page<EndUser> usersPage;
+    
+
+
+        try {
+            // Apply filters based on provided parameters
+            if (email != null && !email.trim().isEmpty() && 
+                username != null && !username.trim().isEmpty() && 
+                userType != null && !userType.trim().isEmpty()) {
+                // Filter by all three parameters
+                usersPage = endUserRepository.findByEmailContainingIgnoreCaseAndUsernameContainingIgnoreCaseAndUserTypeContainingIgnoreCase(
+                    email.trim(), username.trim(), userType.trim(), pageable);
+            } else if (email != null && !email.trim().isEmpty() && 
+                       username != null && !username.trim().isEmpty()) {
+                // Filter by email and username
+                usersPage = endUserRepository.findByEmailContainingIgnoreCaseAndUsernameContainingIgnoreCase(
+                    email.trim(), username.trim(), pageable);
+            } else if (email != null && !email.trim().isEmpty() && 
+                       userType != null && !userType.trim().isEmpty()) {
+                // Filter by email and userType
+                usersPage = endUserRepository.findByEmailContainingIgnoreCaseAndUserTypeContainingIgnoreCase(
+                    email.trim(), userType.trim(), pageable);
+            } else if (username != null && !username.trim().isEmpty() && 
+                       userType != null && !userType.trim().isEmpty()) {
+                // Filter by username and userType
+                usersPage = endUserRepository.findByUsernameContainingIgnoreCaseAndUserTypeContainingIgnoreCase(
+                    username.trim(), userType.trim(), pageable);
+            } else if (email != null && !email.trim().isEmpty()) {
+                // Filter by email only
+                usersPage = endUserRepository.findByEmailContainingIgnoreCase(email.trim(), pageable);
+            } else if (username != null && !username.trim().isEmpty()) {
+                // Filter by username only
+                usersPage = endUserRepository.findByUsernameContainingIgnoreCase(username.trim(), pageable);
+            } else if (userType != null && !userType.trim().isEmpty()) {
+                // Filter by userType only
+                usersPage = endUserRepository.findByUserTypeContainingIgnoreCase(userType.trim(), pageable);
+            } else {
+                // No valid filters
+                usersPage = endUserRepository.findAll(pageable);
+            }
+            
+            System.out.println("Found " + usersPage.getTotalElements() + " users");
+            
+            // Map EndUser entities to EndUserResponseDTO
+            return usersPage.map(user -> {
+                return endUserToEndUserResponseDTO(user);
+            });
+    
+        } catch (Exception e) {
+            System.err.println("Error in filtering: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override

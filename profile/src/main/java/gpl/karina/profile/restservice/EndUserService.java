@@ -17,6 +17,6 @@ public interface EndUserService {
     public Optional<EndUserResponseDTO> findByEmail(String email);
     public EndUserResponseDTO updateUser(String email, UpdateUserReqeuestDTO addUserReqeuestDTO);
     public List<EndUserResponseDTO> getAllUsers();
-    public Page<EndUserResponseDTO> getAllUsersPaginated(Pageable pageable); // For paginated list
+    public Page<EndUserResponseDTO> getAllUsersPaginated(Pageable pageable, String email, String username, String role); // For paginated list
     
 }
