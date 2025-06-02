@@ -4,8 +4,10 @@ import gpl.karina.asset.dto.request.AddLapkeuDTO;
 import gpl.karina.asset.dto.request.MaintenanceRequestDTO;
 import gpl.karina.asset.dto.response.MaintenanceResponseDTO;
 import gpl.karina.asset.model.Asset;
+import gpl.karina.asset.model.AssetReservation;
 import gpl.karina.asset.model.Maintenance;
 import gpl.karina.asset.repository.AssetDb;
+import gpl.karina.asset.repository.AssetReservationRepository;
 import gpl.karina.asset.repository.MaintenanceRepository;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -22,15 +24,24 @@ import java.util.stream.Collectors;
 public class MaintenanceServiceImpl implements MaintenanceService {
 
     @Value("${asset.app.financeUrl}")
-    private String financeUrl;
-
-    private final MaintenanceRepository maintenanceRepository;
+    private String financeUrl;    private final MaintenanceRepository maintenanceRepository;
     private final AssetDb assetRepository;
+    private final AssetReservationRepository assetReservationRepository;
+    private final AssetReservationService assetReservationService;
+    private final AssetMaintenanceService assetMaintenanceService;
     private final WebClient.Builder webClientBuilder;
 
-    public MaintenanceServiceImpl(MaintenanceRepository maintenanceRepository, WebClient.Builder webClientBuilder, AssetDb assetRepository) {
+    public MaintenanceServiceImpl(MaintenanceRepository maintenanceRepository, 
+                                  WebClient.Builder webClientBuilder, 
+                                  AssetDb assetRepository,
+                                  AssetReservationRepository assetReservationRepository,
+                                  AssetReservationService assetReservationService,
+                                  AssetMaintenanceService assetMaintenanceService) {
         this.maintenanceRepository = maintenanceRepository;
         this.assetRepository = assetRepository;
+        this.assetReservationRepository = assetReservationRepository;
+        this.assetReservationService = assetReservationService;
+        this.assetMaintenanceService = assetMaintenanceService;
         this.webClientBuilder = webClientBuilder;
     }
 
@@ -51,8 +62,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang dalam maintenance");
         }
 
-        if ("Dalam Proyek".equals(asset.getStatus())) {
-            throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang digunakan dalam proyek");
+        else if ("Dalam Aktivitas".equals(asset.getStatus())) {
+            throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang digunakan dalam aktivitas");
         }
                 
         // Ubah status asset menjadi sedang maintenance
@@ -63,7 +74,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         Maintenance maintenance = new Maintenance();
         maintenance.setDeskripsiPekerjaan(requestDTO.getDeskripsiPekerjaan());
         maintenance.setBiaya(requestDTO.getBiaya());
-        maintenance.setTanggalMulaiMaintenance(new Date()); // Tanggal hari ini
+        maintenance.setTanggalMulaiMaintenance(requestDTO.getTanggalMulaiMaintenance());
         maintenance.setStatus("Sedang Maintenance");
         maintenance.setAsset(asset);
         
@@ -80,7 +91,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
             webClientBuilder.build()
                 .post()
-                .uri(financeUrl + "/lapkeu/add") // ganti port sesuai service lapkeu
+                .uri(financeUrl + "/api/lapkeu/add") // ganti port sesuai service lapkeu
                 .bodyValue(lapkeuRequest)
                 .retrieve()
                 .bodyToMono(Void.class)

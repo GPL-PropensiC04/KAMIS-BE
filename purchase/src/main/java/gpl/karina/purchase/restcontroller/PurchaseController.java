@@ -522,13 +522,13 @@ public class PurchaseController {
         try {
             List<PurchaseListResponseDTO> result = purchaseRestService.getPurchaseListByRange(rangeParam);
 
-            if (result.isEmpty()) {
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                response.setMessage("Tidak ada data pembelian untuk range: " + rangeParam);
-                response.setTimestamp(new Date());
-                response.setData(null);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+            // if (result.isEmpty()) {
+            //     response.setStatus(HttpStatus.NOT_FOUND.value());
+            //     response.setMessage("Tidak ada data pembelian untuk range: " + rangeParam);
+            //     response.setTimestamp(new Date());
+            //     response.setData(null);
+            //     return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            // }
 
             response.setStatus(HttpStatus.OK.value());
             response.setMessage("Berhasil mendapatkan daftar pembelian untuk range: " + rangeParam);

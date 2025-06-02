@@ -1318,27 +1318,35 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         // Tentukan rentang waktu berdasarkan range
         LocalDate now = LocalDate.now();
         LocalDate start;
-        LocalDate end = now;
+        LocalDate end; // Dideklarasikan di sini, diinisialisasi dalam switch
 
         switch (range.toUpperCase()) {
             case "THIS_MONTH":
                 start = now.withDayOfMonth(1);
+                end = now; // Akhir periode adalah hari ini untuk periode berjalan
                 break;
             case "THIS_QUARTER":
                 int quarter = (now.getMonthValue() - 1) / 3 + 1;
                 Month firstMonth = Month.of((quarter - 1) * 3 + 1);
                 start = LocalDate.of(now.getYear(), firstMonth, 1);
+                end = now; // Akhir periode adalah hari ini untuk periode berjalan
                 break;
             case "THIS_YEAR":
                 start = now.withDayOfYear(1);
+                end = now; // Akhir periode adalah hari ini untuk periode berjalan
+                break;
+            case "LAST_YEAR": // Implementasi baru
+                start = LocalDate.of(now.getYear() - 1, 1, 1);     // 1 Januari tahun lalu
+                end = LocalDate.of(now.getYear() - 1, 12, 31);   // 31 Desember tahun lalu
                 break;
             default:
                 throw new IllegalArgumentException(
-                        "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                        "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, THIS_MONTH, atau LAST_YEAR.");
         }
 
         // Konversi LocalDate ke java.util.Date
         Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        // Gunakan akhir hari dari tanggal 'end' yang telah ditentukan
         Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
         // Reuse existing logic: panggil getAllPurchase dengan parameter lain
@@ -1362,29 +1370,41 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         switch (range.toUpperCase()) {
             case "THIS_YEAR":
                 startCurrent = now.withDayOfYear(1);
-                endCurrent = now.withDayOfYear(now.lengthOfYear());
+                endCurrent = now.withDayOfYear(now.lengthOfYear()); // Akhir tahun ini
                 startPrevious = startCurrent.minusYears(1);
-                endPrevious = endCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1); // Akhir tahun lalu
                 break;
 
             case "THIS_QUARTER":
-                int quarter = (now.getMonthValue() - 1) / 3 + 1;
-                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
-                startCurrent = LocalDate.of(now.getYear(), firstMonth, 1);
-                endCurrent = startCurrent.plusMonths(3).minusDays(1);
-                startPrevious = startCurrent.minusYears(1);
-                endPrevious = endCurrent.minusYears(1);
+                int currentQuarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonthOfCurrentQuarter = Month.of((currentQuarter - 1) * 3 + 1);
+                startCurrent = LocalDate.of(now.getYear(), firstMonthOfCurrentQuarter, 1);
+                endCurrent = startCurrent.plusMonths(3).minusDays(1); // Akhir kuartal ini
+
+                startPrevious = startCurrent.minusYears(1); // Kuartal yang sama tahun lalu
+                endPrevious = endCurrent.minusYears(1);   // Akhir kuartal yang sama tahun lalu
                 break;
 
             case "THIS_MONTH":
                 startCurrent = now.withDayOfMonth(1);
-                endCurrent = now.withDayOfMonth(now.lengthOfMonth());
-                startPrevious = startCurrent.minusMonths(1);
-                endPrevious = endCurrent.minusMonths(1);
+                endCurrent = now.withDayOfMonth(now.lengthOfMonth()); // Akhir bulan ini
+
+                // Untuk perbandingan dengan bulan sebelumnya secara akurat
+                LocalDate previousMonthDate = now.minusMonths(1);
+                startPrevious = previousMonthDate.withDayOfMonth(1); // Awal bulan lalu
+                endPrevious = previousMonthDate.withDayOfMonth(previousMonthDate.lengthOfMonth()); // Akhir bulan lalu
+                break;
+
+            case "LAST_YEAR": // Implementasi baru
+                startCurrent = LocalDate.of(now.getYear() - 1, 1, 1);         // 1 Januari tahun lalu
+                endCurrent = LocalDate.of(now.getYear() - 1, 12, 31);       // 31 Desember tahun lalu
+                startPrevious = startCurrent.minusYears(1);                    // 1 Januari dua tahun lalu
+                endPrevious = endCurrent.minusYears(1);                      // 31 Desember dua tahun lalu
                 break;
 
             default:
-                throw new IllegalArgumentException("Range tidak dikenali: " + range);
+                throw new IllegalArgumentException("Range tidak dikenali: " + range +
+                                                ". Gunakan THIS_YEAR, THIS_QUARTER, THIS_MONTH, atau LAST_YEAR.");
         }
 
         // Konversi LocalDate ke java.util.Date
@@ -1400,9 +1420,10 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
         double percentageChange = 0.0;
         if (previousCount > 0) {
             percentageChange = ((double) (currentCount - previousCount) / previousCount) * 100;
-        } else if (currentCount > 0) {
+        } else if (currentCount > 0) { // previousCount adalah 0, tapi currentCount > 0
             percentageChange = 100.0;
         }
+        // Jika currentCount juga 0 (dan previousCount 0), percentageChange tetap 0.0
 
         return new PurchaseSummaryResponseDTO(currentCount, percentageChange);
     }

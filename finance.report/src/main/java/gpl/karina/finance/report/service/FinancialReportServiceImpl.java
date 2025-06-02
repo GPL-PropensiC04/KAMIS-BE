@@ -46,14 +46,23 @@ public class FinancialReportServiceImpl implements FinancialReportService {
             case "THIS_MONTH":
                 startCurrent = now.withDayOfMonth(1);
                 endCurrent = now.withDayOfMonth(now.lengthOfMonth());
-                startPrevious = startCurrent.minusMonths(1);
-                endPrevious = startPrevious.withDayOfMonth(startPrevious.lengthOfMonth());
-                // Alternatif
-                // endPrevious = endCurrent.minusMonths(1);
+                
+                // Untuk bulan sebelumnya secara akurat
+                LocalDate prevMonthDate = now.minusMonths(1);
+                startPrevious = prevMonthDate.withDayOfMonth(1);
+                endPrevious = prevMonthDate.withDayOfMonth(prevMonthDate.lengthOfMonth());
+                break;
+
+            case "LAST_YEAR": // Implementasi baru
+                startCurrent = LocalDate.of(now.getYear() - 1, 1, 1);     // 1 Januari tahun lalu
+                endCurrent = LocalDate.of(now.getYear() - 1, 12, 31);   // 31 Desember tahun lalu
+                
+                startPrevious = startCurrent.minusYears(1);                // 1 Januari dua tahun lalu
+                endPrevious = endCurrent.minusYears(1);                  // 31 Desember dua tahun lalu
                 break;
 
             default:
-                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH. Diterima: " + range);
+                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, THIS_MONTH, atau LAST_YEAR. Diterima: " + range);
         }
 
         // Konversi LocalDate ke java.util.Date untuk query
@@ -119,24 +128,23 @@ public class FinancialReportServiceImpl implements FinancialReportService {
         return summary;
     }
 
-    // Helper method untuk menghitung perubahan persentase
+    // Helper method untuk menghitung perubahan persentase (tetap sama)
     private double calculatePercentageChange(long currentValue, long previousValue) {
         if (previousValue == 0) {
-            return currentValue > 0 ? 100.0 : (currentValue == 0 ? 0.0 : -100.0); // Penyesuaian jika currentValue negatif dan previous 0
+            return currentValue > 0 ? 100.0 : (currentValue == 0 ? 0.0 : -100.0); 
         }
         return ((double) (currentValue - previousValue) / previousValue) * 100.0;
     }
 
-    // Overload untuk tipe int jika currentValue dan previousValue adalah int
+    // Overload untuk tipe int jika currentValue dan previousValue adalah int (tetap sama)
     private double calculatePercentageChange(int currentValue, int previousValue) {
         if (previousValue == 0) {
-            return currentValue > 0 ? 100.0 : (currentValue == 0 ? 0.0 : -100.0); // Penyesuaian jika currentValue negatif dan previous 0
+            return currentValue > 0 ? 100.0 : (currentValue == 0 ? 0.0 : -100.0); 
         }
         return ((double) (currentValue - previousValue) / previousValue) * 100.0;
     }
 
-
-    // Helper methods untuk mengambil data dari repository
+    // Helper methods untuk mengambil data dari repository (tetap sama)
     private long getTotalIncomeFromDistribusi(Date startDate, Date endDate) {
         Long incomeFromDistribusi = lapkeuRepository.getTotalIncomeFromDistribusi(startDate, endDate);
         return incomeFromDistribusi != null ? incomeFromDistribusi : 0L;
