@@ -23,6 +23,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import gpl.karina.project.model.Distribution;
 import gpl.karina.project.model.LogProject;
 import gpl.karina.project.model.Project;
@@ -31,6 +35,7 @@ import gpl.karina.project.model.ProjectResourceUsage;
 import gpl.karina.project.model.Sell;
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
@@ -1224,6 +1229,65 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(this::projectToProjectResponseAllDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Page<listProjectResponseDTO> getAllProjectsPaginated(
+                Pageable pageable, String idSearch, String projectStatus, Boolean projectType,
+                String projectName, String projectClientId, Date projectStartDate,
+                Date projectEndDate, Long startNominal, Long endNominal) throws Exception {
+
+        Page<Project> filteredProjectsPage;
+
+        // Check if all database-level filters are empty/null
+        boolean noFiltersSet = (idSearch == null || idSearch.isEmpty()) &&
+                (projectStatus == null || projectStatus.isEmpty()) &&
+                (projectType == null) &&
+                (projectName == null || projectName.isEmpty()) &&
+                (projectClientId == null || projectClientId.isEmpty()) &&
+                projectStartDate == null &&
+                projectEndDate == null;
+
+        if (noFiltersSet && startNominal == null && endNominal == null) {
+            // No filters set, fetch all projects
+            filteredProjectsPage = projectRepository.findAll(pageable);
+        } else {
+            // Adjust dates for filtering
+            final Date adjustedStartDateFinal = projectStartDate != null ? adjustedStartDate(projectStartDate) : null;
+            final Date adjustedEndDateFinal = projectEndDate != null ? adjustedEndDate(projectEndDate) : null;
+
+            filteredProjectsPage = projectRepository.findAllProjectsWithFiltersPage(
+                    pageable,
+                    idSearch,
+                    projectName,
+                    projectStatus,
+                    projectType,
+                    projectClientId,
+                    adjustedStartDateFinal,
+                    adjustedEndDateFinal,
+                    startNominal,
+                    endNominal);
+        }
+
+        // For profit filtering, we still need to do it in memory since it's a
+        // calculated field
+        List<Project> filteredProjects = filteredProjectsPage.getContent();
+        if (startNominal != null || endNominal != null) {
+            filteredProjects = filteredProjects.stream()
+                    .filter(project -> {
+                        Long profit = calculateProjectProfit(project);
+                        return (startNominal == null || profit >= startNominal) &&
+                                (endNominal == null || profit <= endNominal);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+            // Convert to DTOs
+            List<listProjectResponseDTO> responseList = filteredProjects.stream()
+                    .map(this::projectToProjectResponseAllDTO)
+                    .collect(Collectors.toList());
+    
+            return new PageImpl<>(responseList, pageable, filteredProjectsPage.getTotalElements());
+        }
 
     /**
      * Helper method to calculate project profit
