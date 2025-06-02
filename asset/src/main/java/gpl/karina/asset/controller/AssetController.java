@@ -5,7 +5,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+
 import org.springframework.core.io.Resource;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpHeaders;
 
@@ -54,6 +59,50 @@ public class AssetController {
         baseResponseDTO.setMessage(String.format("List Asset berhasil ditemukan"));
         baseResponseDTO.setTimestamp(new Date());
         return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/viewall/paginated")
+    public ResponseEntity<BaseResponseDTO<Page<AssetListResponseDTO>>> getAllAssetsPaginated(
+            @RequestParam(defaultValue = "0", name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "size") int size,
+            @RequestParam(name = "nama", required = false) String nama,
+            @RequestParam(name = "jenisAset", required = false) String jenisAset,
+            @RequestParam(name = "status", required = false) String status) {
+        
+        var baseResponseDTO = new BaseResponseDTO<Page<AssetListResponseDTO>>();
+        
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<AssetListResponseDTO> assetsPage;
+            
+            // Debug logging
+            System.out.println("Asset search parameters - nama: " + nama + 
+                            ", jenisAset: " + jenisAset + ", status: " + status);
+
+            if (nama != null || jenisAset != null || status != null) {
+                // If filters present, return filtered paginated assets
+                assetsPage = assetService.getAllAssetsPaginatedWithFilters(
+                    pageable, nama, jenisAset, status);
+            } else {
+                assetsPage = assetService.getAllAssetsPaginated(pageable);
+            }
+
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("Success");
+            baseResponseDTO.setData(assetsPage);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+            
+        } catch (Exception e) {
+            System.err.println("Error in getAllAssetsPaginated: " + e.getMessage());
+            e.printStackTrace();
+            
+            baseResponseDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponseDTO.setMessage("Error fetching assets: " + e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/{platNomor}")

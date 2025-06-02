@@ -7,7 +7,11 @@ import java.util.Date;
 import java.text.ParseException;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
+
 
 import gpl.karina.asset.dto.response.AssetListResponseDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
@@ -59,6 +63,79 @@ public class AssetServiceImpl implements AssetService {
             listAssetResponseDTO.add(assetResponseDTO);
         });
         return listAssetResponseDTO;
+    }
+
+    @Override
+    public Page<AssetListResponseDTO> getAllAssetsPaginated(Pageable pageable) {
+        try {
+            Page<Asset> assetsPage = assetDb.findByIsDeletedFalse(pageable);
+            
+            return assetsPage.map(this::listAssetToAssetResponseDTO);
+            
+        } catch (Exception e) {
+            System.err.println("Error in getAllAssetsPaginated: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Override
+    public Page<AssetListResponseDTO> getAllAssetsPaginatedWithFilters(
+            Pageable pageable, 
+            String nama, 
+            String jenisAset, 
+            String status) {
+        
+        try {
+            // Clean parameters
+            String cleanNama = (nama != null && !nama.trim().isEmpty()) ? nama.trim() : null;
+            String cleanJenisAset = (jenisAset != null && !jenisAset.trim().isEmpty()) ? jenisAset.trim() : null;
+            String cleanStatus = (status != null && !status.trim().isEmpty()) ? status.trim() : null;
+            
+            System.out.println("Service - filtering assets with nama: '" + cleanNama + 
+                            "', jenisAset: '" + cleanJenisAset + "', status: '" + cleanStatus + "'");
+
+            Page<Asset> assetsPage;
+            
+            if (cleanNama != null && cleanJenisAset != null && cleanStatus != null) {
+                // Filter by all three parameters
+                assetsPage = assetDb.findByNamaContainingIgnoreCaseAndJenisAsetContainingIgnoreCaseAndStatusContainingIgnoreCaseAndIsDeletedFalse(
+                    cleanNama, cleanJenisAset, cleanStatus, pageable);
+            } else if (cleanNama != null && cleanJenisAset != null) {
+                // Filter by nama and jenisAset
+                assetsPage = assetDb.findByNamaContainingIgnoreCaseAndJenisAsetContainingIgnoreCaseAndIsDeletedFalse(
+                    cleanNama, cleanJenisAset, pageable);
+            } else if (cleanNama != null && cleanStatus != null) {
+                // Filter by nama and status
+                assetsPage = assetDb.findByNamaContainingIgnoreCaseAndStatusContainingIgnoreCaseAndIsDeletedFalse(
+                    cleanNama, cleanStatus, pageable);
+            } else if (cleanJenisAset != null && cleanStatus != null) {
+                // Filter by jenisAset and status
+                assetsPage = assetDb.findByJenisAsetContainingIgnoreCaseAndStatusContainingIgnoreCaseAndIsDeletedFalse(
+                    cleanJenisAset, cleanStatus, pageable);
+            } else if (cleanNama != null) {
+                // Filter by nama only
+                assetsPage = assetDb.findByNamaContainingIgnoreCaseAndIsDeletedFalse(cleanNama, pageable);
+            } else if (cleanJenisAset != null) {
+                // Filter by jenisAset only
+                assetsPage = assetDb.findByJenisAsetContainingIgnoreCaseAndIsDeletedFalse(cleanJenisAset, pageable);
+            } else if (cleanStatus != null) {
+                // Filter by status only
+                assetsPage = assetDb.findByStatusContainingIgnoreCaseAndIsDeletedFalse(cleanStatus, pageable);
+            } else {
+                // No valid filters
+                assetsPage = assetDb.findByIsDeletedFalse(pageable);
+            }
+
+            System.out.println("Found " + assetsPage.getTotalElements() + " assets");
+
+            return assetsPage.map(this::listAssetToAssetResponseDTO);
+
+        } catch (Exception e) {
+            System.err.println("Error in filtering assets: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override
