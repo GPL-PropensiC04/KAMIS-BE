@@ -26,4 +26,7 @@ public class MaintenanceRequestDTO {
     
     @NotNull(message = "Tanggal mulai tidak boleh kosong")
     private Date tanggalMulaiMaintenance;
+    
+    // Optional: tanggal selesai estimasi untuk pengecekan konflik
+    private Date tanggalSelesaiMaintenance;
 }
