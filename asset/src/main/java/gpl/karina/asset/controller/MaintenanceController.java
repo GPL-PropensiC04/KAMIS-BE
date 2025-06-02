@@ -5,7 +5,6 @@ import gpl.karina.asset.dto.response.BaseResponseDTO;
 import gpl.karina.asset.dto.response.MaintenanceResponseDTO;
 import gpl.karina.asset.service.MaintenanceService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;

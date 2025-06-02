@@ -21,12 +21,16 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.io.ByteArrayResource;
+
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
+import org.springframework.data.domain.PageImpl;
+
 import org.springframework.http.MediaType;
-import org.springframework.http.client.MultipartBodyBuilder;
+
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -566,6 +570,95 @@ public class PurchaseRestServiceImpl implements PurchaseRestService {
                 .collect(Collectors.toList());
 
         return filteredPurchases;
+    }
+
+     @Override
+    public Page<PurchaseListResponseDTO> getAllPurchasesPaginated(Pageable pageable) {
+        Page<Purchase> purchasePage = purchaseRepository.findAll(pageable);
+        
+        List<PurchaseListResponseDTO> purchaseListDTOs = purchasePage.getContent()
+            .stream()
+            .map(this::purchaseToPurchaseListResponseDTO)
+            .collect(Collectors.toList());
+        
+        return new PageImpl<>(purchaseListDTOs, pageable, purchasePage.getTotalElements());
+    }
+
+    @Override
+    public Page<PurchaseListResponseDTO> getAllPurchasesPaginatedWithFilters(
+            Pageable pageable, Integer startNominal, Integer endNominal,
+            Boolean highNominal, Date startDate, Date endDate, Boolean newDate, 
+            String type, String idSearch, String status) {
+        
+        // Get all purchases first (you might want to optimize this with database filtering)
+        List<Purchase> allPurchases = purchaseRepository.findAll();
+        
+        // Adjust endDate to include the whole day (set time to 23:59:59)
+        final Date adjustedEndDate;
+        if (endDate != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(endDate);
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            calendar.set(Calendar.MILLISECOND, 999);
+            adjustedEndDate = calendar.getTime();
+        } else {
+            adjustedEndDate = null;
+        }
+
+        // Apply filters
+        List<Purchase> filteredPurchases = allPurchases.stream()
+                // Filter berdasarkan range harga
+                .filter(p -> (startNominal == null || p.getPurchasePrice() >= startNominal) &&
+                        (endNominal == null || p.getPurchasePrice() <= endNominal))
+
+                // Filter berdasarkan range tanggal
+                .filter(p -> (startDate == null || !p.getPurchaseSubmissionDate().before(startDate)) &&
+                        (adjustedEndDate == null || !p.getPurchaseSubmissionDate().after(adjustedEndDate)))
+
+                // Filter berdasarkan tipe pembelian (aset/resource)
+                .filter(p -> type == null || "all".equalsIgnoreCase(type) ||
+                        ("aset".equalsIgnoreCase(type) && !p.isPurchaseType()) ||
+                        ("resource".equalsIgnoreCase(type) && p.isPurchaseType()))
+
+                // Filter berdasarkan status
+                .filter(p -> status == null || "all".equalsIgnoreCase(status) ||
+                        p.getPurchaseStatus().equalsIgnoreCase(status))
+
+                // Filter berdasarkan ID yang mengandung substring tertentu
+                .filter(p -> idSearch == null || p.getId().contains(idSearch))
+
+                .collect(Collectors.toList());
+
+        // Convert to DTOs
+        List<PurchaseListResponseDTO> filteredPurchaseDTOs = filteredPurchases.stream()
+                .map(this::purchaseToPurchaseListResponseDTO)
+                .collect(Collectors.toList());
+
+        // Apply sorting
+        if (highNominal != null || newDate != null) {
+            filteredPurchaseDTOs.sort((p1, p2) -> {
+                boolean sortByPrice = Boolean.TRUE.equals(highNominal);
+                boolean sortByDate = Boolean.TRUE.equals(newDate);
+
+                if (sortByPrice) {
+                    return highNominal ? Integer.compare(p2.getPurchasePrice(), p1.getPurchasePrice()) // Descending price
+                            : Integer.compare(p1.getPurchasePrice(), p2.getPurchasePrice()); // Ascending price
+                } else if (sortByDate) {
+                    return p2.getPurchaseSubmissionDate().compareTo(p1.getPurchaseSubmissionDate()); // Descending date
+                }
+                return p1.getPurchaseSubmissionDate().compareTo(p2.getPurchaseSubmissionDate()); // Default ascending date
+            });
+        }
+
+        // Manual pagination
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredPurchaseDTOs.size());
+        
+        List<PurchaseListResponseDTO> pageContent = filteredPurchaseDTOs.subList(start, end);
+        
+        return new PageImpl<>(pageContent, pageable, filteredPurchaseDTOs.size());
     }
 
     @Override

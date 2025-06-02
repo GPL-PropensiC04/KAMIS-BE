@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import gpl.karina.purchase.restdto.request.AddPurchaseDTO;
 import gpl.karina.purchase.restdto.request.AssetTempDTO;
 import gpl.karina.purchase.restdto.request.UpdatePurchaseDTO;
@@ -20,6 +23,13 @@ public interface PurchaseRestService {
         Boolean highNominal, Date startDate, Date endDate, Boolean newDate, String type, String idSearch);
     AssetTempResponseDTO addAsset(AssetTempDTO assetTempDTO);
     List<AssetTempResponseDTO> getAllAssets();
+
+    Page<PurchaseListResponseDTO> getAllPurchasesPaginated(Pageable pageable);
+    Page<PurchaseListResponseDTO> getAllPurchasesPaginatedWithFilters(
+        Pageable pageable, Integer startNominal, Integer endNominal,
+        Boolean highNominal, Date startDate, Date endDate, Boolean newDate, 
+        String type, String idSearch, String status);
+
     PurchaseResponseDTO updatePurchase(UpdatePurchaseDTO updatePurchaseDTO, String purchaseId);
     PurchaseResponseDTO getDetailPurchase(String purchaseId);
     PurchaseResponseDTO updatePurchaseStatusToCancelled(UpdatePurchaseStatusDTO updatePurchaseStatusDTO, String purchaseId);

@@ -1,5 +1,7 @@
 package gpl.karina.resource.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +24,6 @@ public interface ResourceRepository extends JpaRepository<Resource, Long>{
     Optional<Resource> findByIdWithPessimisticLock(@Param("id") Long id);
     
     List<Resource> findByResourceStockLessThanEqual(Integer stock);
+
+    Page<Resource> findByResourceNameContainingIgnoreCase(String resourceName, Pageable pageable);
 }

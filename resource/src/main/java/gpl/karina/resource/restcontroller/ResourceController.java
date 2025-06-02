@@ -25,6 +25,10 @@ import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Date;
 import java.util.List;
@@ -76,11 +80,13 @@ public class ResourceController {
     }
 
     @GetMapping("/find-by-supplier/{idSupplier}")
-    public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllSuplierResosource(@PathVariable(name = "idSupplier") String idSupplier) {
-        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();    
+    public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllSuplierResosource(
+            @PathVariable(name = "idSupplier") String idSupplier) {
+        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();
         try {
             // Mengirim token ke service
-            List<ResourceResponseDTO> resources = resourceRestService.getAllSuplierResosource(UUID.fromString(idSupplier));
+            List<ResourceResponseDTO> resources = resourceRestService
+                    .getAllSuplierResosource(UUID.fromString(idSupplier));
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("OK");
             baseResponseDTO.setData(resources);
@@ -107,10 +113,9 @@ public class ResourceController {
         }
     }
 
-
     @GetMapping("/viewall")
     public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getAllResources() {
-        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();    
+        var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();
         try {
             // Mengirim token ke service
             List<ResourceResponseDTO> resources = resourceRestService.getAllResources();
@@ -119,7 +124,7 @@ public class ResourceController {
             baseResponseDTO.setData(resources);
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
-    
+
         } catch (UserNotFound e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());
@@ -141,10 +146,41 @@ public class ResourceController {
         }
     }
 
+    @GetMapping("/viewall/paginated")
+    public ResponseEntity<BaseResponseDTO<Page<ResourceResponseDTO>>> getAllResourcesPaginated(
+            @RequestParam(defaultValue = "0" , name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "size") int size, 
+            @RequestParam(name = "resourceName", required = false) String resourceName) {
+        var baseResponseDTO = new BaseResponseDTO<Page<ResourceResponseDTO>>();
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ResourceResponseDTO> resourcesPage;
+            if (resourceName == null || resourceName.isEmpty()) {
+                 resourcesPage = resourceRestService.getAllResourcesPaginated(pageable, null);
+                resourceName = "";
+            } else {
+                // If resourceName is provided, filter resources by name
+                 resourcesPage = resourceRestService.getAllResourcesPaginated(pageable, resourceName);
+            }
+
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("Success");
+            baseResponseDTO.setData(resourcesPage);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PutMapping("/update/{idResource}")
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> updateResource(@PathVariable Long idResource,
             @RequestBody UpdateResourceDTO resourceDTO) {
-        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();        
+        var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
         try {
             ResourceResponseDTO updatedResource = resourceRestService.updateResource(resourceDTO, idResource);
             baseResponseDTO.setStatus(HttpStatus.OK.value());
@@ -177,9 +213,9 @@ public class ResourceController {
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceStock(
             @PathVariable("idResource") Long idResource,
             @Valid @RequestBody UpdateResourceStockDTO stockOp) {
-        
+
         BaseResponseDTO<ResourceResponseDTO> response = new BaseResponseDTO<>();
-        
+
         try {
             ResourceResponseDTO resource = resourceRestService.addResourceStock(idResource, stockOp.getQuantity());
             response.setStatus(HttpStatus.OK.value());
@@ -206,9 +242,9 @@ public class ResourceController {
     public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> deductResourceStock(
             @PathVariable("idResource") Long idResource,
             @Valid @RequestBody UpdateResourceStockDTO stockOp) {
-        
+
         BaseResponseDTO<ResourceResponseDTO> response = new BaseResponseDTO<>();
-        
+
         try {
             ResourceResponseDTO resource = resourceRestService.deductResourceStock(idResource, stockOp.getQuantity());
             response.setStatus(HttpStatus.OK.value());
@@ -232,9 +268,10 @@ public class ResourceController {
     }
 
     @GetMapping("/find/{idResource}")
-    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(@PathVariable(name = "idResource") Long idResource) {
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> findResouurceById(
+            @PathVariable(name = "idResource") Long idResource) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
-    
+
         try {
             // Mengirim token ke service
             ResourceResponseDTO resource = resourceRestService.getResourceById(idResource);
@@ -243,7 +280,7 @@ public class ResourceController {
             baseResponseDTO.setData(resource);
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
-    
+
         } catch (IllegalArgumentException | UserNotFound e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());
@@ -266,9 +303,11 @@ public class ResourceController {
     }
 
     @PutMapping("/addToDb/{idResource}/{stockUpdate}")
-    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(@PathVariable(name = "idResource") Long idResource, @PathVariable(name = "stockUpdate") Integer stockUpdate) {
+    public ResponseEntity<BaseResponseDTO<ResourceResponseDTO>> addResourceToDbById(
+            @PathVariable(name = "idResource") Long idResource,
+            @PathVariable(name = "stockUpdate") Integer stockUpdate) {
         var baseResponseDTO = new BaseResponseDTO<ResourceResponseDTO>();
-    
+
         try {
             // Mengirim token ke service
             ResourceResponseDTO resource = resourceRestService.addResourceToDbById(idResource, stockUpdate);
@@ -277,7 +316,7 @@ public class ResourceController {
             baseResponseDTO.setData(resource);
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
-    
+
         } catch (UserNotFound e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());
@@ -363,9 +402,10 @@ public class ResourceController {
     }
 
     @GetMapping("/find-by-stock/{stock}")
-    public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getResourcesByStock(@PathVariable(name = "stock") Integer stock) {
+    public ResponseEntity<BaseResponseDTO<List<ResourceResponseDTO>>> getResourcesByStock(
+            @PathVariable(name = "stock") Integer stock) {
         var baseResponseDTO = new BaseResponseDTO<List<ResourceResponseDTO>>();
-        
+
         try {
             // Mengirim parameter stock ke service
             List<ResourceResponseDTO> resources = resourceRestService.getResourcesByStock(stock);
@@ -374,7 +414,7 @@ public class ResourceController {
             baseResponseDTO.setData(resources);
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
-        
+
         } catch (UserNotFound e) {
             baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
             baseResponseDTO.setMessage(e.getMessage());

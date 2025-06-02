@@ -3,8 +3,6 @@ package gpl.karina.asset.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;

@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -153,6 +155,15 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    public Page<ClientListResponseDTO> getAllClientPaginated(Pageable pageable) {
+        Page<Client> clientPage = clientRepository.findAll(pageable);
+        return clientPage.map(client -> {
+            ClientListResponseDTO clientListResponseDTO = listClientToClientResponseDTO(client);
+            return clientListResponseDTO;
+        });
+    }
+
+    @Override
     public ClientResponseDTO getClientById(UUID id) {
         return clientRepository.findById(id)
             .map(this::clientToClientResponseDTO)
@@ -200,6 +211,32 @@ public class ClientServiceImpl implements ClientService {
             .filter(dto -> (minProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() >= minProfit)))
             .filter(dto -> (maxProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() <= maxProfit)))
             .toList();
+    }
+
+    @Override
+    public Page<ClientListResponseDTO> filterClientsPaginated(String nameClient, Boolean typeClient, Long minProfit,
+            Long maxProfit, Pageable pageable) {
+        Page<Client> clientPage;
+        
+        if (nameClient != null && typeClient != null) {
+            clientPage = clientRepository.findByNameClientContainingIgnoreCaseAndTypeClient(nameClient, typeClient, pageable);
+        } else if (nameClient != null) {
+            clientPage = clientRepository.findByNameClientContainingIgnoreCase(nameClient, pageable);
+        } else if (typeClient != null) {
+            clientPage = clientRepository.findByTypeClient(typeClient, pageable);
+        } else {
+            clientPage = clientRepository.findAll(pageable);
+        }
+        
+        return clientPage.map(this::listClientToClientResponseDTO)
+            .map(dto -> {
+                if ((minProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() >= minProfit)) &&
+                    (maxProfit == null || (dto.getTotalProfit() != null && dto.getTotalProfit() <= maxProfit))) {
+                    return dto;
+                }
+                return null;
+            })
+            .map(dto -> dto); // This preserves the Page structure
     }
 
     private ClientListResponseDTO listClientToClientResponseDTO(Client client) {

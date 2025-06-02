@@ -9,6 +9,10 @@ import gpl.karina.profile.restdto.response.SupplierListResponseDTO;
 import gpl.karina.profile.restdto.response.SupplierResponseDTO;
 import gpl.karina.profile.restservice.SupplierService;
 import jakarta.validation.Valid;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -81,6 +85,32 @@ public class SupplierRestController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/all/paginated")
+    public ResponseEntity<BaseResponseDTO<Page<SupplierListResponseDTO>>> getAllSupplierPaginated(
+            @RequestParam(defaultValue = "0", name = "page") int page,
+            @RequestParam(defaultValue = "5", name = "size") int size,
+            @RequestParam(required = false, name = "nameSupplier") String nameSupplier,
+            @RequestParam(required = false, name = "companySupplier") String companySupplier) {
+        var baseResponseDTO = new BaseResponseDTO<Page<SupplierListResponseDTO>>();
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<SupplierListResponseDTO> supplierPage = supplierService.getAllSupplierPaginated(pageable, nameSupplier,
+                    companySupplier);
+
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("Success");
+            baseResponseDTO.setData(supplierPage);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/getall")
     public ResponseEntity<BaseResponseDTO<List<SupplierResponseDTO>>> getAllSuppliers() {
         BaseResponseDTO<List<SupplierResponseDTO>> response = new BaseResponseDTO<>();
@@ -92,6 +122,7 @@ public class SupplierRestController {
         response.setTimestamp(new Date());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
     @PutMapping("/update")
     public ResponseEntity<BaseResponseDTO<SupplierResponseDTO>> updateSupplier(
@@ -178,7 +209,8 @@ public class SupplierRestController {
     }
 
     @GetMapping("/detail/{supplierId}")
-    public ResponseEntity<BaseResponseDTO<DetailSupplierDTO>> getSupplierDetail(@PathVariable("supplierId") UUID supplierId) {
+    public ResponseEntity<BaseResponseDTO<DetailSupplierDTO>> getSupplierDetail(
+            @PathVariable("supplierId") UUID supplierId) {
         BaseResponseDTO<DetailSupplierDTO> response = new BaseResponseDTO<>();
         try {
             DetailSupplierDTO detailSupplierDTO = supplierService.getSupplierDetail(supplierId);
@@ -195,5 +227,5 @@ public class SupplierRestController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
     }
-    
+
 }

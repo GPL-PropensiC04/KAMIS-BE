@@ -18,7 +18,6 @@ public class ClientResponseDTO {
     private String companyClient;
     private String addressClient;
 
-    //TODO: attribute untuk hubungin client sama Distribusi & Penjualan (financial history ambil dari sini juga)
     private List<ProjectResponseDTO> projects;
     
     @JsonFormat(shape = JsonFormat.Shape.STRING, timezone="Asia/Jakarta")

@@ -1,6 +1,5 @@
 package gpl.karina.asset.dto.request;
 
-import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
