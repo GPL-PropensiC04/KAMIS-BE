@@ -20,13 +20,10 @@ public class AssetReservationServiceImpl implements AssetReservationService {
 
     private final AssetReservationRepository assetReservationRepository;
     private final AssetDb assetDb;
-    private final AssetService assetService;
 
-    public AssetReservationServiceImpl(AssetReservationRepository assetReservationRepository, AssetDb assetDb,
-            AssetService assetService) {
+    public AssetReservationServiceImpl(AssetReservationRepository assetReservationRepository, AssetDb assetDb) {
         this.assetReservationRepository = assetReservationRepository;
         this.assetDb = assetDb;
-        this.assetService = assetService;
     }
 
     /**

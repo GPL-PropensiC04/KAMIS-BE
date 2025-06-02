@@ -7,7 +7,7 @@ import gpl.karina.asset.model.Asset;
 import gpl.karina.asset.model.Maintenance;
 import gpl.karina.asset.repository.AssetDb;
 import gpl.karina.asset.repository.MaintenanceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

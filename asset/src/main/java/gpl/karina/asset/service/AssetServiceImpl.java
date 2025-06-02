@@ -8,8 +8,6 @@ import java.text.ParseException;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import gpl.karina.asset.dto.response.AssetListResponseDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
@@ -29,14 +27,12 @@ public class AssetServiceImpl implements AssetService {
 
     private final AssetDb assetDb;
     private final MaintenanceRepository maintenanceRepository;
-    private final WebClient.Builder webClientBuilder;
     private final FileStorageService fileStorageService;
 
-    public AssetServiceImpl(AssetDb assetDb, WebClient.Builder webClientBuilder,
+    public AssetServiceImpl(AssetDb assetDb, 
             MaintenanceRepository maintenanceRepository, FileStorageService fileStorageService) {
         this.assetDb = assetDb;
         this.maintenanceRepository = maintenanceRepository;
-        this.webClientBuilder = webClientBuilder;
         this.fileStorageService = fileStorageService;
     }
 
