@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
@@ -150,6 +152,15 @@ public class ClientServiceImpl implements ClientService {
             clientListResponseDTOs.add(clientListResponseDTO);
         }
         return clientListResponseDTOs;
+    }
+
+    @Override
+    public Page<ClientListResponseDTO> getAllClientPaginated(Pageable pageable) {
+        Page<Client> clientPage = clientRepository.findAll(pageable);
+        return clientPage.map(client -> {
+            ClientListResponseDTO clientListResponseDTO = listClientToClientResponseDTO(client);
+            return clientListResponseDTO;
+        });
     }
 
     @Override

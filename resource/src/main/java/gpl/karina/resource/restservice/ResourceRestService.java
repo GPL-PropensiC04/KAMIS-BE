@@ -3,7 +3,6 @@ package gpl.karina.resource.restservice;
 import java.util.List;
 import java.util.UUID;
 
-import gpl.karina.resource.model.Resource;
 import gpl.karina.resource.restdto.request.AddResourceDTO;
 import gpl.karina.resource.restdto.request.UpdateResourceDTO;
 import gpl.karina.resource.restdto.response.ResourceResponseDTO;

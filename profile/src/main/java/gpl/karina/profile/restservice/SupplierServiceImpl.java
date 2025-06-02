@@ -34,6 +34,8 @@ import gpl.karina.profile.restdto.request.AddSupplierIdDTO;
 import gpl.karina.profile.restdto.response.PurchaseResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Mono;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @Transactional
@@ -408,6 +410,11 @@ public class SupplierServiceImpl implements SupplierService {
         return supplierRepository.findAll().stream()
                 .map(this::supplierToSupplierResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<SupplierListResponseDTO> getAllSuppliersPaginated(Pageable pageable) {
+        return supplierRepository.findAll(pageable).map(this::supplierToSupplierListResponseDTO);
     }
 
     private SupplierListResponseDTO supplierToSupplierListResponseDTO(Supplier supplier) {
