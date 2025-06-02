@@ -1629,29 +1629,41 @@ public class ProjectServiceImpl implements ProjectService {
         switch (range.toUpperCase()) {
             case "THIS_YEAR":
                 startCurrent = now.withDayOfYear(1);
-                endCurrent = now.withDayOfYear(now.lengthOfYear());
+                endCurrent = now.withDayOfYear(now.lengthOfYear()); // Akhir tahun ini
                 startPrevious = startCurrent.minusYears(1);
-                endPrevious = endCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1); // Akhir tahun lalu
                 break;
 
             case "THIS_QUARTER":
-                int quarter = (now.getMonthValue() - 1) / 3 + 1;
-                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
-                startCurrent = LocalDate.of(now.getYear(), firstMonth, 1);
-                endCurrent = startCurrent.plusMonths(3).minusDays(1);
-                startPrevious = startCurrent.minusYears(1);
-                endPrevious = endCurrent.minusYears(1);
+                int currentQuarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonthOfCurrentQuarter = Month.of((currentQuarter - 1) * 3 + 1);
+                startCurrent = LocalDate.of(now.getYear(), firstMonthOfCurrentQuarter, 1);
+                endCurrent = startCurrent.plusMonths(3).minusDays(1); // Akhir kuartal ini
+
+                startPrevious = startCurrent.minusYears(1); // Kuartal yang sama tahun lalu
+                endPrevious = endCurrent.minusYears(1);   // Kuartal yang sama tahun lalu
                 break;
 
             case "THIS_MONTH":
                 startCurrent = now.withDayOfMonth(1);
-                endCurrent = now.withDayOfMonth(now.lengthOfMonth());
-                startPrevious = startCurrent.minusMonths(1);
-                endPrevious = endCurrent.minusMonths(1);
+                endCurrent = now.withDayOfMonth(now.lengthOfMonth()); 
+                startPrevious = startCurrent.minusMonths(1); 
+                endPrevious = startCurrent.minusDays(1);     
+                LocalDate previousMonthDay = now.minusMonths(1);
+                startPrevious = previousMonthDay.withDayOfMonth(1);
+                endPrevious = previousMonthDay.withDayOfMonth(previousMonthDay.lengthOfMonth());
+                break;
+
+            case "LAST_YEAR": // Implementasi baru
+                startCurrent = LocalDate.of(now.getYear() - 1, 1, 1);         // 1 Januari tahun lalu
+                endCurrent = LocalDate.of(now.getYear() - 1, 12, 31);       // 31 Desember tahun lalu
+                startPrevious = startCurrent.minusYears(1);                    // 1 Januari dua tahun lalu
+                endPrevious = endCurrent.minusYears(1);                      // 31 Desember dua tahun lalu
                 break;
 
             default:
-                throw new IllegalArgumentException("Range tidak dikenali: " + range);
+                throw new IllegalArgumentException("Range tidak dikenali: " + range +
+                                                ". Gunakan THIS_YEAR, THIS_QUARTER, THIS_MONTH, atau LAST_YEAR.");
         }
 
         // Konversi LocalDate ke java.util.Date
@@ -1677,39 +1689,49 @@ public class ProjectServiceImpl implements ProjectService {
         return new SellDistributionSummaryDTO(currentSell, sellPercentage, currentDistribution, distributionPercentage);
     }
 
+    // calculatePercentageChange method tetap sama
     private Double calculatePercentageChange(Long current, Long previous) {
-        if (previous == 0) {
-            return current > 0 ? 100.0 : 0.0;
+        if (previous == null || previous == 0) { // Tambahkan null check untuk previous
+            return (current == null || current == 0) ? 0.0 : 100.0; // Jika current juga 0 atau null, 0%. Jika current > 0, anggap 100% peningkatan.
         }
+        if (current == null) current = 0L; // Anggap null sebagai 0
         return ((double) (current - previous) / previous) * 100;
     }
 
     @Override
     public List<listProjectResponseDTO> getProjectListByRange(String range) {
-        // Tentukan rentang waktu berdasarkan range
         LocalDate now = LocalDate.now();
         LocalDate start;
-        LocalDate end = now;
+        LocalDate end; // Tidak diinisialisasi ke 'now' dulu agar bisa di-override
 
         try {
             switch (range.toUpperCase()) {
                 case "THIS_MONTH":
                     start = now.withDayOfMonth(1);
+                    end = now; // Tetap menggunakan 'now' sebagai akhir periode berjalan
                     break;
                 case "THIS_QUARTER":
                     int quarter = (now.getMonthValue() - 1) / 3 + 1;
                     Month firstMonth = Month.of((quarter - 1) * 3 + 1);
                     start = LocalDate.of(now.getYear(), firstMonth, 1);
+                    end = now; // Tetap menggunakan 'now' sebagai akhir periode berjalan
                     break;
                 case "THIS_YEAR":
                     start = now.withDayOfYear(1);
+                    end = now; // Tetap menggunakan 'now' sebagai akhir periode berjalan
+                    break;
+                case "LAST_YEAR": // Implementasi baru
+                    start = LocalDate.of(now.getYear() - 1, 1, 1);     // 1 Januari tahun lalu
+                    end = LocalDate.of(now.getYear() - 1, 12, 31);   // 31 Desember tahun lalu
                     break;
                 default:
-                    throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                    throw new IllegalArgumentException(
+                            "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, THIS_MONTH, atau LAST_YEAR.");
             }
 
             // Konversi LocalDate ke java.util.Date
             Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            // Untuk 'end', gunakan akhir hari dari tanggal 'end' yang telah ditentukan
             Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
             // Panggil getAllProject dengan filter rentang tanggal
@@ -1724,9 +1746,12 @@ public class ProjectServiceImpl implements ProjectService {
                     null, // startNominal
                     null  // endNominal
             );
+        } catch (IllegalArgumentException e) { // Tangkap IllegalArgumentException secara spesifik
+            // Log atau rethrow jika perlu
+            throw e; // Rethrow agar bisa ditangani di level atas jika diperlukan
         } catch (Exception e) {
             // Handle the exception and log it, or rethrow a custom exception
-            throw new RuntimeException("Terjadi kesalahan saat mendapatkan daftar proyek: " + e.getMessage(), e);
+            throw new RuntimeException("Terjadi kesalahan saat mendapatkan daftar proyek by range: " + e.getMessage(), e);
         }
     }
 
