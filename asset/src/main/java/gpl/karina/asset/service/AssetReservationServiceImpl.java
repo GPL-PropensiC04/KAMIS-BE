@@ -39,7 +39,7 @@ public class AssetReservationServiceImpl implements AssetReservationService {
             return;
         }
 
-        if ("Direncanakan".equals(reservationStatus) || "Dilaksanakan".equals(reservationStatus)) {
+        if ("Dilaksanakan".equals(reservationStatus)) {
             // Asset is now in use by a project
             asset.setStatus("Dalam Aktivitas");
             logger.info("Asset {} status updated to: Dalam Aktivitas", platNomor);
