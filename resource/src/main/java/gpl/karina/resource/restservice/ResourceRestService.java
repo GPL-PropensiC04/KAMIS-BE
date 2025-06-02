@@ -14,7 +14,7 @@ public interface ResourceRestService {
 
     List<ResourceResponseDTO> getAllResources();
 
-    Page<ResourceResponseDTO> getAllResourcesPaginated(Pageable pageable); // For paginated list
+    Page<ResourceResponseDTO> getAllResourcesPaginated(Pageable pageable, String resourceName); // For paginated list
 
     ResourceResponseDTO updateResource(UpdateResourceDTO updateResourceDTO, Long idResource);
 

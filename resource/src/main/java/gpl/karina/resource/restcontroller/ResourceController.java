@@ -149,11 +149,19 @@ public class ResourceController {
     @GetMapping("/viewall/paginated")
     public ResponseEntity<BaseResponseDTO<Page<ResourceResponseDTO>>> getAllResourcesPaginated(
             @RequestParam(defaultValue = "0" , name = "page") int page,
-            @RequestParam(defaultValue = "10", name = "size") int size) {
+            @RequestParam(defaultValue = "10", name = "size") int size, 
+            @RequestParam(name = "resourceName", required = false) String resourceName) {
         var baseResponseDTO = new BaseResponseDTO<Page<ResourceResponseDTO>>();
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<ResourceResponseDTO> resourcesPage = resourceRestService.getAllResourcesPaginated(pageable);
+            Page<ResourceResponseDTO> resourcesPage;
+            if (resourceName == null || resourceName.isEmpty()) {
+                 resourcesPage = resourceRestService.getAllResourcesPaginated(pageable, null);
+                resourceName = "";
+            } else {
+                // If resourceName is provided, filter resources by name
+                 resourcesPage = resourceRestService.getAllResourcesPaginated(pageable, resourceName);
+            }
 
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setMessage("Success");

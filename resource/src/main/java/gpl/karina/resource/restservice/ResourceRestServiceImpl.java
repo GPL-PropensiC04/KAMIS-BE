@@ -78,9 +78,15 @@ public class ResourceRestServiceImpl implements ResourceRestService {
     }
 
     @Override
-    public Page<ResourceResponseDTO> getAllResourcesPaginated(Pageable pageable) {
-        Page<Resource> resourcePage = resourceRepository.findAll(pageable);
-        return resourcePage.map(this::resourceToResourceResponseDTO);
+    public Page<ResourceResponseDTO> getAllResourcesPaginated(Pageable pageable, String resourceName) {
+        if (resourceName != null && !resourceName.isEmpty()) {
+            // If resourceName is provided, filter by resourceName
+            Page<Resource> resourcePage = resourceRepository.findByResourceNameContainingIgnoreCase(resourceName, pageable);
+            return resourcePage.map(this::resourceToResourceResponseDTO);
+        } else {
+            Page<Resource> resourcePage = resourceRepository.findAll(pageable);
+            return resourcePage.map(this::resourceToResourceResponseDTO);
+        }
     }
 
     @Override
