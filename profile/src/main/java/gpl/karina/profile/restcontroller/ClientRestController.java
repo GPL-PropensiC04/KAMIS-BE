@@ -99,14 +99,28 @@ public class ClientRestController {
     @GetMapping("/all/paginated")
     public ResponseEntity<BaseResponseDTO<Page<ClientListResponseDTO>>> getAllClientPaginated(
             @RequestParam(defaultValue = "0" , name = "page") int page,
-            @RequestParam(defaultValue = "10", name = "size") int size) {
+            @RequestParam(defaultValue = "10", name = "size") int size,
+            @RequestParam(name = "nameClient", required = false) String nameClient,
+            @RequestParam(name = "typeClient", required = false) Boolean typeClient,
+            @RequestParam(name = "minProfit", required = false) Long minProfit,
+            @RequestParam(name = "maxProfit", required = false) Long maxProfit) {
         var baseResponseDTO = new BaseResponseDTO<Page<ClientListResponseDTO>>();
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<ClientListResponseDTO> clientPage = clientService.getAllClientPaginated(pageable);
-
+            Page<ClientListResponseDTO> clientPage;
+            String message;
+            if (nameClient != null || typeClient != null || minProfit != null || maxProfit != null) {
+                // If filters present, return filtered paginated clients
+                clientPage = clientService.filterClientsPaginated(nameClient, typeClient,
+                        minProfit, maxProfit, pageable);
+                message = ("List Client berhasil difilter");
+            } else {
+                clientPage = clientService.getAllClientPaginated(pageable);
+                message = ("List Client berhasil ditemukan");
+            }
+            
             baseResponseDTO.setStatus(HttpStatus.OK.value());
-            baseResponseDTO.setMessage("Success");
+            baseResponseDTO.setMessage(message);
             baseResponseDTO.setData(clientPage);
             baseResponseDTO.setTimestamp(new Date());
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
