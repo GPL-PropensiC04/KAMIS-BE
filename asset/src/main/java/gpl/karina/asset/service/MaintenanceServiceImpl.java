@@ -107,10 +107,6 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         return convertToDTO(savedMaintenance);    
     }
     
-    /**
-     * Check if the planned maintenance conflicts with any existing asset reservations
-     * Using the provided list of reservations
-     */
     private void checkMaintenanceReservationConflict(List<AssetReservation> assetReservations, Date maintenanceStartDate, String platNomor) throws Exception {
         if (assetReservations == null || assetReservations.isEmpty()) {
             System.out.println("No reservations found for asset: " + platNomor);
