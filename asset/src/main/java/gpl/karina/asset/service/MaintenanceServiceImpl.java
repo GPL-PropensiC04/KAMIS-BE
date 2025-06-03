@@ -134,7 +134,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             // Check if maintenance start date falls within reservation period
             if (isDateWithinPeriod(maintenanceStartDate, reservation.getStartDate(), reservation.getEndDate())) {
                 throw new Exception(String.format(
-                    "⚠️ Maintenance tidak dapat dijadwalkan karena asset dengan plat nomor %s sudah direservasi untuk project %s (status: %s) dari %s sampai %s",
+                    "Maintenance tidak dapat dijadwalkan karena asset dengan plat nomor %s sudah direservasi untuk project %s (status: %s) dari %s sampai %s",
                     platNomor,
                     reservation.getProjectId(),
                     reservation.getReservationStatus(),
@@ -153,7 +153,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
                 // Prevent maintenance if it's scheduled less than 1 days before a planned reservation
                 if (daysDifference < 1) {
                     throw new Exception(String.format(
-                        "⚠️ Maintenance tidak dapat dijadwalkan karena terlalu dekat dengan reservasi yang direncanakan untuk project %s (dimulai %s). Berikan jarak minimal 1 hari.",
+                        "Maintenance tidak dapat dijadwalkan karena terlalu dekat dengan reservasi yang direncanakan untuk project %s (dimulai %s). Berikan jarak minimal 1 hari.",
                         reservation.getProjectId(),
                         formatDateForError(reservation.getStartDate())
                     ));
