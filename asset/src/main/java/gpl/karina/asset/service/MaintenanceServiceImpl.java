@@ -4,10 +4,8 @@ import gpl.karina.asset.dto.request.AddLapkeuDTO;
 import gpl.karina.asset.dto.request.MaintenanceRequestDTO;
 import gpl.karina.asset.dto.response.MaintenanceResponseDTO;
 import gpl.karina.asset.model.Asset;
-import gpl.karina.asset.model.AssetReservation;
 import gpl.karina.asset.model.Maintenance;
 import gpl.karina.asset.repository.AssetDb;
-import gpl.karina.asset.repository.AssetReservationRepository;
 import gpl.karina.asset.repository.MaintenanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,24 +22,15 @@ import java.util.stream.Collectors;
 public class MaintenanceServiceImpl implements MaintenanceService {
 
     @Value("${asset.app.financeUrl}")
-    private String financeUrl;    private final MaintenanceRepository maintenanceRepository;
+    private String financeUrl;
+
+    private final MaintenanceRepository maintenanceRepository;
     private final AssetDb assetRepository;
-    private final AssetReservationRepository assetReservationRepository;
-    private final AssetReservationService assetReservationService;
-    private final AssetMaintenanceService assetMaintenanceService;
     private final WebClient.Builder webClientBuilder;
 
-    public MaintenanceServiceImpl(MaintenanceRepository maintenanceRepository, 
-                                  WebClient.Builder webClientBuilder, 
-                                  AssetDb assetRepository,
-                                  AssetReservationRepository assetReservationRepository,
-                                  AssetReservationService assetReservationService,
-                                  AssetMaintenanceService assetMaintenanceService) {
+    public MaintenanceServiceImpl(MaintenanceRepository maintenanceRepository, WebClient.Builder webClientBuilder, AssetDb assetRepository) {
         this.maintenanceRepository = maintenanceRepository;
         this.assetRepository = assetRepository;
-        this.assetReservationRepository = assetReservationRepository;
-        this.assetReservationService = assetReservationService;
-        this.assetMaintenanceService = assetMaintenanceService;
         this.webClientBuilder = webClientBuilder;
     }
 
