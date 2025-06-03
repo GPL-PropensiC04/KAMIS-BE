@@ -38,5 +38,6 @@ out/
 
 ### ENVIRONMENT ###
 .env
+.env.dev
 
 logs/

@@ -37,7 +37,9 @@ out/
 .vscode/
 
 ### ENVIRONMENT ###
+.env.dev
 .env
+
 logs/
 
 # Purchase Images
