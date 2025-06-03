@@ -84,9 +84,27 @@ public class MaintenanceServiceImpl implements MaintenanceService {
     
         Maintenance savedMaintenance = maintenanceRepository.save(maintenance);
     
-        // ...existing code for finance integration...
-    
-        return convertToDTO(savedMaintenance);
+        try {
+            AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
+            lapkeuRequest.setId(savedMaintenance.getId().toString());
+            lapkeuRequest.setActivityType(3); // PURCHASE
+            lapkeuRequest.setPemasukan(0L);
+            lapkeuRequest.setPengeluaran(requestDTO.getBiaya() != null ? requestDTO.getBiaya().longValue() : 0L);
+            lapkeuRequest.setDescription("Maintenance - " + asset.getPlatNomor());
+            lapkeuRequest.setPaymentDate(savedMaintenance.getTanggalMulaiMaintenance());
+
+            webClientBuilder.build()
+                .post()
+                .uri(financeUrl + "/lapkeu/add")
+                .bodyValue(lapkeuRequest)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+        } catch (Exception e) {
+            System.err.println("Gagal insert ke Lapkeu: " + e.getMessage());
+        }
+        
+        return convertToDTO(savedMaintenance);    
     }
     
     /**
