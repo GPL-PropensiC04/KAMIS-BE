@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +19,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 
 import gpl.karina.purchase.model.AssetTemp;
@@ -120,8 +124,60 @@ public class PurchaseController {
         }
     }
 
+    @GetMapping("/viewall/paginated")
+    public ResponseEntity<BaseResponseDTO<Page<PurchaseListResponseDTO>>> getAllPurchasesPaginated(
+            @RequestParam(defaultValue = "0", name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "size") int size,
+            @RequestParam(name = "startNominal", required = false) Integer startNominal,
+            @RequestParam(name = "endNominal", required = false) Integer endNominal,
+            @RequestParam(name = "highNominal", required = false) Boolean highNominal,
+            @RequestParam(name = "startDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date startDate,
+            @RequestParam(name = "endDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date endDate,
+            @RequestParam(name = "newDate", required = false) Boolean newDate,
+            @RequestParam(name = "type", required = false) String type,
+            @RequestParam(name = "idSearch", required = false) String idSearch,
+            @RequestParam(name = "status", required = false) String status) {
+        
+        var baseResponseDTO = new BaseResponseDTO<Page<PurchaseListResponseDTO>>();
+        
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            
+            Page<PurchaseListResponseDTO> purchasesPage;
+            
+            // Check if any filters are present
+            if (startNominal != null || endNominal != null || highNominal != null || 
+                startDate != null || endDate != null || newDate != null || 
+                type != null || idSearch != null || status != null) {
+                
+                // If filters present, return filtered paginated purchases
+                purchasesPage = purchaseRestService.getAllPurchasesPaginatedWithFilters(
+                    pageable, startNominal, endNominal, highNominal, 
+                    startDate, endDate, newDate, type, idSearch, status);
+            } else {
+                purchasesPage = purchaseRestService.getAllPurchasesPaginated(pageable);
+            }
+
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage("Success");
+            baseResponseDTO.setData(purchasesPage);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+            
+        } catch (Exception e) {
+            System.err.println("Error in getAllPurchasesPaginated: " + e.getMessage());
+            e.printStackTrace();
+            
+            baseResponseDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponseDTO.setMessage("Error fetching purchases: " + e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PutMapping("/update/{purchaseId}")
-    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchase(@PathVariable String purchaseId,
+    public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchase(@PathVariable(name = "purchaseId") String purchaseId,
             @RequestBody UpdatePurchaseDTO updatePurchaseDTO) {
         var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
         // String token = authorizationHeader.startsWith("Bearer ") ?
@@ -214,7 +270,7 @@ public class PurchaseController {
     }
 
     @GetMapping("/asset/{idAsset}")
-    public ResponseEntity<BaseResponseDTO<AssetTempResponseDTO>> findAssetById(@PathVariable Long idAsset) {
+    public ResponseEntity<BaseResponseDTO<AssetTempResponseDTO>> findAssetById(@PathVariable(name = "idAsset") Long idAsset) {
         var baseResponseDTO = new BaseResponseDTO<AssetTempResponseDTO>();
         // String token = authorizationHeader.startsWith("Bearer ") ?
         // authorizationHeader.substring(7) : authorizationHeader;
@@ -297,7 +353,7 @@ public class PurchaseController {
 
     @PutMapping("/updatestatus/cancel/{idPurchase}")
     public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusToCancel(
-            @PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
+            @PathVariable(name = "idPurchase") String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
         // String token = authorizationHeader.startsWith("Bearer ") ?
         // authorizationHeader.substring(7) : authorizationHeader;
         var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();
@@ -335,7 +391,7 @@ public class PurchaseController {
 
     @PutMapping("/updatestatus/pembayaran/{idPurchase}")
     public ResponseEntity<BaseResponseDTO<PurchaseResponseDTO>> updatePurchaseStatusPembayaran(
-            @PathVariable String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
+            @PathVariable("idPurchase") String idPurchase, @RequestBody UpdatePurchaseStatusDTO updateStatusPurchaseDTO) {
         // String token = authorizationHeader.startsWith("Bearer ") ?
         // authorizationHeader.substring(7) : authorizationHeader;
         var baseResponseDTO = new BaseResponseDTO<PurchaseResponseDTO>();

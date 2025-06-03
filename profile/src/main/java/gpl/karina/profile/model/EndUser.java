@@ -41,4 +41,7 @@ public class EndUser {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "user_type", nullable = false, insertable = false, updatable = false)
+    private String userType; // This will be set based on the subclass type (e.g., "Admin", "User", etc.)
 }

@@ -24,6 +24,9 @@ import gpl.karina.profile.restdto.response.EndUserResponseDTO;
 import gpl.karina.profile.restdto.response.LoginResponseDTO;
 import gpl.karina.profile.security.service.UserDetailsServiceImpl;
 import gpl.karina.profile.restdto.request.AddUserReqeuestDTO;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import gpl.karina.profile.security.jwt.JwtUtils;
 
@@ -39,8 +42,10 @@ public class EndUserServiceImpl implements EndUserService {
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
 
-    public EndUserServiceImpl(EndUserRepository endUserRepository, UserDetailsServiceImpl userDetailsService, JwtUtils jwtUtils, AdminRepository adminRepository,
-     DireksiRepository direksiRepository, FinanceRepository financeRepository, OperasionalRepository operasionalRepository, PasswordEncoder passwordEncoder) {
+    public EndUserServiceImpl(EndUserRepository endUserRepository, UserDetailsServiceImpl userDetailsService,
+            JwtUtils jwtUtils, AdminRepository adminRepository,
+            DireksiRepository direksiRepository, FinanceRepository financeRepository,
+            OperasionalRepository operasionalRepository, PasswordEncoder passwordEncoder) {
         this.endUserRepository = endUserRepository;
         this.userDetailsService = userDetailsService;
         this.jwtUtils = jwtUtils;
@@ -50,12 +55,12 @@ public class EndUserServiceImpl implements EndUserService {
         this.operasionalRepository = operasionalRepository;
         this.passwordEncoder = passwordEncoder;
     }
-    
+
     private EndUserResponseDTO endUserToEndUserResponseDTO(EndUser endUser) {
         EndUserResponseDTO endUserResponseDTO = new EndUserResponseDTO();
         endUserResponseDTO.setEmail(endUser.getEmail());
         endUserResponseDTO.setUsername(endUser.getUsername());
-        
+
         // Tentukan role berdasarkan jenis class
         if (endUser instanceof Admin) {
             endUserResponseDTO.setRole("admin");
@@ -66,7 +71,7 @@ public class EndUserServiceImpl implements EndUserService {
         } else if (endUser instanceof Operasional) {
             endUserResponseDTO.setRole("operasional");
         }
-        
+
         return endUserResponseDTO;
     }
 
@@ -86,7 +91,7 @@ public class EndUserServiceImpl implements EndUserService {
             throw new BadCredentialsException("Invalid username or password");
         }
         UserDetails userDetails = userDetailsService.loadUserByUsername(endUser.get().getUsername());
-        
+
         if (!passwordEncoder.matches(loginRequestDTO.getPassword(), userDetails.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
         }
@@ -165,11 +170,67 @@ public class EndUserServiceImpl implements EndUserService {
     @Override
     public List<EndUserResponseDTO> getAllUsers() {
         return endUserRepository.findAll().stream()
-            .map(this::endUserToEndUserResponseDTO)
-            .collect(Collectors.toList());
+                .map(this::endUserToEndUserResponseDTO)
+                .collect(Collectors.toList());
     }
 
+    @Override
+    public Page<EndUserResponseDTO> getAllUsersPaginated(Pageable pageable, String email, String username, String userType) {
+        Page<EndUser> usersPage;
     
+
+
+        try {
+            // Apply filters based on provided parameters
+            if (email != null && !email.trim().isEmpty() && 
+                username != null && !username.trim().isEmpty() && 
+                userType != null && !userType.trim().isEmpty()) {
+                // Filter by all three parameters
+                usersPage = endUserRepository.findByEmailContainingIgnoreCaseAndUsernameContainingIgnoreCaseAndUserTypeContainingIgnoreCase(
+                    email.trim(), username.trim(), userType.trim(), pageable);
+            } else if (email != null && !email.trim().isEmpty() && 
+                       username != null && !username.trim().isEmpty()) {
+                // Filter by email and username
+                usersPage = endUserRepository.findByEmailContainingIgnoreCaseAndUsernameContainingIgnoreCase(
+                    email.trim(), username.trim(), pageable);
+            } else if (email != null && !email.trim().isEmpty() && 
+                       userType != null && !userType.trim().isEmpty()) {
+                // Filter by email and userType
+                usersPage = endUserRepository.findByEmailContainingIgnoreCaseAndUserTypeContainingIgnoreCase(
+                    email.trim(), userType.trim(), pageable);
+            } else if (username != null && !username.trim().isEmpty() && 
+                       userType != null && !userType.trim().isEmpty()) {
+                // Filter by username and userType
+                usersPage = endUserRepository.findByUsernameContainingIgnoreCaseAndUserTypeContainingIgnoreCase(
+                    username.trim(), userType.trim(), pageable);
+            } else if (email != null && !email.trim().isEmpty()) {
+                // Filter by email only
+                usersPage = endUserRepository.findByEmailContainingIgnoreCase(email.trim(), pageable);
+            } else if (username != null && !username.trim().isEmpty()) {
+                // Filter by username only
+                usersPage = endUserRepository.findByUsernameContainingIgnoreCase(username.trim(), pageable);
+            } else if (userType != null && !userType.trim().isEmpty()) {
+                // Filter by userType only
+                usersPage = endUserRepository.findByUserTypeContainingIgnoreCase(userType.trim(), pageable);
+            } else {
+                // No valid filters
+                usersPage = endUserRepository.findAll(pageable);
+            }
+            
+            System.out.println("Found " + usersPage.getTotalElements() + " users");
+            
+            // Map EndUser entities to EndUserResponseDTO
+            return usersPage.map(user -> {
+                return endUserToEndUserResponseDTO(user);
+            });
+    
+        } catch (Exception e) {
+            System.err.println("Error in filtering: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     @Override
     public EndUserResponseDTO updateUser(String email, UpdateUserReqeuestDTO addUserReqeuestDTO) {
         Optional<EndUser> endUser = endUserRepository.findByEmail(email);
@@ -187,7 +248,7 @@ public class EndUserServiceImpl implements EndUserService {
                 }
                 endUserRepository.save(endUserToUpdate);
                 return (endUserToEndUserResponseDTO(endUserToUpdate));
-            }    
+            }
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to update user: " + e.getMessage());
         }

@@ -8,6 +8,8 @@ import gpl.karina.profile.restdto.request.AddUserReqeuestDTO;
 import gpl.karina.profile.restdto.request.UpdateUserReqeuestDTO;
 import gpl.karina.profile.restdto.response.EndUserResponseDTO;
 import gpl.karina.profile.restdto.response.LoginResponseDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface EndUserService {
     public LoginResponseDTO login(LoginRequestDTO loginRequestDTO);
@@ -15,4 +17,6 @@ public interface EndUserService {
     public Optional<EndUserResponseDTO> findByEmail(String email);
     public EndUserResponseDTO updateUser(String email, UpdateUserReqeuestDTO addUserReqeuestDTO);
     public List<EndUserResponseDTO> getAllUsers();
+    public Page<EndUserResponseDTO> getAllUsersPaginated(Pageable pageable, String email, String username, String role); // For paginated list
+    
 }

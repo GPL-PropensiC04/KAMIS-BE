@@ -30,6 +30,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
@@ -197,6 +200,47 @@ public class ProjectController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/all/paginated")
+    public ResponseEntity<BaseResponseDTO<Page<listProjectResponseDTO>>> getListProjectPaginated(
+            @RequestParam(name = "idProject", required = false) String idSearch,
+            @RequestParam(name = "statusProject", required = false) String projectStatus,
+            @RequestParam(name = "tipeProject", required = false) Boolean projectType,
+            @RequestParam(name = "namaProject", required = false) String projectName,
+            @RequestParam(name = "clientProject", required = false) String projectClientId,
+            @RequestParam(name = "tanggalMulai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectStartDate,
+            @RequestParam(name = "tanggalSelesai", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date projectEndDate,
+            @RequestParam(name = "startNominal", required = false) Long startNominal,
+            @RequestParam(name = "endNominal", required = false) Long endNominal,
+            @RequestParam(defaultValue = "0", name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "size") int size) {
+        BaseResponseDTO<Page<listProjectResponseDTO>> response = new BaseResponseDTO<>();
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+
+            Page<listProjectResponseDTO> listProjectPaginated =
+                    projectService.getAllProjectsPaginated(pageable, idSearch, projectStatus, projectType, projectName, projectClientId, projectStartDate, projectEndDate, startNominal, endNominal);
+            if (listProjectPaginated.isEmpty()) {
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                response.setMessage("Tidak ada proyek yang ditemukan");
+                response.setTimestamp(new Date());
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+            response.setStatus(HttpStatus.OK.value());
+            response.setMessage("Berhasil mendapatkan daftar proyek");
+            response.setTimestamp(new Date());
+            response.setData(listProjectPaginated);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.setMessage("Gagal mendapatkan daftar proyek: " + e.getMessage());
+            response.setTimestamp(new Date());
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
 
     @PutMapping("/update-status/{id}")
     public ResponseEntity<BaseResponseDTO<ProjectResponseWrapperDTO>> updateProjectStatus(
