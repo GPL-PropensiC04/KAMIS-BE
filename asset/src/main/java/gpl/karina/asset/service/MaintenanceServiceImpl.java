@@ -27,7 +27,6 @@ public class MaintenanceServiceImpl implements MaintenanceService {
     private String financeUrl;
     private final MaintenanceRepository maintenanceRepository;
     private final AssetDb assetRepository;
-    private final AssetReservationRepository assetReservationRepository;
     private final AssetReservationService assetReservationService;
     private final WebClient.Builder webClientBuilder;
 
@@ -38,7 +37,6 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             AssetReservationService assetReservationService) {
         this.maintenanceRepository = maintenanceRepository;
         this.assetRepository = assetRepository;
-        this.assetReservationRepository = assetReservationRepository;
         this.assetReservationService = assetReservationService;
         this.webClientBuilder = webClientBuilder;
     }
@@ -65,10 +63,9 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             throw new Exception("Asset dengan plat nomor " + requestDTO.getPlatNomor() + " sedang digunakan dalam aktivitas");
         }
     
-        // Check for reservation conflicts using the fetched list
-        System.out.println("Checking for reservation conflicts...");
+        
         checkMaintenanceReservationConflict(assetReservations, requestDTO.getTanggalMulaiMaintenance(), requestDTO.getPlatNomor());
-        System.out.println("No reservation conflicts found. Proceeding with maintenance creation.");
+        
     
         // Continue with the rest of your maintenance creation logic...
         asset.setStatus("Sedang Maintenance");
@@ -83,7 +80,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         maintenance.setAsset(asset);
     
         Maintenance savedMaintenance = maintenanceRepository.save(maintenance);
-    
+
         try {
             AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
             lapkeuRequest.setId(savedMaintenance.getId().toString());
@@ -95,7 +92,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
             webClientBuilder.build()
                 .post()
-                .uri(financeUrl + "/lapkeu/add")
+                .uri(financeUrl + "/lapkeu/add") // ganti port sesuai service lapkeu
                 .bodyValue(lapkeuRequest)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -104,7 +101,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             System.err.println("Gagal insert ke Lapkeu: " + e.getMessage());
         }
         
-        return convertToDTO(savedMaintenance);    
+        return convertToDTO(savedMaintenance);
     }
     
     /**
@@ -122,9 +119,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
                 .filter(reservation -> !"Batal".equals(reservation.getReservationStatus()) && 
                                      !"Selesai".equals(reservation.getReservationStatus()))
                 .collect(Collectors.toList());
-    
-        System.out.println("Found " + assetReservations.size() + " total reservations for asset: " + platNomor);
-        System.out.println("Found " + activeReservations.size() + " active reservations (excluding Batal/Selesai) for asset: " + platNomor);
+
     
         if (activeReservations.isEmpty()) {
             System.out.println("No active reservations found for asset: " + platNomor);
@@ -167,8 +162,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         }
     }
     
-    // Remove the old checkMaintenanceReservationConflict method that uses repository
-    // Keep the helper methods as they are
+    
     private String formatDateForError(Date date) {
         if (date == null) return "N/A";
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
