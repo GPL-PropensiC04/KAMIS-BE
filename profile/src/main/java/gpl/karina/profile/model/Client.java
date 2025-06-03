@@ -50,8 +50,6 @@ public class Client {
     @Column(name = "Alamat", nullable = false)
     private String addressClient;
 
-    //TODO: attribute untuk hubungin client sama Distribusi & Penjualan (financial history ambil dari sini juga)
-
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "Created Date", updatable = false, nullable = false)

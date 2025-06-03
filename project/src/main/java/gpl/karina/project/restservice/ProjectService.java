@@ -9,6 +9,9 @@ import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import java.util.List;
 import java.util.Date;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface ProjectService {
     public ProjectResponseWrapperDTO addProject(AddProjectRequestDTO projectRequestDTO) throws Exception;
 
@@ -18,6 +21,11 @@ public interface ProjectService {
             String idSearch, String projectStatus, Boolean projectType,
             String projectName, String projectClientId, Date projectStartDate,
             Date projectEndDate, Long startNominal, Long endNominal) throws Exception;
+
+    public Page<listProjectResponseDTO> getAllProjectsPaginated(
+                Pageable pageable, String idSearch, String projectStatus, Boolean projectType,
+                String projectName, String projectClientId, Date projectStartDate,
+                Date projectEndDate, Long startNominal, Long endNominal) throws Exception;
 
     public ProjectResponseWrapperDTO getProjectById(String id) throws Exception;
 

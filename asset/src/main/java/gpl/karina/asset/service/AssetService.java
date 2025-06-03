@@ -3,6 +3,9 @@ package gpl.karina.asset.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import gpl.karina.asset.dto.response.AssetListResponseDTO;
 import gpl.karina.asset.dto.response.AssetResponseDTO;
 import gpl.karina.asset.model.Asset;
@@ -19,4 +22,11 @@ public interface AssetService {
     Asset getAssetFoto(String id);
     List<AssetResponseDTO> getAssetsBySupplier(UUID supplierId);
 
+    Page<AssetListResponseDTO> getAllAssetsPaginated(Pageable pageable);
+    Page<AssetListResponseDTO> getAllAssetsPaginatedWithFilters(
+        Pageable pageable, 
+        String nama, 
+        String jenisAset, 
+        String status
+    );
 }

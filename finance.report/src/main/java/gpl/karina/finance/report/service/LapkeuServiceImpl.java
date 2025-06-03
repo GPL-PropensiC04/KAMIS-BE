@@ -9,7 +9,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import gpl.karina.finance.report.dto.response.BaseResponseDTO;
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseBarResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
@@ -146,6 +144,12 @@ public class LapkeuServiceImpl implements LapkeuService {
                 break;
 
             case "THIS_YEAR":
+                start = now.withDayOfYear(1);
+                break;
+            case "LAST_YEAR":
+                start = LocalDate.of(now.getYear() - 1, 1, 1);
+                end = LocalDate.of(now.getYear() - 1, 12, 31);
+                break;
             default:
                 start = now.withDayOfYear(1);
                 break;
@@ -211,9 +215,17 @@ public class LapkeuServiceImpl implements LapkeuService {
                 }
                 start = now.withDayOfYear(1);
                 break;
-
+            
+            case "LAST_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("LAST_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = LocalDate.of(now.getYear() - 1, 1, 1);
+                end = LocalDate.of(now.getYear() - 1, 12, 31);
+                break;
+            
             default:
-                throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                throw new IllegalArgumentException("Range tidak valid. Gunakan LAST_YEAR, THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
         }
 
         Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -403,6 +415,10 @@ public class LapkeuServiceImpl implements LapkeuService {
             break;
             case "THIS_YEAR":
             start = now.withDayOfYear(1);
+            break;
+            case "LAST_YEAR":
+            start = LocalDate.of(now.getYear() - 1, 1, 1);
+            end = LocalDate.of(now.getYear() - 1, 12, 31);
             break;
             default:
             start = now.minusMonths(6); // Default to last 6 months

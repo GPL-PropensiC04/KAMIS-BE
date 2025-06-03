@@ -5,7 +5,6 @@ import gpl.karina.asset.dto.response.BaseResponseDTO;
 import gpl.karina.asset.dto.response.MaintenanceResponseDTO;
 import gpl.karina.asset.service.MaintenanceService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -16,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/maintenance")
+@RequestMapping("/api/maintenance/")
 public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
@@ -45,6 +44,7 @@ public class MaintenanceController {
         }
         
         try {
+            // The requestDTO now contains startDate provided by the client
             MaintenanceResponseDTO result = maintenanceService.createMaintenance(requestDTO);
             
             response.setStatus(HttpStatus.CREATED.value());
@@ -121,7 +121,7 @@ public class MaintenanceController {
     }
 
     @PatchMapping("/{id}/complete")
-    public ResponseEntity<BaseResponseDTO<MaintenanceResponseDTO>> completeMaintenance(@PathVariable Long id) {
+    public ResponseEntity<BaseResponseDTO<MaintenanceResponseDTO>> completeMaintenance(@PathVariable(name = "id") Long id) {
         BaseResponseDTO<MaintenanceResponseDTO> response = new BaseResponseDTO<>();
         
         try {

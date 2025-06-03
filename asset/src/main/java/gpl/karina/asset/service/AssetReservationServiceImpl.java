@@ -20,13 +20,10 @@ public class AssetReservationServiceImpl implements AssetReservationService {
 
     private final AssetReservationRepository assetReservationRepository;
     private final AssetDb assetDb;
-    private final AssetService assetService;
 
-    public AssetReservationServiceImpl(AssetReservationRepository assetReservationRepository, AssetDb assetDb,
-            AssetService assetService) {
+    public AssetReservationServiceImpl(AssetReservationRepository assetReservationRepository, AssetDb assetDb) {
         this.assetReservationRepository = assetReservationRepository;
         this.assetDb = assetDb;
-        this.assetService = assetService;
     }
 
     /**
@@ -39,10 +36,10 @@ public class AssetReservationServiceImpl implements AssetReservationService {
             return;
         }
 
-        if ("Direncanakan".equals(reservationStatus) || "Dilaksanakan".equals(reservationStatus)) {
+        if ("Dilaksanakan".equals(reservationStatus)) {
             // Asset is now in use by a project
-            asset.setStatus("Dalam Proyek");
-            logger.info("Asset {} status updated to: Dalam Proyek", platNomor);
+            asset.setStatus("Dalam Aktivitas");
+            logger.info("Asset {} status updated to: Dalam Aktivitas", platNomor);
         } else if ("Selesai".equals(reservationStatus) || "Batal".equals(reservationStatus)) {
             // Check if there are other active reservations for this asset
             List<AssetReservation> activeReservations = assetReservationRepository
@@ -209,6 +206,13 @@ public class AssetReservationServiceImpl implements AssetReservationService {
             throw new IllegalArgumentException("Asset with plate number " + platNomor + " not found");
         }
 
+        // Check if asset is under maintenance
+        if ("Sedang Maintenance".equals(asset.getStatus())) {
+            logger.info("Asset {} is currently under maintenance and cannot be reserved.", platNomor);
+            return false;
+        }
+        
+
         // Check for any overlapping reservations in the given time period
         List<AssetReservation> overlappingReservations = assetReservationRepository
                 .findOverlappingReservations(platNomor, startDate, endDate);
@@ -224,6 +228,13 @@ public class AssetReservationServiceImpl implements AssetReservationService {
         if (asset == null) {
             throw new IllegalArgumentException("Asset with plate number " + platNomor + " not found");
         }
+
+        // Check if asset is under maintenance
+        if ("Sedang Maintenance".equals(asset.getStatus())) {
+            logger.info("Asset {} is currently under maintenance and cannot be reserved.", platNomor);
+            return false;
+        }
+        
 
         // Check for any overlapping reservations in the given time period, excluding
         // the specified project's reservations

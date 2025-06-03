@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -17,11 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import gpl.karina.profile.restdto.request.AddClientRequestDTO;
 import gpl.karina.profile.restdto.request.UpdateClientRequestDTO;
 import gpl.karina.profile.restdto.response.BaseResponseDTO;
 import gpl.karina.profile.restdto.response.ClientListResponseDTO;
 import gpl.karina.profile.restdto.response.ClientResponseDTO;
+
 import gpl.karina.profile.restservice.ClientService;
 import jakarta.validation.Valid;
 
@@ -90,6 +95,44 @@ public class ClientRestController {
         baseResponseDTO.setTimestamp(new Date());
         return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
     }
+
+    @GetMapping("/all/paginated")
+    public ResponseEntity<BaseResponseDTO<Page<ClientListResponseDTO>>> getAllClientPaginated(
+            @RequestParam(defaultValue = "0" , name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "size") int size,
+            @RequestParam(name = "nameClient", required = false) String nameClient,
+            @RequestParam(name = "typeClient", required = false) Boolean typeClient,
+            @RequestParam(name = "minProfit", required = false) Long minProfit,
+            @RequestParam(name = "maxProfit", required = false) Long maxProfit) {
+        var baseResponseDTO = new BaseResponseDTO<Page<ClientListResponseDTO>>();
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ClientListResponseDTO> clientPage;
+            String message;
+            if (nameClient != null || typeClient != null || minProfit != null || maxProfit != null) {
+                // If filters present, return filtered paginated clients
+                clientPage = clientService.filterClientsPaginated(nameClient, typeClient,
+                        minProfit, maxProfit, pageable);
+                message = ("List Client berhasil difilter");
+            } else {
+                clientPage = clientService.getAllClientPaginated(pageable);
+                message = ("List Client berhasil ditemukan");
+            }
+            
+            baseResponseDTO.setStatus(HttpStatus.OK.value());
+            baseResponseDTO.setMessage(message);
+            baseResponseDTO.setData(clientPage);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);
+        } catch (Exception e) {
+            baseResponseDTO.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            baseResponseDTO.setMessage(e.getMessage());
+            baseResponseDTO.setData(null);
+            baseResponseDTO.setTimestamp(new Date());
+            return new ResponseEntity<>(baseResponseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
 
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponseDTO<ClientResponseDTO>> getClientDetail(@PathVariable("id") UUID id) {

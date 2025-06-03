@@ -2,7 +2,6 @@ package gpl.karina.project.restservice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,7 +11,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
+
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -24,6 +23,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import gpl.karina.project.model.Distribution;
 import gpl.karina.project.model.LogProject;
 import gpl.karina.project.model.Project;
@@ -32,10 +35,10 @@ import gpl.karina.project.model.ProjectResourceUsage;
 import gpl.karina.project.model.Sell;
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
-import gpl.karina.project.restdto.AssetUpdateStatusDTO;
 import gpl.karina.project.restdto.AssetUsageDTO;
 import gpl.karina.project.restdto.ResourceStockUpdateDTO;
 import gpl.karina.project.restdto.ResourceUsageDTO;
@@ -54,13 +57,11 @@ import gpl.karina.project.restdto.response.SellDistributionSummaryDTO;
 import gpl.karina.project.restdto.response.SellResponseDTO;
 import gpl.karina.project.restdto.response.listProjectResponseDTO;
 import gpl.karina.project.security.jwt.JwtUtils;
-import gpl.karina.project.repository.LogProjectRepository;
 import gpl.karina.project.repository.ProjectRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import reactor.core.publisher.Mono;
-import gpl.karina.project.restservice.AssetReservationClient;
 
 @Service
 @Transactional
@@ -82,20 +83,18 @@ public class ProjectServiceImpl implements ProjectService {
     private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
     private final ProjectRepository projectRepository;
-    private final LogProjectRepository logProjectRepository;
     private final WebClient.Builder webClientBuilder;
     private final JwtUtils jwtUtils;
     private final AssetReservationClient assetReservationClient;
     private final HttpServletRequest request;
 
     public ProjectServiceImpl(ProjectRepository projectRepository, WebClient.Builder webClientBuilder,
-            HttpServletRequest request, JwtUtils jwtUtils, LogProjectRepository logProjectRepository,
+            HttpServletRequest request, JwtUtils jwtUtils,
             AssetReservationClient assetReservationClient) {
         this.projectRepository = projectRepository;
         this.request = request;
         this.webClientBuilder = webClientBuilder;
         this.jwtUtils = jwtUtils;
-        this.logProjectRepository = logProjectRepository;
         this.assetReservationClient = assetReservationClient;
     }
 
@@ -137,7 +136,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (response == null || response.getData() == null) {
             throw new IllegalArgumentException("Client not found with id: " + id);
         }
-        
+
         ClientDetailDTO clientDetailDTO = response.getData();
         return clientDetailDTO;
     }
@@ -302,7 +301,7 @@ public class ProjectServiceImpl implements ProjectService {
                     .block();
 
             if (response == null || response.getData() == null) {
-                
+
                 throw new IllegalArgumentException("ERR BEGO");
             }
 
@@ -456,7 +455,7 @@ public class ProjectServiceImpl implements ProjectService {
         try {
             // ClientDetailDTO clientDetail = fetchClientById(project.getProjectClientId());
             // projectResponseDTO.setProjectClientName(clientDetail.getNameClient());
-            
+
         } catch (Exception e) {
             logger.error("Error fetching client name: {}", e.getMessage());
             projectResponseDTO.setProjectClientName("Unknown Client");
@@ -648,7 +647,6 @@ public class ProjectServiceImpl implements ProjectService {
         } catch (Exception e) {
             throw new IllegalArgumentException("Pastikan ID Klien sudah terdaftar dalam sistem");
         }
-        
 
         if (projectRequestDTO.getProjectEndDate().before(projectRequestDTO.getProjectStartDate())) {
             throw new IllegalArgumentException("Tanggal akhir proyek tidak boleh sebelum tanggal mulai proyek");
@@ -1179,59 +1177,118 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public List<listProjectResponseDTO> getAllProject(
-        String idSearch, String projectStatus, Boolean projectType,
-        String projectName, String projectClientId, Date projectStartDate,
-        Date projectEndDate, Long startNominal, Long endNominal) throws Exception {
+            String idSearch, String projectStatus, Boolean projectType,
+            String projectName, String projectClientId, Date projectStartDate,
+            Date projectEndDate, Long startNominal, Long endNominal) throws Exception {
 
         List<Project> filteredProjects;
-        
+
         // Check if all database-level filters are empty/null
-        boolean noFiltersSet = (idSearch == null || idSearch.isEmpty()) && 
-                  (projectStatus == null || projectStatus.isEmpty()) &&
-                  (projectType == null ) &&
-                  (projectName == null || projectName.isEmpty()) &&
-                  (projectClientId == null || projectClientId.isEmpty()) &&
-                  projectStartDate == null &&
-                  projectEndDate == null;
-        
+        boolean noFiltersSet = (idSearch == null || idSearch.isEmpty()) &&
+                (projectStatus == null || projectStatus.isEmpty()) &&
+                (projectType == null) &&
+                (projectName == null || projectName.isEmpty()) &&
+                (projectClientId == null || projectClientId.isEmpty()) &&
+                projectStartDate == null &&
+                projectEndDate == null;
+
         if (noFiltersSet && startNominal == null && endNominal == null) {
-        // No filters set, fetch all projects
-        filteredProjects = projectRepository.findAll();
+            // No filters set, fetch all projects
+            filteredProjects = projectRepository.findAll();
         } else {
-        // Adjust dates for filtering
-        final Date adjustedStartDateFinal = projectStartDate != null ? adjustedStartDate(projectStartDate) : null;
-        final Date adjustedEndDateFinal = projectEndDate != null ? adjustedEndDate(projectEndDate) : null;
-        
-        // Use the database-level filtering
-        System.out.println("Project Clinet ID "+ projectClientId);
-        filteredProjects = projectRepository.findProjectsWithFilters(
-            idSearch, 
-            projectName,
-            projectStatus,
-            projectType,
-            projectClientId,
-            adjustedStartDateFinal,
-            adjustedEndDateFinal,
-            startNominal,
-            endNominal);
+            // Adjust dates for filtering
+            final Date adjustedStartDateFinal = projectStartDate != null ? adjustedStartDate(projectStartDate) : null;
+            final Date adjustedEndDateFinal = projectEndDate != null ? adjustedEndDate(projectEndDate) : null;
+
+            filteredProjects = projectRepository.findProjectsWithFilters(
+                    idSearch,
+                    projectName,
+                    projectStatus,
+                    projectType,
+                    projectClientId,
+                    adjustedStartDateFinal,
+                    adjustedEndDateFinal,
+                    startNominal,
+                    endNominal);
         }
 
-        // For profit filtering, we still need to do it in memory since it's a calculated field
+        // For profit filtering, we still need to do it in memory since it's a
+        // calculated field
         if (startNominal != null || endNominal != null) {
-        filteredProjects = filteredProjects.stream()
-            .filter(project -> {
-            Long profit = calculateProjectProfit(project);
-            return (startNominal == null || profit >= startNominal) &&
-                (endNominal == null || profit <= endNominal);
-            })
-            .collect(Collectors.toList());
+            filteredProjects = filteredProjects.stream()
+                    .filter(project -> {
+                        Long profit = calculateProjectProfit(project);
+                        return (startNominal == null || profit >= startNominal) &&
+                                (endNominal == null || profit <= endNominal);
+                    })
+                    .collect(Collectors.toList());
         }
 
         // Convert to DTOs
         return filteredProjects.stream()
-            .map(this::projectToProjectResponseAllDTO)
-            .collect(Collectors.toList());
+                .map(this::projectToProjectResponseAllDTO)
+                .collect(Collectors.toList());
     }
+
+    @Override
+    public Page<listProjectResponseDTO> getAllProjectsPaginated(
+                Pageable pageable, String idSearch, String projectStatus, Boolean projectType,
+                String projectName, String projectClientId, Date projectStartDate,
+                Date projectEndDate, Long startNominal, Long endNominal) throws Exception {
+
+        Page<Project> filteredProjectsPage;
+
+        // Check if all database-level filters are empty/null
+        boolean noFiltersSet = (idSearch == null || idSearch.isEmpty()) &&
+                (projectStatus == null || projectStatus.isEmpty()) &&
+                (projectType == null) &&
+                (projectName == null || projectName.isEmpty()) &&
+                (projectClientId == null || projectClientId.isEmpty()) &&
+                projectStartDate == null &&
+                projectEndDate == null;
+
+        if (noFiltersSet && startNominal == null && endNominal == null) {
+            // No filters set, fetch all projects
+            filteredProjectsPage = projectRepository.findAll(pageable);
+        } else {
+            // Adjust dates for filtering
+            final Date adjustedStartDateFinal = projectStartDate != null ? adjustedStartDate(projectStartDate) : null;
+            final Date adjustedEndDateFinal = projectEndDate != null ? adjustedEndDate(projectEndDate) : null;
+
+            filteredProjectsPage = projectRepository.findAllProjectsWithFiltersPage(
+                    pageable,
+                    idSearch,
+                    projectName,
+                    projectStatus,
+                    projectType,
+                    projectClientId,
+                    adjustedStartDateFinal,
+                    adjustedEndDateFinal,
+                    startNominal,
+                    endNominal);
+        }
+
+        // For profit filtering, we still need to do it in memory since it's a
+        // calculated field
+        List<Project> filteredProjects = filteredProjectsPage.getContent();
+        if (startNominal != null || endNominal != null) {
+            filteredProjects = filteredProjects.stream()
+                    .filter(project -> {
+                        Long profit = calculateProjectProfit(project);
+                        return (startNominal == null || profit >= startNominal) &&
+                                (endNominal == null || profit <= endNominal);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+            // Convert to DTOs
+            List<listProjectResponseDTO> responseList = filteredProjects.stream()
+                    .map(this::projectToProjectResponseAllDTO)
+                    .collect(Collectors.toList());
+    
+            return new PageImpl<>(responseList, pageable, filteredProjectsPage.getTotalElements());
+        }
+
     /**
      * Helper method to calculate project profit
      */
@@ -1461,6 +1518,13 @@ public class ProjectServiceImpl implements ProjectService {
                 }
                 start = now.withDayOfYear(1);
                 break;
+            case "LAST_YEAR":
+                if (!periodType.equalsIgnoreCase("MONTHLY") && !periodType.equalsIgnoreCase("QUARTERLY")) {
+                    throw new IllegalArgumentException("LAST_YEAR hanya mendukung periodType = MONTHLY atau QUARTERLY");
+                }
+                start = LocalDate.of(now.getYear() - 1, 1, 1);
+                end = LocalDate.of(now.getYear() - 1, 12, 31);
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
@@ -1622,29 +1686,41 @@ public class ProjectServiceImpl implements ProjectService {
         switch (range.toUpperCase()) {
             case "THIS_YEAR":
                 startCurrent = now.withDayOfYear(1);
-                endCurrent = now.withDayOfYear(now.lengthOfYear());
+                endCurrent = now.withDayOfYear(now.lengthOfYear()); // Akhir tahun ini
                 startPrevious = startCurrent.minusYears(1);
-                endPrevious = endCurrent.minusYears(1);
+                endPrevious = endCurrent.minusYears(1); // Akhir tahun lalu
                 break;
 
             case "THIS_QUARTER":
-                int quarter = (now.getMonthValue() - 1) / 3 + 1;
-                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
-                startCurrent = LocalDate.of(now.getYear(), firstMonth, 1);
-                endCurrent = startCurrent.plusMonths(3).minusDays(1);
-                startPrevious = startCurrent.minusYears(1);
-                endPrevious = endCurrent.minusYears(1);
+                int currentQuarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonthOfCurrentQuarter = Month.of((currentQuarter - 1) * 3 + 1);
+                startCurrent = LocalDate.of(now.getYear(), firstMonthOfCurrentQuarter, 1);
+                endCurrent = startCurrent.plusMonths(3).minusDays(1); // Akhir kuartal ini
+
+                startPrevious = startCurrent.minusYears(1); // Kuartal yang sama tahun lalu
+                endPrevious = endCurrent.minusYears(1);   // Kuartal yang sama tahun lalu
                 break;
 
             case "THIS_MONTH":
                 startCurrent = now.withDayOfMonth(1);
-                endCurrent = now.withDayOfMonth(now.lengthOfMonth());
-                startPrevious = startCurrent.minusMonths(1);
-                endPrevious = endCurrent.minusMonths(1);
+                endCurrent = now.withDayOfMonth(now.lengthOfMonth()); 
+                startPrevious = startCurrent.minusMonths(1); 
+                endPrevious = startCurrent.minusDays(1);     
+                LocalDate previousMonthDay = now.minusMonths(1);
+                startPrevious = previousMonthDay.withDayOfMonth(1);
+                endPrevious = previousMonthDay.withDayOfMonth(previousMonthDay.lengthOfMonth());
+                break;
+
+            case "LAST_YEAR": // Implementasi baru
+                startCurrent = LocalDate.of(now.getYear() - 1, 1, 1);         // 1 Januari tahun lalu
+                endCurrent = LocalDate.of(now.getYear() - 1, 12, 31);       // 31 Desember tahun lalu
+                startPrevious = startCurrent.minusYears(1);                    // 1 Januari dua tahun lalu
+                endPrevious = endCurrent.minusYears(1);                      // 31 Desember dua tahun lalu
                 break;
 
             default:
-                throw new IllegalArgumentException("Range tidak dikenali: " + range);
+                throw new IllegalArgumentException("Range tidak dikenali: " + range +
+                                                ". Gunakan THIS_YEAR, THIS_QUARTER, THIS_MONTH, atau LAST_YEAR.");
         }
 
         // Konversi LocalDate ke java.util.Date
@@ -1656,11 +1732,13 @@ public class ProjectServiceImpl implements ProjectService {
         // Hitung jumlah penjualan berdasarkan rentang tanggal
         Long currentSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startDateCurrent,
                 endDateCurrent, false, List.of(0, 1, 2, 3));
-        Long previousSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startDatePrevious,
+        Long previousSell = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(
+                startDatePrevious,
                 endDatePrevious, false, List.of(0, 1, 2, 3));
 
         Long currentDistribution = projectRepository
-                .countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startDateCurrent, endDateCurrent, true, List.of(0, 1, 2, 3));
+                .countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(startDateCurrent, endDateCurrent, true,
+                        List.of(0, 1, 2, 3));
         Long previousDistribution = projectRepository.countByCreatedDateBetweenAndProjectTypeAndProjectStatusIn(
                 startDatePrevious, endDatePrevious, true, List.of(0, 1, 2, 3));
 
@@ -1670,39 +1748,49 @@ public class ProjectServiceImpl implements ProjectService {
         return new SellDistributionSummaryDTO(currentSell, sellPercentage, currentDistribution, distributionPercentage);
     }
 
+    // calculatePercentageChange method tetap sama
     private Double calculatePercentageChange(Long current, Long previous) {
-        if (previous == 0) {
-            return current > 0 ? 100.0 : 0.0;
+        if (previous == null || previous == 0) { // Tambahkan null check untuk previous
+            return (current == null || current == 0) ? 0.0 : 100.0; // Jika current juga 0 atau null, 0%. Jika current > 0, anggap 100% peningkatan.
         }
+        if (current == null) current = 0L; // Anggap null sebagai 0
         return ((double) (current - previous) / previous) * 100;
     }
 
     @Override
     public List<listProjectResponseDTO> getProjectListByRange(String range) {
-        // Tentukan rentang waktu berdasarkan range
         LocalDate now = LocalDate.now();
         LocalDate start;
-        LocalDate end = now;
+        LocalDate end; // Tidak diinisialisasi ke 'now' dulu agar bisa di-override
 
         try {
             switch (range.toUpperCase()) {
                 case "THIS_MONTH":
                     start = now.withDayOfMonth(1);
+                    end = now; // Tetap menggunakan 'now' sebagai akhir periode berjalan
                     break;
                 case "THIS_QUARTER":
                     int quarter = (now.getMonthValue() - 1) / 3 + 1;
                     Month firstMonth = Month.of((quarter - 1) * 3 + 1);
                     start = LocalDate.of(now.getYear(), firstMonth, 1);
+                    end = now; // Tetap menggunakan 'now' sebagai akhir periode berjalan
                     break;
                 case "THIS_YEAR":
                     start = now.withDayOfYear(1);
+                    end = now; // Tetap menggunakan 'now' sebagai akhir periode berjalan
+                    break;
+                case "LAST_YEAR": // Implementasi baru
+                    start = LocalDate.of(now.getYear() - 1, 1, 1);     // 1 Januari tahun lalu
+                    end = LocalDate.of(now.getYear() - 1, 12, 31);   // 31 Desember tahun lalu
                     break;
                 default:
-                    throw new IllegalArgumentException("Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, atau THIS_MONTH.");
+                    throw new IllegalArgumentException(
+                            "Range tidak valid. Gunakan THIS_YEAR, THIS_QUARTER, THIS_MONTH, atau LAST_YEAR.");
             }
 
             // Konversi LocalDate ke java.util.Date
             Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            // Untuk 'end', gunakan akhir hari dari tanggal 'end' yang telah ditentukan
             Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
 
             // Panggil getAllProject dengan filter rentang tanggal
@@ -1715,11 +1803,14 @@ public class ProjectServiceImpl implements ProjectService {
                     startDate, // projectStartDate
                     endDate, // projectEndDate
                     null, // startNominal
-                    null  // endNominal
+                    null // endNominal
             );
+        } catch (IllegalArgumentException e) { // Tangkap IllegalArgumentException secara spesifik
+            // Log atau rethrow jika perlu
+            throw e; // Rethrow agar bisa ditangani di level atas jika diperlukan
         } catch (Exception e) {
             // Handle the exception and log it, or rethrow a custom exception
-            throw new RuntimeException("Terjadi kesalahan saat mendapatkan daftar proyek: " + e.getMessage(), e);
+            throw new RuntimeException("Terjadi kesalahan saat mendapatkan daftar proyek by range: " + e.getMessage(), e);
         }
     }
 

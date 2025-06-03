@@ -1,7 +1,4 @@
 package gpl.karina.resource.restdto.response;
-
-import java.util.UUID;
-import java.util.List;
 import lombok.Data;
 
 @Data
