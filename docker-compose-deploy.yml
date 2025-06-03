@@ -21,7 +21,7 @@ services:
       - FRONTEND_URL=https://www.sikamis.com
       - FILE_STORAGE_PATH=/app/uploads
     volumes:
-      - /microservices/data/asset-uploads:/app/uploads
+      - ~/microservices-deploy/asset-images/
     networks:
       - kamis-network
 
@@ -113,7 +113,7 @@ services:
       - FRONTEND_URL=https://www.sikamis.com
       - FILE_STORAGE_PATH=/app/uploads
     volumes:
-      - /microservices/data/purchase-uploads:/app/uploads
+      - ~/microservices-deploy/purchase-images/
     networks:
       - kamis-network
 
