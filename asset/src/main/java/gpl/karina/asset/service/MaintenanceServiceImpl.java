@@ -252,6 +252,81 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         }
         return !dateToCheck.before(startDate) && !dateToCheck.after(endDate);
     }
+    
+    /**
+     * Check if the planned maintenance conflicts with any existing asset reservations
+     * Using the provided list of reservations
+     */
+    private void checkMaintenanceReservationConflict(List<AssetReservation> assetReservations, Date maintenanceStartDate, String platNomor) throws Exception {
+        if (assetReservations == null || assetReservations.isEmpty()) {
+            System.out.println("No reservations found for asset: " + platNomor);
+            return;
+        }
+    
+        // Filter for active reservations (not "Batal" or "Selesai")
+        List<AssetReservation> activeReservations = assetReservations.stream()
+                .filter(reservation -> !"Batal".equals(reservation.getReservationStatus()) && 
+                                     !"Selesai".equals(reservation.getReservationStatus()))
+                .collect(Collectors.toList());
+    
+        System.out.println("Found " + assetReservations.size() + " total reservations for asset: " + platNomor);
+        System.out.println("Found " + activeReservations.size() + " active reservations (excluding Batal/Selesai) for asset: " + platNomor);
+    
+        if (activeReservations.isEmpty()) {
+            System.out.println("No active reservations found for asset: " + platNomor);
+            return;
+        }
+    
+        for (AssetReservation reservation : activeReservations) {
+            System.out.println("Checking reservation: Project " + reservation.getProjectId() + 
+                              " with status '" + reservation.getReservationStatus() + "'" +
+                              " from " + reservation.getStartDate() + " to " + reservation.getEndDate());
+    
+            // Check if maintenance start date falls within reservation period
+            if (isDateWithinPeriod(maintenanceStartDate, reservation.getStartDate(), reservation.getEndDate())) {
+                throw new Exception(String.format(
+                    "⚠️ Maintenance tidak dapat dijadwalkan karena asset dengan plat nomor %s sudah direservasi untuk project %s (status: %s) dari %s sampai %s",
+                    platNomor,
+                    reservation.getProjectId(),
+                    reservation.getReservationStatus(),
+                    formatDateForError(reservation.getStartDate()),
+                    formatDateForError(reservation.getEndDate())
+                ));
+            }
+    
+            // Check if maintenance date is before reservation but might overlap
+            // Only check for "Direncanakan" status since "Dilaksanakan" is already being executed
+            if ("Direncanakan".equals(reservation.getReservationStatus()) && 
+                maintenanceStartDate.before(reservation.getStartDate())) {
+                
+                long daysDifference = (reservation.getStartDate().getTime() - maintenanceStartDate.getTime()) / (1000 * 60 * 60 * 24);
+                
+                // Prevent maintenance if it's scheduled less than 1 days before a planned reservation
+                if (daysDifference < 1) {
+                    throw new Exception(String.format(
+                        "⚠️ Maintenance tidak dapat dijadwalkan karena terlalu dekat dengan reservasi yang direncanakan untuk project %s (dimulai %s). Berikan jarak minimal 1 hari.",
+                        reservation.getProjectId(),
+                        formatDateForError(reservation.getStartDate())
+                    ));
+                }
+            }
+        }
+    }
+    
+    // Remove the old checkMaintenanceReservationConflict method that uses repository
+    // Keep the helper methods as they are
+    private String formatDateForError(Date date) {
+        if (date == null) return "N/A";
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        return sdf.format(date);
+    }
+    
+    private boolean isDateWithinPeriod(Date dateToCheck, Date startDate, Date endDate) {
+        if (dateToCheck == null || startDate == null || endDate == null) {
+            return false;
+        }
+        return !dateToCheck.before(startDate) && !dateToCheck.after(endDate);
+    }
 
     @Override
     public List<MaintenanceResponseDTO> getAllMaintenance() {
