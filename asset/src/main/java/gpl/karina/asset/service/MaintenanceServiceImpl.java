@@ -83,7 +83,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         maintenance.setAsset(asset);
     
         Maintenance savedMaintenance = maintenanceRepository.save(maintenance);
-    
+
         try {
             AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
             lapkeuRequest.setId(savedMaintenance.getId().toString());
@@ -95,7 +95,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
             webClientBuilder.build()
                 .post()
-                .uri(financeUrl + "/lapkeu/add")
+                .uri(financeUrl + "/lapkeu/add") // ganti port sesuai service lapkeu
                 .bodyValue(lapkeuRequest)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -104,9 +104,13 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             System.err.println("Gagal insert ke Lapkeu: " + e.getMessage());
         }
         
-        return convertToDTO(savedMaintenance);    
+        return convertToDTO(savedMaintenance);
     }
     
+    /**
+     * Check if the planned maintenance conflicts with any existing asset reservations
+     * Using the provided list of reservations
+     */
     private void checkMaintenanceReservationConflict(List<AssetReservation> assetReservations, Date maintenanceStartDate, String platNomor) throws Exception {
         if (assetReservations == null || assetReservations.isEmpty()) {
             System.out.println("No reservations found for asset: " + platNomor);
