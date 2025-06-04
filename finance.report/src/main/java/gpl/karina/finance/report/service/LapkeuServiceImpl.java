@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import gpl.karina.finance.report.dto.response.ChartPengeluaranResponseDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseBarResponseDTO;
+import gpl.karina.finance.report.dto.response.IncomeExpenseBreakdownDTO;
 import gpl.karina.finance.report.dto.response.IncomeExpenseLineResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuResponseDTO;
 import gpl.karina.finance.report.dto.response.LapkeuSummaryResponseDTO;
@@ -450,5 +451,119 @@ public class LapkeuServiceImpl implements LapkeuService {
         result.add(new IncomeExpenseBarResponseDTO("Total", totalPemasukan, totalPengeluaran));
 
         return result;
+    }
+
+    @Override
+    public List<IncomeExpenseBreakdownDTO> getIncomeExpenseBreakdown(String periodType, String range) {
+        LocalDate now = LocalDate.now();
+        LocalDate start;
+        LocalDate end = now;
+
+        // Set default periodType if not provided
+        if (periodType == null || periodType.isBlank()) {
+            periodType = "MONTHLY";
+        }
+
+        // Determine date range based on range parameter
+        switch (range.toUpperCase()) {
+            case "THIS_MONTH":
+                start = now.withDayOfMonth(1);
+                break;
+            case "THIS_QUARTER":
+                int quarter = (now.getMonthValue() - 1) / 3 + 1;
+                Month firstMonth = Month.of((quarter - 1) * 3 + 1);
+                start = LocalDate.of(now.getYear(), firstMonth, 1);
+                break;
+            case "THIS_YEAR":
+                start = now.withDayOfYear(1);
+                break;
+            case "LAST_YEAR":
+                start = LocalDate.of(now.getYear() - 1, 1, 1);
+                end = LocalDate.of(now.getYear() - 1, 12, 31);
+                break;
+            default:
+                start = now.minusMonths(6); // Default to last 6 months
+                break;
+        }
+
+        // Convert to java.util.Date
+        Date startDate = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date endDate = Date.from(end.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).toInstant());
+
+        // Get all lapkeu data within the date range
+        List<Lapkeu> lapkeuList = lapkeuRepository.findAll().stream()
+            .filter(l -> l.getPaymentDate() != null && 
+                        !l.getPaymentDate().before(startDate) && 
+                        !l.getPaymentDate().after(endDate))
+            .collect(Collectors.toList());
+        
+        // Create a breakdown result
+        IncomeExpenseBreakdownDTO result = new IncomeExpenseBreakdownDTO();
+        result.setPeriod(range);
+        
+        // Initialize maps for breakdowns
+        Map<String, Long> pemasukanBreakdown = new HashMap<>();
+        Map<String, Long> pengeluaranBreakdown = new HashMap<>();
+        
+        // Set initial values
+        pemasukanBreakdown.put("Distribusi", 0L);
+        pemasukanBreakdown.put("Penjualan", 0L);
+        
+        pengeluaranBreakdown.put("Distribusi", 0L);
+        pengeluaranBreakdown.put("Pembelian", 0L);
+        pengeluaranBreakdown.put("Maintenance", 0L);
+        
+        // Calculate totals and breakdowns
+        long totalPemasukan = 0L;
+        long totalPengeluaran = 0L;
+        
+        for (Lapkeu lapkeu : lapkeuList) {
+            Integer activityType = lapkeu.getActivityType();
+            String activityName = getActivityTypeName(activityType);
+            
+            // Process income
+            if (lapkeu.getPemasukan() != null && lapkeu.getPemasukan() > 0) {
+                long amount = lapkeu.getPemasukan();
+                totalPemasukan += amount;
+                
+                // Update breakdown based on activity type
+                if (activityType == 0) { // Distribusi
+                    pemasukanBreakdown.put("Distribusi", 
+                        pemasukanBreakdown.getOrDefault("Distribusi", 0L) + amount);
+                } else if (activityType == 1) { // Penjualan
+                    pemasukanBreakdown.put("Penjualan", 
+                        pemasukanBreakdown.getOrDefault("Penjualan", 0L) + amount);
+                }
+            }
+            
+            // Process expense
+            if (lapkeu.getPengeluaran() != null && lapkeu.getPengeluaran() > 0) {
+                long amount = lapkeu.getPengeluaran();
+                totalPengeluaran += amount;
+                
+                // Update breakdown
+                pengeluaranBreakdown.put(activityName, 
+                    pengeluaranBreakdown.getOrDefault(activityName, 0L) + amount);
+            }
+        }
+        
+        // Set the result values
+        result.setPemasukanBreakdown(pemasukanBreakdown);
+        result.setPengeluaranBreakdown(pengeluaranBreakdown);
+        result.setTotalPemasukan(totalPemasukan);
+        result.setTotalPengeluaran(totalPengeluaran);
+        
+        return List.of(result);
+    }
+
+    // Helper method to get activity type name
+    private String getActivityTypeName(Integer activityTypeCode) {
+        return switch (activityTypeCode) {
+            case 0 -> "Distribusi";
+            case 1 -> "Penjualan";
+            case 2 -> "Pembelian";
+            case 3 -> "Maintenance";
+            default -> "Unknown";
+        };
     }
 }
