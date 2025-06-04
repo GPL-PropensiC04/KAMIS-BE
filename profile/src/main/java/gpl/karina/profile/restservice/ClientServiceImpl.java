@@ -149,7 +149,10 @@ public class ClientServiceImpl implements ClientService {
         List<ClientListResponseDTO> clientListResponseDTOs = new ArrayList<>();
         for (Client client : clients) {
             ClientListResponseDTO clientListResponseDTO = listClientToClientResponseDTO(client);
-            clientListResponseDTOs.add(clientListResponseDTO);
+            
+            if (clientListResponseDTO.getProjectCount() <= 5) {
+                clientListResponseDTOs.add(clientListResponseDTO);
+            }
         }
         return clientListResponseDTOs;
     }
