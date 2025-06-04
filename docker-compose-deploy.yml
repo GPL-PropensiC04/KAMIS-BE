@@ -113,7 +113,7 @@ services:
       - FRONTEND_URL=https://www.sikamis.com
       - FILE_STORAGE_PATH=/app/uploads
     volumes:
-      - ~/microservices-deploy/purchase-images/
+      - /home/kasditang/microservices-deploy/purchase-images:/app/uploads
     networks:
       - kamis-network
 
