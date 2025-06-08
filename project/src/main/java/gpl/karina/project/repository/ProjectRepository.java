@@ -38,7 +38,7 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
                         +"      (CAST(:endDate AS TIMESTAMP) IS NULL OR p.tanggal_selesai_proyek <= CAST(:endDate AS TIMESTAMP)) AND "
                         +"      (CAST(:startNominal AS BIGINT) IS NULL OR p.total_pemasukkan >= CAST(:startNominal AS BIGINT)) AND "
                         +"      (CAST(:endNominal AS BIGINT) IS NULL OR p.total_pemasukkan <= CAST(:endNominal AS BIGINT)) " 
-                        +"      ORDER BY p.tanggal_mulai_proyek DESC" , nativeQuery = true)
+                        +"      ORDER BY p.tanggal_mulai_proyek ASC" , nativeQuery = true)
         List<Project> findProjectsWithFilters(
                         @Param("idSearch") String idSearch,
                         @Param("projectName") String projectName,
@@ -64,7 +64,7 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
                         +"      (CAST(:endDate AS TIMESTAMP) IS NULL OR p.tanggal_selesai_proyek <= CAST(:endDate AS TIMESTAMP)) AND "
                         +"      (CAST(:startNominal AS BIGINT) IS NULL OR p.total_pemasukkan >= CAST(:startNominal AS BIGINT)) AND "
                         +"      (CAST(:endNominal AS BIGINT) IS NULL OR p.total_pemasukkan <= CAST(:endNominal AS BIGINT)) " 
-                        +"      ORDER BY p.tanggal_mulai_proyek DESC", nativeQuery = true)
+                        +"      ORDER BY p.tanggal_mulai_proyek ASC", nativeQuery = true)
         Page<Project> findAllProjectsWithFiltersPage(
                         Pageable pageable,
                         @Param("idSearch") String idSearch,
@@ -76,6 +76,9 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
                         @Param("endDate") Date endDate,
                         @Param("startNominal") Long startNominal,
                         @Param("endNominal") Long endNominal);
+                        
+        @Query("SELECT p FROM Project p ORDER BY p.projectStartDate ASC")
+        Page<Project> findAllByNewestPage(Pageable pageable);
 
         @Query("SELECT COUNT(p) FROM Project p WHERE FUNCTION('DATE', p.createdDate) = FUNCTION('DATE', :date)")
         Long countProjectsCreatedOn(@Param("date") Date date);

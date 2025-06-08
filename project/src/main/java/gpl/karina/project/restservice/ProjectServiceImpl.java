@@ -1249,7 +1249,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (noFiltersSet && startNominal == null && endNominal == null) {
             // No filters set, fetch all projects
-            filteredProjectsPage = projectRepository.findAll(pageable);
+            filteredProjectsPage = projectRepository.findAllByNewestPage(pageable);
         } else {
             // Adjust dates for filtering
             final Date adjustedStartDateFinal = projectStartDate != null ? adjustedStartDate(projectStartDate) : null;
@@ -1348,6 +1348,7 @@ public class ProjectServiceImpl implements ProjectService {
         String statusText = "";
         if (newStatus == 1) {
             statusText = "Dilaksanakan";
+            project.setProjectStartDate(adjustedStartDate(new Date()));
         } else if (newStatus == 2) {
             statusText = "Selesai";
             project.setProjectEndDate(adjustedEndDate(new Date()));
