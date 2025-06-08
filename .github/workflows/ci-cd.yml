@@ -122,28 +122,33 @@ jobs:
             ${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}:~/microservices-deploy/
         
 
-      - name: Generate remote .env & launch
+      - name: Generate remote .env & nginx.conf & launch
         run: |
-            ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" "echo -e 'DATABASE_URL_ASSET=${{ secrets.DATABASE_URL_ASSET }}\n
-            DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}\n
-            DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}\n
-            JWT_PUBLIC_KEY=${{ secrets.JWT_PUBLIC_KEY }}\n
-            JWT_EXPIRATION_MS=${{ vars.JWT_EXPIRATION_MS }}\n
-            DATABASE_URL_FINANCE=${{ secrets.DATABASE_URL_FINANCE }}\n
-            DATABASE_URL_PROFILE=${{ secrets.DATABASE_URL_PROFILE }}\n
-            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}\n
-            DATABASE_URL_PROJECT=${{ secrets.DATABASE_URL_PROJECT }}\n
-            DATABASE_URL_PURCHASE=${{ secrets.DATABASE_URL_PURCHASE }}\n
-            DATABASE_URL_RESOURCE=${{ secrets.DATABASE_URL_RESOURCE }}\n
-            ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}\n
-            ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}\n
-            ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}' > ~/microservices-deploy/.env"
-            
-            ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" "
-            cd ~/microservices-deploy/ && 
-            docker compose -f docker-compose-deploy.yml pull && 
-            docker compose -f docker-compose-deploy.yml up -d"
-
+          ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" "cat > ~/microservices-deploy/.env << 'EOF'
+          DATABASE_URL_ASSET=${{ secrets.DATABASE_URL_ASSET }}
+          DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}
+          DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
+          JWT_PUBLIC_KEY=${{ secrets.JWT_PUBLIC_KEY }}
+          JWT_EXPIRATION_MS=${{ vars.JWT_EXPIRATION_MS }}
+          DATABASE_URL_FINANCE=${{ secrets.DATABASE_URL_FINANCE }}
+          DATABASE_URL_PROFILE=${{ secrets.DATABASE_URL_PROFILE }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          DATABASE_URL_PROJECT=${{ secrets.DATABASE_URL_PROJECT }}
+          DATABASE_URL_PURCHASE=${{ secrets.DATABASE_URL_PURCHASE }}
+          DATABASE_URL_RESOURCE=${{ secrets.DATABASE_URL_RESOURCE }}
+          ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
+          ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+          EOF"
+          
+          ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" "cat > ~/microservices-deploy/nginx.conf << 'EOF'
+          ${{ secrets.NGINX_CONF }}
+          EOF"
+          
+          ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" "
+          cd ~/microservices-deploy/ && 
+          docker compose -f docker-compose-deploy.yml pull && 
+          docker compose -f docker-compose-deploy.yml up -d"
       - name: Remote cleanup
         run: |
           ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" \
