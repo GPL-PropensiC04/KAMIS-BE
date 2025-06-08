@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   asset:
     image: gcr.io/nimble-acrobat-461000-v3/asset:latest
@@ -21,7 +19,7 @@ services:
       - FRONTEND_URL=https://www.sikamis.com
       - FILE_STORAGE_PATH=/app/uploads
     volumes:
-      - ~/microservices-deploy/asset-images/
+      - ./asset-images:/app/asset-images
     networks:
       - kamis-network
 
@@ -67,6 +65,9 @@ services:
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
       - FRONTEND_URL=https://www.sikamis.com
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     networks:
       - kamis-network
 
@@ -113,7 +114,7 @@ services:
       - FRONTEND_URL=https://www.sikamis.com
       - FILE_STORAGE_PATH=/app/uploads
     volumes:
-      - ~/microservices-deploy/purchase-images/
+      - ./purchase-images:/app/uploads
     networks:
       - kamis-network
 
