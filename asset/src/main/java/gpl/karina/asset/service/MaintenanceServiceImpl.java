@@ -80,7 +80,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         maintenance.setAsset(asset);
     
         Maintenance savedMaintenance = maintenanceRepository.save(maintenance);
-
+    
         try {
             AddLapkeuDTO lapkeuRequest = new AddLapkeuDTO();
             lapkeuRequest.setId(savedMaintenance.getId().toString());
@@ -92,7 +92,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
 
             webClientBuilder.build()
                 .post()
-                .uri(financeUrl + "/lapkeu/add") // ganti port sesuai service lapkeu
+                .uri(financeUrl + "/lapkeu/add")
                 .bodyValue(lapkeuRequest)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -101,13 +101,9 @@ public class MaintenanceServiceImpl implements MaintenanceService {
             System.err.println("Gagal insert ke Lapkeu: " + e.getMessage());
         }
         
-        return convertToDTO(savedMaintenance);
+        return convertToDTO(savedMaintenance);    
     }
     
-    /**
-     * Check if the planned maintenance conflicts with any existing asset reservations
-     * Using the provided list of reservations
-     */
     private void checkMaintenanceReservationConflict(List<AssetReservation> assetReservations, Date maintenanceStartDate, String platNomor) throws Exception {
         if (assetReservations == null || assetReservations.isEmpty()) {
             System.out.println("No reservations found for asset: " + platNomor);
@@ -119,7 +115,9 @@ public class MaintenanceServiceImpl implements MaintenanceService {
                 .filter(reservation -> !"Batal".equals(reservation.getReservationStatus()) && 
                                      !"Selesai".equals(reservation.getReservationStatus()))
                 .collect(Collectors.toList());
-
+    
+        System.out.println("Found " + assetReservations.size() + " total reservations for asset: " + platNomor);
+        System.out.println("Found " + activeReservations.size() + " active reservations (excluding Batal/Selesai) for asset: " + platNomor);
     
         if (activeReservations.isEmpty()) {
             System.out.println("No active reservations found for asset: " + platNomor);
@@ -162,7 +160,8 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         }
     }
     
-    
+    // Remove the old checkMaintenanceReservationConflict method that uses repository
+    // Keep the helper methods as they are
     private String formatDateForError(Date date) {
         if (date == null) return "N/A";
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
@@ -175,6 +174,7 @@ public class MaintenanceServiceImpl implements MaintenanceService {
         }
         return !dateToCheck.before(startDate) && !dateToCheck.after(endDate);
     }
+    
 
     @Override
     public List<MaintenanceResponseDTO> getAllMaintenance() {
