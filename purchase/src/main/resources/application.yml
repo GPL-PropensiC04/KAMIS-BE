@@ -39,7 +39,7 @@ purchase:
     resourceUrl: ${RESOURCE_URL}
     frontendUrl: ${FRONTEND_URL}
 file:
-  upload-dir: purchase-images
+  upload-dir: ${FILE_UPLOAD_DIR:purchase-images}
 logging:
   file:
     name: logs/purchase-application.log

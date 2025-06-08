@@ -39,7 +39,7 @@ asset:
     resourceUrl: ${RESOURCE_URL}
     frontendUrl: ${FRONTEND_URL}
 file:
-  upload-dir: asset-images
+  upload-dir: ${FILE_UPLOAD_DIR:asset-images}
 migration:
   auto-execute: true
 logging:

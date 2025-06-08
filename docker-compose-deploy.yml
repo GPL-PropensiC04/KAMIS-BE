@@ -17,7 +17,7 @@ services:
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
       - FRONTEND_URL=https://www.sikamis.com
-      - FILE_STORAGE_PATH=/app/uploads
+      - FILE_UPLOAD_DIR=/app/asset-images
     volumes:
       - ./asset-images:/app/asset-images
     networks:
@@ -112,7 +112,7 @@ services:
       - PURCHASE_URL=http://purchase-service:8084/api
       - RESOURCE_URL=http://resource-service:8085/api
       - FRONTEND_URL=https://www.sikamis.com
-      - FILE_STORAGE_PATH=/app/uploads
+      - FILE_UPLOAD_DIR=/app/uploads
     volumes:
       - ./purchase-images:/app/uploads
     networks:
