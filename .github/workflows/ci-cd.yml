@@ -134,7 +134,10 @@ jobs:
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}\n
             DATABASE_URL_PROJECT=${{ secrets.DATABASE_URL_PROJECT }}\n
             DATABASE_URL_PURCHASE=${{ secrets.DATABASE_URL_PURCHASE }}\n
-            DATABASE_URL_RESOURCE=${{ secrets.DATABASE_URL_RESOURCE }}' > ~/microservices-deploy/.env"
+            DATABASE_URL_RESOURCE=${{ secrets.DATABASE_URL_RESOURCE }}\n
+            ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}\n
+            ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}\n
+            ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}' > ~/microservices-deploy/.env"
             
             ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" "
             cd ~/microservices-deploy/ && 

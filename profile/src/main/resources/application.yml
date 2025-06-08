@@ -35,6 +35,9 @@ profile:
     resourceUrl: ${RESOURCE_URL}
     assetUrl: ${ASSET_URL}
     frontendUrl: ${FRONTEND_URL}
+    adminEmail: ${ADMIN_EMAIL}
+    adminPassword: ${ADMIN_PASSWORD}
+    adminUsername: ${ADMIN_USERNAME}
 logging:
   file:
     name: logs/profile-application.log
