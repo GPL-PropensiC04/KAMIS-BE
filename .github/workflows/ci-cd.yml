@@ -137,6 +137,7 @@ jobs:
           ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}
           ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+          IMAGE_REPO=${{ secrets.IMAGE_REPO }}
           EOF"
           
           ssh "${{ secrets.DEPLOY_USERNAME }}@${{ secrets.DEPLOY_SERVER }}" 'cat > ~/microservices-deploy/nginx.conf << '\''EOF'\''
