@@ -1,7 +1,7 @@
 services:
 
   asset:
-    image: gcr.io/nimble-acrobat-461000-v3/asset:latest
+    image: ${IMAGE_REPO}/asset:latest
     container_name: asset-service
     restart: always
     ports:
@@ -25,7 +25,7 @@ services:
       - kamis-network
 
   finance:
-    image: gcr.io/nimble-acrobat-461000-v3/finance.report:latest
+    image: ${IMAGE_REPO}/finance.report:latest
     container_name: finance-service
     restart: always
     ports:
@@ -47,7 +47,7 @@ services:
       - kamis-network
 
   profile:
-    image: gcr.io/nimble-acrobat-461000-v3/profile:latest
+    image: ${IMAGE_REPO}/profile:latest
     container_name: profile-service
     restart: always
     ports:
@@ -73,7 +73,7 @@ services:
       - kamis-network
 
   project:
-    image: gcr.io/nimble-acrobat-461000-v3/project:latest
+    image: ${IMAGE_REPO}/project:latest
     container_name: project-service
     restart: always
     ports:
@@ -95,7 +95,7 @@ services:
       - kamis-network
 
   purchase:
-    image: gcr.io/nimble-acrobat-461000-v3/purchase:latest
+    image: ${IMAGE_REPO}/purchase:latest
     container_name: purchase-service
     restart: always
     ports:
@@ -120,7 +120,7 @@ services:
       - kamis-network
 
   resource:
-    image: gcr.io/nimble-acrobat-461000-v3/resource:latest
+    image: ${IMAGE_REPO}/resource:latest
     container_name: resource-service
     restart: always
     ports:
