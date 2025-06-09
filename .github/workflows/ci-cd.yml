@@ -1,15 +1,14 @@
 name: CI/CD
 
-# fire on pushes to main or your deploy‐branch
+# fire on pushes gcp-deploy branch
 on:
   push:
     branches:
-      - main
       - gcp-deploy
 
 # global env → replace with your GitHub Variables (non-sensitive)
 env:
-  GCP_PROJECT_ID: nimble-acrobat-461000-v3
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   IMAGE_REPO: ${{ vars.REGISTRY_SERVER}}/${{ secrets.GCP_PROJECT_ID }}
 
 jobs:
